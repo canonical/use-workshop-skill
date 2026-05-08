@@ -1,0 +1,194 @@
+- description: Refresh failed, user asks what to do
+  vars:
+    user: |
+      My workshop refresh just failed with an error about a setup-base hook. What do I do?
+  assert:
+    - type: contains-all
+      value:
+        - workshop changes
+        - workshop tasks
+    - type: contains-any
+      value:
+        - --wait-on-error
+        - --verbose
+    - type: not-contains
+      value: snap remove
+    - type: llm-rubric
+      value: |
+        The response does NOT recommend `workshop remove` + `workshop launch` as the fix
+        for a failed refresh from a Ready workshop. It either omits remove entirely or
+        mentions it only to warn against using it (the --wait-on-error / --continue /
+        --abort flow is the correct path).
+
+- description: Refresh failed (paraphrase 1, SDK install error)
+  vars:
+    user: |
+      I ran `workshop refresh` and it bombed out partway through with an SDK install error. What now?
+  assert:
+    - type: contains-all
+      value:
+        - workshop changes
+        - workshop tasks
+    - type: contains-any
+      value:
+        - --wait-on-error
+        - --verbose
+    - type: llm-rubric
+      value: |
+        The response prescribes the `workshop changes` / `workshop tasks`
+        diagnostic flow (and `--wait-on-error` for interactive recovery) as
+        the first step. It does NOT recommend `workshop remove` + `workshop
+        launch` as the fix for a failed refresh from a Ready workshop, and
+        it does NOT recommend `sudo snap remove --purge workshop`. (Mentioning
+        either as something explicitly to avoid is fine — what's forbidden is
+        prescribing them as the fix.)
+
+- description: Refresh failed (paraphrase 2, repeated failure with Status Error)
+  vars:
+    user: |
+      Refresh keeps failing on me — the change shows Status: Error in the changes list. How do I figure out what's actually wrong?
+  assert:
+    - type: contains
+      value: workshop tasks
+    - type: contains-any
+      value:
+        - --wait-on-error
+        - --verbose
+        - "shell"
+    - type: llm-rubric
+      value: |
+        The response treats the Error status as a diagnostic starting point (drilling
+        into `workshop tasks <ID>` for the failed task's logs, optionally retrying with
+        `--wait-on-error` to inspect interactively). It does NOT recommend `workshop
+        remove` + `workshop launch` as the primary fix for an Error change from a
+        Ready workshop.
+
+- description: User wants to inspect a paused workshop interactively
+  vars:
+    user: |
+      I ran workshop refresh --wait-on-error and now my workshop is in Waiting. How do I poke around inside before deciding what to do?
+  assert:
+    - type: contains
+      value: workshop shell
+    - type: contains-any
+      value:
+        - --continue
+        - --abort
+
+- description: User asks how to resume after fixing the issue
+  vars:
+    user: |
+      I shelled in, manually fixed what was broken, and the workshop is still Waiting. How do I tell it to keep going?
+  assert:
+    - type: contains
+      value: --continue
+    - type: contains-any
+      value:
+        - workshop refresh --continue
+        - workshop launch --continue
+    - type: not-contains
+      value: workshop remove
+
+- description: User asks about warnings vs errors
+  vars:
+    user: |
+      workshop info says my workshop is Ready but workshop warnings shows something. How worried should I be?
+  assert:
+    - type: contains-any
+      value:
+        - non-blocking
+        - "not blocking"
+        - "doesn't block"
+        - transient
+        - cosmetic
+    - type: contains
+      value: workshop okay
+
+- description: User reaches for snap purge prematurely
+  vars:
+    user: |
+      Things are weird. Should I just do sudo snap remove workshop --purge and start over?
+  assert:
+    - type: contains-any
+      value:
+        - last resort
+        - last-resort
+        - "do not"
+        - "don't"
+        - destructive
+        - all users
+        - "every user"
+        - "every workshop"
+        - nuclear
+        - nuke
+    - type: contains-any
+      value:
+        - workshop changes
+        - workshop tasks
+        - lxc list
+    - type: llm-rubric
+      value: |
+        The response discourages using `snap remove --purge` as a first step,
+        recommends starting with workshop diagnostic commands (at minimum
+        `workshop changes`; `workshop tasks` and/or `lxc list` are bonus,
+        not required), and warns that purge is destructive at system scope
+        (affects all users / every workshop on the system).
+
+- description: Snap purge prematurely (paraphrase 1, hopeful framing)
+  vars:
+    user: |
+      Honest question — would `sudo snap remove --purge workshop` solve a flaky workshop?
+  assert:
+    - type: contains-any
+      value:
+        - last resort
+        - last-resort
+        - "do not"
+        - "don't"
+        - destructive
+        - all users
+        - "every user"
+        - "every workshop"
+        - nuclear
+        - nuke
+    - type: contains-any
+      value:
+        - workshop changes
+        - workshop tasks
+        - lxc list
+    - type: llm-rubric
+      value: |
+        The response discourages `snap remove --purge` as a first step,
+        points the user at workshop diagnostics first (at minimum `workshop
+        changes`), and warns that purge is system-wide (affects every
+        workshop for every user on the system).
+
+- description: Snap purge prematurely (paraphrase 2, "nuke option" framing)
+  vars:
+    user: |
+      I've heard people call `snap remove --purge workshop` the nuke option. Should I use it now or save it for later?
+  assert:
+    - type: contains-any
+      value:
+        - last resort
+        - last-resort
+        - save it for later
+        - "later"
+        - destructive
+        - all users
+        - "every user"
+        - "every workshop"
+        - nuclear
+        - nuke
+    - type: contains-any
+      value:
+        - workshop changes
+        - workshop tasks
+        - lxc list
+    - type: llm-rubric
+      value: |
+        The response treats `snap remove --purge` as a true last resort
+        (save it for later, not now) and points the user to workshop
+        diagnostics first (at minimum `workshop changes`; `workshop tasks`
+        and/or `lxc list` are bonus, not required). It warns that purge
+        affects every workshop for every user on the system.

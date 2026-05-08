@@ -1,0 +1,107 @@
+- description: User wants to attach a remote IDE over SSH (vendor-agnostic)
+  vars:
+    user: |
+      I want to use a remote-SSH IDE workflow to edit code inside my workshop. What's the workshop-side setup?
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains-any
+      value:
+        - sshd
+        - ssh server
+    - type: llm-rubric
+      value: |
+        The response describes the workshop-side pattern: run `sshd` inside
+        the workshop, tunnel its port to a non-privileged host port, point
+        the IDE at the host address. The response does NOT name a specific
+        commercial IDE / editor product (e.g., VS Code, JetBrains products,
+        Cursor) and improvise its product-specific config — the user did
+        not name one and the response should stay vendor-neutral on that
+        side. Mentioning generic OSS tools and packages such as `sshd`,
+        `openssh-server`, or `apt-get install openssh-server` is fine —
+        those are workshop-side setup, not IDE-side product config.
+
+- description: User asks about a specific remote-IDE vendor
+  vars:
+    user: |
+      I use VS Code Remote SSH. How do I set up my workshop so VS Code can attach to it?
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains-any
+      value:
+        - sshd
+        - ssh server
+    - type: contains-any
+      value:
+        - workshop info
+        - "from:"
+    - type: llm-rubric
+      value: |
+        The response gives the workshop-side pattern (sshd inside, tunnel to
+        a host port, find the host address via `workshop info`) and treats
+        the IDE as the destination tool. Acknowledging the user's named tool
+        ("VS Code Remote SSH") and naming the host endpoint the user should
+        point it at is fine. The response does NOT fabricate vendor-specific
+        config files (e.g., it does NOT invent VS Code `settings.json`
+        entries, extension settings, or vendor-internal commands the docs do
+        not document).
+
+- description: User wants ssh-agent forwarding for git inside the workshop
+  vars:
+    user: |
+      I need to clone a private repo from inside my workshop using my host's SSH keys. How do I forward my ssh-agent in?
+  assert:
+    - type: contains
+      value: ssh-agent
+    - type: contains
+      value: workshop connect
+    - type: contains-any
+      value:
+        - "plugs:"
+        - "plug"
+    - type: llm-rubric
+      value: |
+        The response makes clear that ssh-agent does NOT auto-connect — the
+        user must run `workshop connect <workshop>/<sdk>:ssh-agent` (or the
+        equivalent shorthand) explicitly. It is fine, even helpful, for the
+        response to use the phrase "auto-connect" while explaining that
+        ssh-agent is the exception that requires a manual connect.
+
+- description: User asks for the host address to point their tool at
+  vars:
+    user: |
+      I refreshed my workshop with a tunnel for a service running on port 3000 inside it. What address do I tell my tool to connect to?
+  assert:
+    - type: contains
+      value: workshop info
+    - type: contains-any
+      value:
+        - "from:"
+        - "host"
+        - "127.0.0.1"
+        - "localhost"
+    - type: contains-any
+      value:
+        - tunnels
+        - tunnel
+
+- description: User picks a privileged port for a system tunnel plug
+  vars:
+    user: |
+      I want my workshop's web server on port 80 inside the workshop to be reachable on port 80 of my host. Will workshop set that up?
+  assert:
+    - type: contains-any
+      value:
+        - privileged
+        - "below 1024"
+        - "1024"
+        - "non-privileged"
+        - "rejected"
+        - "unprivileged"
+    - type: llm-rubric
+      value: |
+        The response identifies that the host port 80 is privileged and that
+        the system-SDK tunnel plug requires a non-privileged host port (>=
+        1024). It recommends using a non-privileged host port for the tunnel
+        plug, regardless of what port the service runs on inside the workshop.

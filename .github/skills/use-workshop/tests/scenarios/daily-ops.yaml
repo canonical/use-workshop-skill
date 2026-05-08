@@ -1,0 +1,72 @@
+- description: Run a one-off command inside an existing workshop
+  vars:
+    user: |
+      My workshop is named "dev" and it's Ready. How do I run "make build" inside it?
+  assert:
+    - type: contains
+      value: workshop exec
+    - type: contains-any
+      value:
+        - workshop exec dev
+        - workshop exec --
+    - type: not-contains
+      value: workshop launch
+
+- description: User edited only the actions block, asks if refresh is needed
+  vars:
+    user: |
+      I just added a new entry under actions: in workshop.yaml. Do I need to run workshop refresh before I can use it?
+  assert:
+    - type: contains-any
+      value:
+        - "no"
+        - "No"
+        - not need
+        - "don't need"
+        - without refresh
+        - without a refresh
+    - type: contains
+      value: workshop run
+    - type: not-contains
+      value: must refresh
+
+- description: User wants to forward arguments through workshop run
+  vars:
+    user: |
+      I have a "tests" action that runs my test runner. How do I pass extra flags to it from workshop run?
+  assert:
+    - type: contains
+      value: workshop run
+    - type: contains
+      value: '"$@"'
+    - type: contains-any
+      value:
+        - "--"
+        - separator
+
+- description: User reports a workshop is Stopped, wants to use it
+  vars:
+    user: |
+      I tried workshop exec but it says the workshop is Stopped. What now?
+  assert:
+    - type: contains
+      value: workshop start
+    - type: llm-rubric
+      value: |
+        The PRIMARY recommendation for a Stopped workshop is `workshop start`.
+        The response does NOT recommend `workshop launch` or `workshop remove`
+        as the fix for the Stopped state. (The response MAY mention launch/remove
+        only in the context of OTHER states like Error, as conditional fallbacks,
+        which is fine — but they must not be the primary recommendation here.)
+
+- description: User edited base image and asks how to apply it
+  vars:
+    user: |
+      I changed base: ubuntu@22.04 to ubuntu@24.04 in my workshop.yaml. How do I apply that?
+  assert:
+    - type: contains
+      value: workshop refresh
+    - type: not-contains
+      value: workshop remove
+    - type: not-contains
+      value: re-launch

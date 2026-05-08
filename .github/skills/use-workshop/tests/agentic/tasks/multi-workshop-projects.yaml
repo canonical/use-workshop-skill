@@ -1,0 +1,56 @@
+- description: multi-workshop-projects — migrate to multi-workshop layout and add a second workshop
+  vars:
+    workshop_name: agentic-mw-api
+    # Comma-separated string (NOT a YAML list) — promptfoo treats list-valued
+    # vars as a parameter sweep, expanding to one run per element. The
+    # provider parses both forms.
+    cleanup_workshops: "agentic-mw-api,agentic-mw-web"
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/multi-workshop-projects
+    # Migrating + launching two workshops takes longer than one workshop.
+    timeout_ms: 1500000
+    task: |
+      This project currently has a single root-level `workshop.yaml`
+      defining a workshop named `agentic-mw-api`. I want to add a second
+      workshop named `agentic-mw-web` alongside it.
+
+      Migrate the project to the multi-workshop layout, add the second
+      workshop's definition, then launch both workshops and confirm both
+      are Ready.
+
+      Both workshops can use `ubuntu@24.04` and need no special SDKs.
+  assert:
+    - type: contains
+      value: ".workshop/"
+    # Evidence that the agent moved/wrote files for the migration. Any of:
+    # native Edit/Write tool, `mv` (rename), `cp` (copy original) plus `rm`
+    # (remove original), or a `cat > ... << EOF` heredoc that writes a new
+    # file. All are valid ways to express the migration.
+    - type: contains-any
+      value:
+        - "[TOOL_USE Edit]"
+        - "[TOOL_USE Write]"
+        - "[BASH] mv"
+        - "[BASH] cp"
+        - "cat >"
+    - type: contains
+      value: "[BASH] workshop launch"
+    - type: contains-any
+      value:
+        - "agentic-mw-api"
+    - type: contains-any
+      value:
+        - "agentic-mw-web"
+    - type: javascript
+      value: |
+        // Both workshops should show Ready in their captured info blocks.
+        const apiReady = /"agentic-mw-api"[\s\S]{0,400}?"stdout":\s*"[^"]*status:\s*ready/i.test(output);
+        const webReady = /"agentic-mw-web"[\s\S]{0,400}?"stdout":\s*"[^"]*status:\s*ready/i.test(output);
+        return apiReady && webReady;
+    - type: llm-rubric
+      value: |
+        The agent migrated the project from a root `workshop.yaml` to the
+        `.workshop/<name>.yaml` layout (one file per workshop, basename
+        matching the `name:` field). It added the second definition and
+        launched both. Both workshops reach Ready. The agent did NOT
+        attempt to keep both `workshop.yaml` and `.workshop/*.yaml`
+        side by side (that's explicitly rejected by Workshop).

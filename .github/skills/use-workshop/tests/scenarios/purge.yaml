@@ -1,0 +1,64 @@
+- description: Standard workshop removal
+  vars:
+    user: |
+      I'm done with my workshop. How do I remove it?
+  assert:
+    - type: contains
+      value: workshop remove
+    - type: contains-any
+      value:
+        - workshop list
+        - confirm
+    - type: not-contains
+      value: snap remove
+
+- description: Project deleted before workshop was removed (orphan)
+  vars:
+    user: |
+      I deleted my project directory without removing the workshop first. workshop list --global still shows the workshop. How do I clean up?
+  assert:
+    - type: contains-any
+      value:
+        - lxc list
+        - lxc delete
+    - type: contains-any
+      value:
+        - "workshop."
+        - workshop.user
+    - type: not-contains
+      value: snap remove --purge
+
+- description: User asks about workshop restore vs remove
+  vars:
+    user: |
+      My workshop has gotten weird with stale mounts and connections from earlier experiments. I don't want to lose the container though. What's the cleanest way to reset it?
+  assert:
+    - type: contains
+      value: workshop restore
+    - type: contains-any
+      value:
+        - last
+        - "launch or refresh"
+        - default
+    - type: llm-rubric
+      value: |
+        The PRIMARY recommendation is `workshop restore`, which preserves the
+        container. The response does NOT recommend `workshop remove` as the fix
+        for this situation. (The response MAY mention `workshop remove` in
+        contrast — to clarify what restore is *not* — or as a conditional
+        fallback for an `Error` state, which is fine. It must not be the
+        primary recommended action.)
+
+- description: After manual lxc cleanup, what to verify
+  vars:
+    user: |
+      I just used lxc delete to remove an orphan container. How do I verify nothing's left behind?
+  assert:
+    - type: contains-any
+      value:
+        - workshop list --global
+        - lxc list --all-projects
+    - type: contains-any
+      value:
+        - profile list
+        - lxc profile

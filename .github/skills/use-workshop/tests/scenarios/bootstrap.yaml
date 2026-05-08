@@ -1,0 +1,76 @@
+- description: First-time setup, user has cloned a repo with workshop.yaml
+  vars:
+    user: |
+      I just cloned a repo and it has a workshop.yaml at the root. What do I run to get started?
+  assert:
+    - type: contains
+      value: workshop launch
+    - type: contains-any
+      value:
+        - workshop info
+        - workshop list
+    - type: not-contains
+      value: workshop start
+    - type: not-contains
+      value: sdkcraft
+
+- description: Greenfield project, user wants a Go-based workshop
+  vars:
+    user: |
+      I want to set up a workshop for a Go project. What's the minimal workshop.yaml I need and how do I launch it?
+  assert:
+    - type: contains-all
+      value:
+        - "name:"
+        - "base:"
+        - "sdks:"
+    - type: contains
+      value: ubuntu@
+    - type: contains
+      value: workshop launch
+    - type: not-contains
+      value: sudo snap remove
+
+- description: User wants to know what to commit and what to gitignore
+  vars:
+    user: |
+      I'm setting up a workshop in a git repo. What files should I commit and which ones should I add to .gitignore?
+  assert:
+    - type: contains-any
+      value:
+        - .gitignore
+        - .workshop.lock
+        - "*.lock"
+    - type: contains-any
+      value:
+        - workshop.yaml
+        - .workshop/
+    - type: not-contains
+      value: sdkcraft
+
+- description: User wants to discover SDKs first
+  vars:
+    user: |
+      How do I find out what SDKs are available for adding a new tool to my workshop?
+  assert:
+    - type: contains-any
+      value:
+        - sdk find
+        - sdk info
+    - type: not-contains
+      value: sdkcraft
+
+- description: User asks how to confirm a launch worked
+  vars:
+    user: |
+      I just ran workshop launch. How do I check it's actually ready and the project is mounted?
+  assert:
+    - type: contains-any
+      value:
+        - workshop info
+        - workshop list
+    - type: contains-any
+      value:
+        - /project
+        - workshop exec
+        - workshop shell

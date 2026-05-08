@@ -1,0 +1,6 @@
+name: agentic-daily
+base: ubuntu@24.04
+actions:
+  hello: echo agentic-daily-hello-ok
+  echoargs: |
+    echo "received: $@"

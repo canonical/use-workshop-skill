@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "generated_at": "2026-05-07T15:53:59+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 7,
+    "passed": 7,
+    "failed": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 13236,
+      "completion": 77248,
+      "cached": 5223076
+    },
+    "cost_usd": 3.4709
+  },
+  "cases": [
+    {
+      "description": "bootstrap-project \u2014 greenfield Python workshop",
+      "passed": true,
+      "score": 0.9833333333333334,
+      "latency_ms": 103413,
+      "cost": 0.276196
+    },
+    {
+      "description": "daily-ops \u2014 launch workshop and run a defined action",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 94703,
+      "cost": 0.086704
+    },
+    {
+      "description": "customize-actions-sketches \u2014 add a new action and run it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 36972,
+      "cost": 0.077009
+    },
+    {
+      "description": "manage-interfaces \u2014 wire an HTTP service tunnel from workshop to host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 645301,
+      "cost": 1.415369
+    },
+    {
+      "description": "ide-integration \u2014 set up sshd + tunnel for a remote-SSH IDE workflow",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 572997,
+      "cost": 1.345145
+    },
+    {
+      "description": "multi-workshop-projects \u2014 migrate to multi-workshop layout and add a second workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 70603,
+      "cost": 0.119598
+    },
+    {
+      "description": "troubleshoot \u2014 diagnose a failed launch and recover to Ready",
+      "passed": true,
+      "score": 0.9800000000000001,
+      "latency_ms": 76220,
+      "cost": 0.150873
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# Workshop definition combining multiple SDKs.
+# SDKs install in the order they appear (system SDK is always first).
+# This template shows a regular Store SDK alongside an in-project SDK
+# (defined under `.workshop/<name>/sdk.yaml`, referenced as `project-<name>`).
+
+name: dev
+base: ubuntu@24.04
+sdks:
+  # A Store SDK with a pinned channel.
+  - name: <sdk-name>
+    channel: <track>/<risk>
+
+  # An in-project SDK living at `.workshop/<custom-name>/sdk.yaml`.
+  - name: project-<custom-name>
+
+  # An additional Store SDK; can declare extra plugs/slots inline.
+  - name: <other-sdk>
+    plugs:
+      <plug-name>:
+        bind: <sdk-name>:<plug-name>   # bind to resolve plug conflicts
+
+actions:
+  build: |
+    <your-build-command>
+
+  run: |
+    <your-run-command> "$@"

@@ -1,0 +1,78 @@
+- description: Expose a workshop service on the host (auto-connect tunnel)
+  vars:
+    user: |
+      I have a service running on port 8080 inside my workshop. How do I make it reachable at localhost:8080 on my host?
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains-any
+      value:
+        - "system"
+        - "system:"
+    - type: contains-any
+      value:
+        - plugs
+        - slots
+    - type: contains
+      value: workshop refresh
+    - type: contains
+      value: localhost:8080
+
+- description: Reach a host service from inside the workshop (manual connect)
+  vars:
+    user: |
+      I want code inside the workshop to connect to a Postgres server running on the host at localhost:5432. How do I wire that up?
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains
+      value: workshop connect
+    - type: contains
+      value: workshop refresh
+    - type: contains-any
+      value:
+        - manual
+        - "system:"
+
+- description: Plug conflict between two SDKs wanting the same mount target
+  vars:
+    user: |
+      Two SDKs in my workshop both declare a plug for ~/.cache/foo and the launch fails with a conflict. How do I fix that?
+  assert:
+    - type: contains
+      value: bind
+    - type: contains-any
+      value:
+        - workshop launch
+        - workshop refresh
+    - type: contains-any
+      value:
+        - workshop connections
+        - bind.
+
+- description: Reassign a mount source to a different host directory
+  vars:
+    user: |
+      How do I point an existing mount plug at a different host directory after the workshop is already launched?
+  assert:
+    - type: contains
+      value: workshop remount
+    - type: not-contains
+      value: workshop launch
+
+- description: User asks about ssh-agent forwarding
+  vars:
+    user: |
+      I want my workshop to use the SSH keys from my host's ssh-agent so I can clone private repos. How?
+  assert:
+    - type: contains
+      value: ssh-agent
+    - type: contains
+      value: workshop connect
+    - type: contains-any
+      value:
+        - manual
+        - "not auto"
+        - "never auto"
+        - "doesn't auto"
+        - "does not auto"

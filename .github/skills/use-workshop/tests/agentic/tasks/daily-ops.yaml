@@ -1,0 +1,28 @@
+- description: daily-ops — launch workshop and run a defined action
+  vars:
+    workshop_name: agentic-daily
+    cleanup_workshops: ["agentic-daily"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/daily-ops
+    timeout_ms: 900000
+    task: |
+      You are in a project directory that already has a `workshop.yaml`
+      defining a workshop named `agentic-daily` with a `hello` action.
+
+      Launch the workshop, wait for it to be Ready, then invoke the
+      `hello` action. Print the action's output so I can confirm it ran.
+  assert:
+    - type: contains
+      value: "[BASH] workshop launch"
+    - type: contains
+      value: "[BASH] workshop run"
+    - type: contains
+      value: "agentic-daily-hello-ok"
+    - type: javascript
+      value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        The agent launched the existing workshop (did NOT recreate the
+        definition file), confirmed Ready before running the action, and
+        used `workshop run` (not `workshop exec`) to invoke the named
+        action. The action's output (`agentic-daily-hello-ok`) is visible
+        in the transcript.

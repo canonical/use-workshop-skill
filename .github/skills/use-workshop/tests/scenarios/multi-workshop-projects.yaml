@@ -1,0 +1,122 @@
+- description: User wants two workshops in the same project
+  vars:
+    user: |
+      My project has a Python backend and a Node frontend. I want a separate workshop for each, in the same git repo. How do I lay that out?
+  assert:
+    - type: contains
+      value: .workshop/
+    - type: contains-any
+      value:
+        - workshop launch
+        - workshop list
+    - type: llm-rubric
+      value: |
+        The response describes the multi-workshop layout: one definition
+        file per workshop under `.workshop/`, with each file's basename
+        matching its `name:` field (e.g., `.workshop/backend.yaml` with
+        `name: backend`). It is acceptable for the response to demonstrate
+        this invariant by example (showing two correctly-named files with
+        matching `name:` fields) rather than stating it as an explicit rule
+        — either form satisfies the requirement.
+
+- description: User asks how to migrate from a single workshop.yaml
+  vars:
+    user: |
+      I currently have a workshop.yaml at the project root and I want to add a second workshop alongside it. Can I just add another file?
+  assert:
+    - type: contains-any
+      value:
+        - "no"
+        - "No"
+        - "cannot"
+        - "can't"
+        - "rejects"
+        - "refuses"
+    - type: contains-any
+      value:
+        - "move"
+        - "rename"
+        - "migrate"
+    - type: contains
+      value: .workshop/
+    - type: llm-rubric
+      value: |
+        The response explains that mixing a root-level `workshop.yaml` with
+        `.workshop/*.yaml` files is not allowed, and that the user must
+        first move the existing definition under `.workshop/` and rename it
+        to match a workshop name (basename equal to `name:` field).
+
+- description: User omits workshop name in a multi-workshop project
+  vars:
+    user: |
+      My project has two workshops, "api" and "web". I tried `workshop refresh` but it complained. What do I do?
+  assert:
+    - type: contains-any
+      value:
+        - "workshop refresh api"
+        - "workshop refresh web"
+        - "workshop refresh <name>"
+    - type: llm-rubric
+      value: |
+        The response conveys that, in a multi-workshop project, the
+        workshop name is required (or at minimum: must be supplied) on
+        every command — it cannot be omitted. The response demonstrates
+        the fix by showing `workshop refresh` invoked with one of the
+        named workshops (e.g., `workshop refresh api`). Phrasing flexibility
+        is fine: "required", "must specify", "needs to know which one",
+        "needs the name", and similar all satisfy the requirement.
+
+- description: Cross-workshop networking
+  vars:
+    user: |
+      My "api" workshop runs a service on port 8080 inside it. My "web" workshop needs to call that service. How do I wire them up?
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains-any
+      value:
+        - "host"
+        - "bridge"
+        - "through the host"
+    - type: contains
+      value: workshop connect
+    - type: not-contains
+      value: workshop connect api/
+    - type: llm-rubric
+      value: |
+        The response describes bridging through the host: the provider
+        workshop ("api") exposes its service via a system-SDK tunnel to a
+        host port (auto-connect), and the consumer workshop ("web") reaches
+        that host port through its own system-SDK tunnel slot, requiring a
+        manual `workshop connect`. The response does NOT suggest a direct
+        cross-workshop `workshop connect <a>/sdk:plug <b>/sdk:slot`.
+
+- description: User attempts a direct cross-workshop connect
+  vars:
+    user: |
+      Why does `workshop connect api/backend:db web/consumer:db` fail? They're in the same project.
+  assert:
+    - type: contains-any
+      value:
+        - "rejected"
+        - "not allowed"
+        - "does not allow"
+        - "do not allow"
+        - "doesn't allow"
+        - "not supported"
+        - "doesn't work"
+        - "does not work"
+        - "cannot"
+        - "can't"
+        - "refuses"
+        - "only exist within a single workshop"
+        - "only within a single workshop"
+        - "within the same workshop"
+        - "in the same workshop"
+        - "must both belong to the same workshop"
+    - type: contains-any
+      value:
+        - "host"
+        - "bridge"
+        - "through the host"
+        - tunnel

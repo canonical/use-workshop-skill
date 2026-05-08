@@ -1,0 +1,47 @@
+- description: ide-integration — set up sshd + tunnel for a remote-SSH IDE workflow
+  vars:
+    workshop_name: agentic-ssh
+    cleanup_workshops: ["agentic-ssh"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/ide-integration
+    timeout_ms: 900000
+    task: |
+      The project has a minimal `workshop.yaml` for `agentic-ssh`. I want
+      to use a remote-SSH IDE workflow (any vendor — stay generic) to
+      edit code inside this workshop.
+
+      Set up the workshop-side pieces:
+        - install/run `sshd` inside the workshop (a sketch SDK is fine
+          for prototyping),
+        - tunnel the workshop's SSH port (22 inside) to host port 12222,
+        - launch / refresh as needed,
+        - verify the tunnel via `workshop info` or `workshop connections`.
+
+      Leave `sshd` configuration minimal — the goal is the wiring, not a
+      production-grade auth setup.
+  assert:
+    - type: contains-any
+      value:
+        - sshd
+        - openssh-server
+    - type: contains
+      value: tunnel
+    - type: contains
+      value: "12222"
+    - type: contains-any
+      value:
+        - "[BASH] workshop launch"
+        - "[BASH] workshop refresh"
+    - type: contains-any
+      value:
+        - "[BASH] workshop info"
+        - "[BASH] workshop connections"
+    - type: javascript
+      value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        The agent set up sshd inside the workshop (via a sketch SDK or
+        equivalent) and added a tunnel exposing the SSH port to host
+        port 12222. The workshop reaches Ready and the tunnel shows up
+        in `workshop info` / `workshop connections`. The response stays
+        vendor-neutral on the IDE side — does not improvise specific
+        commercial-IDE config (e.g., VS Code `settings.json` entries).

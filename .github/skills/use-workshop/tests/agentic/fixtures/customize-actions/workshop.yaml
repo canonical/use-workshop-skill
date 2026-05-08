@@ -1,0 +1,4 @@
+name: agentic-customize
+base: ubuntu@24.04
+actions:
+  hello: echo hello-from-existing-action

@@ -1,0 +1,58 @@
+description: |
+  Routing and behavior eval for the use-workshop skill.
+  Each scenario file under `scenarios/` contributes test cases that simulate
+  a user prompt; the SKILL.md is loaded as the chat system message via the
+  prompt.json template; assertions check that the model picks the right
+  `workshop` or `sdk` command, surfaces the right flags, and avoids known
+  anti-patterns.
+
+# Chat-format prompt: {{skill}} expands to SKILL.md contents (loaded via
+# defaultTest.vars.skill below); {{user}} comes from each scenario case.
+prompts:
+  - file://prompt.json
+
+providers:
+  # Primary baseline. Listed first so scripts that read the first provider
+  # id from this file (e.g. scripts/run-routing.sh) default to Sonnet 4.6.
+  - id: anthropic:messages:claude-sonnet-4-6
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Clarity diagnostic — Haiku failures on a well-written skill usually
+  # indicate ambiguity in the skill rather than model weakness.
+  - id: anthropic:messages:claude-haiku-4-5
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Headroom check — Opus failures usually indicate a missing/wrong skill
+  # fact, not a model capability gap.
+  - id: anthropic:messages:claude-opus-4-7
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+defaultTest:
+  vars:
+    # Inject the skill bundle (SKILL.md + all 8 references concatenated)
+    # as the system message. This simulates the mid-conversation state where
+    # the skill is loaded AND its required_reading has been satisfied —
+    # which is what we want to test (does the agent route correctly given
+    # the skill's full knowledge layer is in context?).
+    #
+    # Regenerate skill-bundle.md whenever SKILL.md or references/* change;
+    # see tests/README.md for the one-line script.
+    skill: file://skill-bundle.md
+
+tests:
+  - file://scenarios/bootstrap.yaml
+  - file://scenarios/daily-ops.yaml
+  - file://scenarios/interfaces.yaml
+  - file://scenarios/parallel-envs.yaml
+  - file://scenarios/troubleshoot.yaml
+  - file://scenarios/troubleshoot-multiturn.yaml
+  - file://scenarios/purge.yaml
+  - file://scenarios/out-of-scope.yaml
+  - file://scenarios/customize-actions.yaml
+  - file://scenarios/author-in-project-sdk.yaml
+  - file://scenarios/ide-integration.yaml
+  - file://scenarios/multi-workshop-projects.yaml

@@ -1,0 +1,68 @@
+- description: author-in-project-sdk — write .workshop/ruff/ with setup-project, launch, verify
+  vars:
+    workshop_name: agentic-author-sdk
+    cleanup_workshops: ["agentic-author-sdk"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/author-in-project-sdk
+    extra_allowed_tools: "Bash(chmod *)"
+    timeout_ms: 900000
+    task: |
+      The project already has a `workshop.yaml` declaring a `uv` SDK on
+      `ubuntu@24.04`. The workshop is named exactly `agentic-author-sdk`.
+
+      Add a project-specific SDK that installs `ruff` against the
+      project. Requirements:
+
+        - The SDK lives at `.workshop/ruff/`. It is reusable and
+          committable (so write the files directly; do not use the
+          interactive sketch flow).
+        - The install runs at every launch / refresh, in the workshop's
+          project context (so the right hook is `setup-project`).
+          The hook body should run `uv tool install ruff`.
+        - Reference the SDK from `workshop.yaml` as `project-ruff` under
+          `sdks:`.
+        - Launch the workshop and confirm it reaches `Ready`.
+        - Run `ruff --version` inside the workshop via `workshop exec`
+          and print the output, so I can confirm the hook actually
+          installed ruff.
+
+      Use the use-workshop skill's guidance for in-project SDK schema,
+      hook execution context, the executable-script requirement, and
+      verification.
+  assert:
+    # Skill was loaded and the agent followed the canonical authoring
+    # path: write sdk.yaml + hooks/setup-project, chmod +x, refresh/launch.
+    - type: contains-any
+      value:
+        - "[BASH] workshop launch"
+        - "[BASH] workshop refresh"
+    - type: contains
+      value: "[BASH] chmod"
+    - type: contains
+      value: "[BASH] workshop exec"
+    # The hook actually ran and ruff is callable inside the workshop.
+    - type: javascript
+      value: /ruff\s+\d+\.\d+/i.test(output)
+    # Workshop reached Ready before teardown — independent of what the
+    # agent claimed.
+    - type: javascript
+      value: /"stdout":\s*"[^"]*Status:\s*Ready/i.test(output)
+    # The captured workshop info shows the SDK installed under its
+    # project-<name> identity.
+    - type: javascript
+      value: /project-ruff/i.test(output)
+    - type: llm-rubric
+      value: |
+        Looking at the agent's transcript and the captured workshop
+        state, the agent: (a) consulted the skill's
+        `author-in-project-sdk.md` workflow and `in-project-sdk.md`
+        reference; (b) wrote `.workshop/ruff/sdk.yaml` with
+        `name: ruff` and a `hooks:` list containing `setup-project`;
+        (c) wrote `.workshop/ruff/hooks/setup-project` as an
+        executable bash script that installs ruff (e.g.,
+        `uv tool install ruff`), and ran `chmod +x` on it; (d) added
+        `- name: project-ruff` to `workshop.yaml` under `sdks:`; (e)
+        applied the change with `workshop launch` (or `workshop
+        refresh`) and verified end-to-end with `workshop exec --
+        ruff --version` exiting 0. The agent did NOT use `workshop
+        sketch-sdk` or any interactive sketch flow, and did NOT
+        improvise `sdkcraft` invocations.

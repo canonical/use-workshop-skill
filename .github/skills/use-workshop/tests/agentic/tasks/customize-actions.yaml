@@ -1,0 +1,39 @@
+- description: customize-actions — add a new action and run it
+  vars:
+    workshop_name: agentic-customize
+    cleanup_workshops: ["agentic-customize"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/customize-actions
+    timeout_ms: 900000
+    task: |
+      The project has a `workshop.yaml` with one action (`hello`). Add a
+      second action named `lint` whose body is exactly:
+
+          echo lint-action-ran
+
+      Then launch the workshop (named `agentic-customize`) and run the
+      new `lint` action. Print its output so I can confirm.
+
+      Assume actions are loaded at run time — don't wait for or run a
+      refresh purely because of the `actions:` edit.
+  assert:
+    - type: contains
+      value: "[BASH] workshop launch"
+    - type: contains
+      value: "[BASH] workshop run"
+    - type: contains
+      value: "lint-action-ran"
+    # Bonus: agent edited the file. The transcript should show an Edit/Write
+    # tool use for workshop.yaml, OR a bash heredoc/sed that modified it.
+    - type: contains-any
+      value:
+        - "[TOOL_USE Edit]"
+        - "[TOOL_USE Write]"
+        - "actions:"
+    - type: llm-rubric
+      value: |
+        The agent edited the existing `workshop.yaml` to add a `lint`
+        action whose body matches what was requested (`echo
+        lint-action-ran`). The agent did NOT run `workshop refresh` *as a
+        prerequisite for the action edit* (running refresh for other
+        reasons, e.g. before launching, is fine). The new action's output
+        is visible in the transcript.

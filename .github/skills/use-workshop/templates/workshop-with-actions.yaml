@@ -1,0 +1,20 @@
+# Workshop definition with actions.
+# Actions are bash scripts injected into the workshop at `workshop run` time.
+# Action edits do NOT require `workshop refresh` -- they are parsed each run.
+# Trailing args are forwarded as positional parameters; quote "$@".
+
+name: dev
+base: ubuntu@24.04
+sdks:
+  - name: <sdk-name>
+    channel: <track>/<risk>
+
+actions:
+  build: |
+    <your-build-command>
+
+  test: |
+    <your-test-runner> "$@"
+
+  lint: |
+    <your-linter> --config .<linter-config>

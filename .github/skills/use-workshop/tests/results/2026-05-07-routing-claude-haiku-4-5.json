@@ -1,0 +1,409 @@
+{
+  "meta": {
+    "generated_at": "2026-05-07T14:58:31+00:00",
+    "model": "claude-haiku-4-5",
+    "provider": "anthropic:messages",
+    "total_cases": 53,
+    "passed": 51,
+    "failed": 2,
+    "pass_rate": 0.9623,
+    "tokens": {
+      "total": 1436929,
+      "prompt": 0,
+      "completion": 0,
+      "cached": 1436929
+    },
+    "cost_usd": 1.5342
+  },
+  "cases": [
+    {
+      "description": "First-time setup, user has cloned a repo with workshop.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 55,
+      "cost": 0.027821
+    },
+    {
+      "description": "Greenfield project, user wants a Go-based workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 55,
+      "cost": 0.028564
+    },
+    {
+      "description": "User wants to know what to commit and what to gitignore",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 55,
+      "cost": 0.028544
+    },
+    {
+      "description": "User wants to discover SDKs first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 55,
+      "cost": 0.029421
+    },
+    {
+      "description": "User asks how to confirm a launch worked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.028306
+    },
+    {
+      "description": "Run a one-off command inside an existing workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.027984
+    },
+    {
+      "description": "User edited only the actions block, asks if refresh is needed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.027303
+    },
+    {
+      "description": "User wants to forward arguments through workshop run",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.028516
+    },
+    {
+      "description": "User reports a workshop is Stopped, wants to use it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.027707
+    },
+    {
+      "description": "User edited base image and asks how to apply it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.028185
+    },
+    {
+      "description": "Expose a workshop service on the host (auto-connect tunnel)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.029014
+    },
+    {
+      "description": "Reach a host service from inside the workshop (manual connect)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.029806
+    },
+    {
+      "description": "Plug conflict between two SDKs wanting the same mount target",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13,
+      "cost": 0.028526
+    },
+    {
+      "description": "Reassign a mount source to a different host directory",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.028436
+    },
+    {
+      "description": "User asks about ssh-agent forwarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11,
+      "cost": 0.028741
+    },
+    {
+      "description": "Run two parallel test runs over the same source",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029708
+    },
+    {
+      "description": "Compare two builds against the same code",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.02982
+    },
+    {
+      "description": "Cleanup ordering for worktrees with workshops",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13,
+      "cost": 0.027987
+    },
+    {
+      "description": "Optional case mentioning AI agents (one example among others)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.029603
+    },
+    {
+      "description": "Refresh failed, user asks what to do",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029711
+    },
+    {
+      "description": "Refresh failed (paraphrase 1, SDK install error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9,
+      "cost": 0.029849
+    },
+    {
+      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9,
+      "cost": 0.031419
+    },
+    {
+      "description": "User wants to inspect a paused workshop interactively",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11,
+      "cost": 0.029768
+    },
+    {
+      "description": "User asks how to resume after fixing the issue",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.027464
+    },
+    {
+      "description": "User asks about warnings vs errors",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15,
+      "cost": 0.028425
+    },
+    {
+      "description": "User reaches for snap purge prematurely",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15,
+      "cost": 0.027855
+    },
+    {
+      "description": "Snap purge prematurely (paraphrase 1, hopeful framing)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029976
+    },
+    {
+      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.02838
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.031002
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.027091
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.030009
+    },
+    {
+      "description": "Standard workshop removal",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.027984
+    },
+    {
+      "description": "Project deleted before workshop was removed (orphan)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.028932
+    },
+    {
+      "description": "User asks about workshop restore vs remove",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.028572
+    },
+    {
+      "description": "After manual lxc cleanup, what to verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.028944
+    },
+    {
+      "description": "User asks about publishing an SDK to the Store",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.028714
+    },
+    {
+      "description": "User asks about workshopctl",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029038
+    },
+    {
+      "description": "User asks about sdkcraft pack vs workshop launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029444
+    },
+    {
+      "description": "User wants a reusable build script for the workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.02854
+    },
+    {
+      "description": "User wants to try a transient package install before committing",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.028322
+    },
+    {
+      "description": "User asks how to commit a stable sketch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029265
+    },
+    {
+      "description": "User asks where their sketch is stored on disk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.028049
+    },
+    {
+      "description": "User tries to maintain two sketches at once",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.029003
+    },
+    {
+      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
+      "passed": false,
+      "score": 0.8333333333333334,
+      "latency_ms": 4,
+      "cost": 0.031771,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response describes the workshop-side pattern: run `sshd` inside\nthe workshop, tunnel its port to a non-privileged host port, point\nthe IDE at the host address. The response does NOT name a specific\ncommercial IDE / editor product (e.g., VS Code, JetBrains products,\nCursor) and improvise its product-specific config \u2014 the user did\nnot name one and the response should stay vendor-neutral on that\nside. Mentioning generic OSS tools and packages such as `sshd`,\n`openssh-server`, or `apt-get install openssh-server` is fine \u2014\nthose are workshop-side setup, not IDE-side product config.\n",
+          "passed": false,
+          "reason": "The response correctly describes running sshd inside the workshop, tunneling port 22 to a non-privileged host port, and pointing the IDE at localhost:2222. However, it explicitly names specific IDE/editor products such as VS Code, JetBrains IntelliJ/PyCharm, and Vim/Neovim and provides product-specific configuration, which the rubric says it should not do."
+        }
+      ],
+      "failure_reason": "The response correctly describes running sshd inside the workshop, tunneling port 22 to a non-privileged host port, and pointing the IDE at localhost:2222. However, it explicitly names specific IDE/editor products such as VS Code, JetBrains IntelliJ/PyCharm, and Vim/Neovim and provides product-specific configuration, which the rubric says it should not do."
+    },
+    {
+      "description": "User asks about a specific remote-IDE vendor",
+      "passed": true,
+      "score": 0.9875,
+      "latency_ms": 10,
+      "cost": 0.031198
+    },
+    {
+      "description": "User wants ssh-agent forwarding for git inside the workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10,
+      "cost": 0.029094
+    },
+    {
+      "description": "User asks for the host address to point their tool at",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8,
+      "cost": 0.027668
+    },
+    {
+      "description": "User picks a privileged port for a system tunnel plug",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8,
+      "cost": 0.028246
+    },
+    {
+      "description": "User wants two workshops in the same project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.031053
+    },
+    {
+      "description": "User asks how to migrate from a single workshop.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.028475
+    },
+    {
+      "description": "User omits workshop name in a multi-workshop project",
+      "passed": false,
+      "score": 0.8,
+      "latency_ms": 6,
+      "cost": 0.028144,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response conveys that, in a multi-workshop project, the\nworkshop name is required (or at minimum: must be supplied) on\nevery command \u2014 it cannot be omitted. The response demonstrates\nthe fix by showing `workshop refresh` invoked with one of the\nnamed workshops (e.g., `workshop refresh api`). Phrasing flexibility\nis fine: \"required\", \"must specify\", \"needs to know which one\",\n\"needs the name\", and similar all satisfy the requirement.\n",
+          "passed": false,
+          "reason": "The response clearly explains that `workshop refresh` needs a workshop name in a multi-workshop project and demonstrates the fix with `workshop refresh api` and `workshop refresh web`. However, it does not convey that the workshop name is required on every command and even shows some commands without a workshop name, so it only partially satisfies the rubric."
+        }
+      ],
+      "failure_reason": "The response clearly explains that `workshop refresh` needs a workshop name in a multi-workshop project and demonstrates the fix with `workshop refresh api` and `workshop refresh web`. However, it does not convey that the workshop name is required on every command and even shows some commands without a workshop name, so it only partially satisfies the rubric."
+    },
+    {
+      "description": "Cross-workshop networking",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029656
+    },
+    {
+      "description": "User attempts a direct cross-workshop connect",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.029116
+    }
+  ]
+}

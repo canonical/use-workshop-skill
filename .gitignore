@@ -1,0 +1,11 @@
+# Editor / OS
+.DS_Store
+*.swp
+
+# Skill-local: regenerated bundle
+.github/skills/use-workshop/tests/skill-bundle.md
+
+# Skill-local: per-run promptfoo outputs
+.github/skills/use-workshop/tests/.promptfoo*
+.github/skills/use-workshop/tests/output.*
+.github/skills/use-workshop/tests/results/raw/

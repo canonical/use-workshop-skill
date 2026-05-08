@@ -1,0 +1,72 @@
+- description: Run two parallel test runs over the same source
+  vars:
+    user: |
+      I want to run two parallel test runs over the same code, isolated from each other. How do I set that up with workshops?
+  assert:
+    - type: contains
+      value: git worktree
+    - type: contains-any
+      value:
+        - workshop launch
+        - workshop run
+        - workshop exec
+    - type: contains-any
+      value:
+        - workshop list --global
+        - per worktree
+        - shared workshop
+
+- description: Compare two builds against the same code
+  vars:
+    user: |
+      I need to compare a build against ubuntu@22.04 and another against ubuntu@24.04, same code, side by side. What's the workflow?
+  assert:
+    - type: contains
+      value: git worktree
+    - type: contains-any
+      value:
+        - "base:"
+        - workshop.yaml
+    - type: contains
+      value: workshop launch
+    - type: contains-any
+      value:
+        - workshop remove
+        - cleanup
+        - tear down
+
+- description: Cleanup ordering for worktrees with workshops
+  vars:
+    user: |
+      I'm done with one of the worktrees that had its own workshop. What's the right order to clean it up?
+  assert:
+    - type: contains
+      value: workshop remove
+    - type: contains
+      value: git worktree remove
+    - type: contains-any
+      value:
+        - "before"
+        - "first"
+        - "then"
+
+- description: Optional case mentioning AI agents (one example among others)
+  vars:
+    user: |
+      I want to run two coding agents in parallel on the same repo, each in its own worktree, sharing one workshop sandbox. Can workshops do that?
+  assert:
+    - type: contains
+      value: git worktree
+    - type: contains-any
+      value:
+        - workshop launch
+        - workshop run
+        - shared workshop
+    - type: not-contains
+      value: sdkcraft
+    - type: llm-rubric
+      value: |
+        The response describes the worktree-per-task pattern with workshops as a generic capability,
+        not as something specific to any particular agent or coding tool. It does not assume the
+        user is using Claude, GitHub Copilot, or any other named product, except to acknowledge
+        the user's question.

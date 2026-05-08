@@ -1,0 +1,35 @@
+# Workshop definition with explicit interface wiring.
+# Two examples below: a tunnel exposing a workshop service to the host
+# (auto-connects), and an explicit `connections:` entry for non-default wiring.
+
+name: dev
+base: ubuntu@24.04
+sdks:
+
+  # Service inside the workshop publishes a TCP port via tunnel slot.
+  - name: <service-sdk>
+    slots:
+      api:
+        interface: tunnel
+        endpoint: localhost:8080      # service port inside the workshop
+
+  # System SDK exposes a matching plug; auto-connects because the plug is
+  # on `system`, the slot is on a regular SDK, and the names match.
+  - name: system
+    plugs:
+      api:
+        interface: tunnel
+        endpoint: localhost:8080      # port on the host
+
+  # Another regular SDK with a manually wired mount slot.
+  - name: <data-sdk>
+    slots:
+      data:
+        interface: mount
+        workshop-source: $SDK/data    # path inside the workshop
+
+# Explicit connection: ties a plug to a specific slot when auto-connect
+# would not pick the right target (e.g., multiple slots match the interface).
+connections:
+  - plug: <consumer-sdk>:data
+    slot: <data-sdk>:data

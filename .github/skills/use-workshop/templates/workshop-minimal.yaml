@@ -1,0 +1,9 @@
+# Minimal workshop definition.
+# Place at the project root as `workshop.yaml` (single-workshop project).
+# Add `.workshop.lock` to .gitignore.
+
+name: dev
+base: ubuntu@24.04
+sdks:
+  - name: <sdk-name>
+    channel: <track>/<risk>     # optional; default is latest/stable

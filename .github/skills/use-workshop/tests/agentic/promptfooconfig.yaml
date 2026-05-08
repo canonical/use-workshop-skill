@@ -1,0 +1,38 @@
+description: |
+  Agentic end-to-end eval for the use-workshop skill.
+  Each task spawns `claude -p` in an isolated sandbox where the skill is
+  the only one installed, drives a real workshop with LXD, and asserts on
+  the resulting transcript + captured workshop state.
+  Slow and side-effectful: every task creates and tears down a real LXD
+  container. Default model is Sonnet 4.6; per-task overrides via vars.
+
+prompts:
+  # Each task supplies its own `task` var; this prompt template is just a
+  # passthrough so promptfoo's pipeline accepts the test cases.
+  - "{{task}}"
+
+providers:
+  - id: file://provider-claude-cli.js
+    config:
+      model: claude-sonnet-4-6
+      # Resolved at run time by run-agentic.sh; this default lets the
+      # config also work when invoked directly from the agentic/ dir.
+      repo_root: ../../../..
+      agent_timeout_ms: 900000
+      max_budget_usd: 3
+
+defaultTest:
+  options:
+    # Each agentic task is an end-to-end LXD-backed run, so the prompt-cache
+    # window relevance is small. promptfoo defaults are fine.
+    cache: false
+
+tests:
+  - file://tasks/bootstrap-project.yaml
+  - file://tasks/daily-ops.yaml
+  - file://tasks/customize-actions.yaml
+  - file://tasks/author-in-project-sdk.yaml
+  - file://tasks/manage-interfaces.yaml
+  - file://tasks/ide-integration.yaml
+  - file://tasks/multi-workshop-projects.yaml
+  - file://tasks/troubleshoot.yaml

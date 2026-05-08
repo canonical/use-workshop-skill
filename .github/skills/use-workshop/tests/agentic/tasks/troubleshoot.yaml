@@ -1,0 +1,42 @@
+- description: troubleshoot — diagnose a failed launch and recover to Ready
+  vars:
+    workshop_name: agentic-troubleshoot
+    cleanup_workshops: ["agentic-troubleshoot"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/troubleshoot
+    timeout_ms: 1200000
+    extra_allowed_tools:
+      # The recovery flow may include `lxc delete` for a stuck container,
+      # so allow that pattern in addition to the default.
+      - "Bash(lxc delete*)"
+    task: |
+      The project has a `workshop.yaml` for a workshop named
+      `agentic-troubleshoot`. Try to launch it. The launch will fail
+      because the SDK reference is broken.
+
+      Diagnose what went wrong using the right diagnostic commands, then
+      fix the workshop definition so it can be launched successfully.
+      The fix should be the smallest reasonable change to the SDK list
+      (e.g., remove the bogus SDK or replace it with a real one — your
+      call). After the fix, the workshop must reach Ready.
+  assert:
+    - type: contains
+      value: "[BASH] workshop launch"
+    - type: contains-any
+      value:
+        - "[BASH] workshop changes"
+        - "[BASH] workshop tasks"
+    - type: contains-any
+      value:
+        - "[TOOL_USE Edit]"
+        - "[TOOL_USE Write]"
+    - type: javascript
+      value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        The agent walked the diagnostic flow before changing anything:
+        used `workshop changes` and/or `workshop tasks` to find the
+        actual error (an SDK that doesn't exist), then fixed the
+        definition (removed or replaced the bogus SDK reference), then
+        re-attempted the launch (or refresh) and confirmed Ready. The
+        agent did NOT reach for `sudo snap remove --purge workshop` or
+        any other system-wide nuke as a recovery step.

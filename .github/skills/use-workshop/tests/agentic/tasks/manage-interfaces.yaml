@@ -1,0 +1,48 @@
+- description: manage-interfaces — wire an HTTP service tunnel from workshop to host
+  vars:
+    workshop_name: agentic-tunnel
+    cleanup_workshops: ["agentic-tunnel"]
+    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/manage-interfaces
+    timeout_ms: 900000
+    task: |
+      The project has a minimal `workshop.yaml` for a workshop named
+      `agentic-tunnel`. I'll be running an HTTP service inside the
+      workshop on port 8080, and I want it reachable on the host as
+      `localhost:18080`.
+
+      Edit the workshop definition to add the tunnel wiring, launch the
+      workshop, and verify the tunnel is established (use `workshop info`
+      and/or `workshop connections` — show me the tunnel definition with
+      both `from:` and `to:` ports).
+
+      Use port 18080 on the host and port 8080 inside the workshop. The
+      service inside is not actually running — that's fine; the tunnel
+      configuration itself is what we're verifying.
+  assert:
+    - type: contains
+      value: "[BASH] workshop"
+    - type: contains-any
+      value:
+        - "[BASH] workshop launch"
+        - "[BASH] workshop refresh"
+    - type: contains-any
+      value:
+        - "[BASH] workshop info"
+        - "[BASH] workshop connections"
+    - type: contains
+      value: "tunnel"
+    - type: contains
+      value: "18080"
+    - type: contains
+      value: "8080"
+    - type: javascript
+      value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        The agent edited the workshop definition to add a `tunnel`
+        interface with the system-SDK auto-connect pattern (a slot on a
+        regular SDK pointing at the workshop-side port 8080, a plug on
+        `system` pointing at host port 18080, with matching plug/slot
+        names so it auto-connects). The workshop reaches Ready and the
+        agent surfaces the host-side address (or shows `workshop info`
+        / `workshop connections` output that confirms the tunnel).

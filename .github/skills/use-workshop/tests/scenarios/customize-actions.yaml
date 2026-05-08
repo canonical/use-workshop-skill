@@ -1,0 +1,48 @@
+- description: User wants a reusable build script for the workshop
+  vars:
+    user: |
+      I keep typing the same five commands to build my project inside the workshop. How do I save them as something I can run with one command?
+  assert:
+    - type: contains-any
+      value:
+        - "actions:"
+        - "actions block"
+    - type: contains
+      value: workshop run
+    - type: not-contains
+      value: sdkcraft
+    - type: llm-rubric
+      value: |
+        The response makes clear that a `workshop refresh` is NOT needed
+        after editing the `actions:` block — actions are parsed at run
+        time. (The response MAY use the phrase "workshop refresh" to
+        teach this point, e.g., "no `workshop refresh` needed" or
+        "don't run `workshop refresh` for action changes — it's a no-op."
+        What it must not do is prescribe `workshop refresh` as a required
+        step before running the action.)
+
+- description: User wants a project-specific tool install (route to author-in-project-sdk)
+  vars:
+    user: |
+      I want every workshop in this repo to come with `ruff` already installed against the project. We don't have a ruff SDK in the Store and I'd rather not depend on one — what's the right path?
+  assert:
+    - type: contains-any
+      value:
+        - in-project SDK
+        - "project-ruff"
+        - ".workshop/ruff"
+    - type: contains
+      value: setup-project
+    - type: contains-any
+      value:
+        - "chmod +x"
+        - executable
+    - type: llm-rubric
+      value: |
+        The response routes the user to authoring an in-project SDK at
+        `.workshop/ruff/` with a `setup-project` hook that installs ruff
+        (e.g., via `uv tool install ruff`). It mentions referencing the
+        SDK in the workshop definition as `project-ruff`, the
+        executable-script requirement (`chmod +x`), and `workshop refresh`
+        to apply. It does NOT drive the user through `workshop sketch-sdk`
+        / interactive sketching.

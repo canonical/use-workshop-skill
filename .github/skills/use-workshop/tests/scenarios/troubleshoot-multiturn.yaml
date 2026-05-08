@@ -1,0 +1,61 @@
+# Three sequential cases that walk through the failed-refresh recovery
+# decision tree. Each case carries narrated prior context so the skill is
+# tested mid-flow, not just at the entry point. Together they exercise the
+# `--wait-on-error` / shell-in / `--continue` / verify chain.
+
+- description: Multi-turn recovery — turn 1, refresh just failed
+  vars:
+    user: |
+      I just ran `workshop refresh` and it errored. This is the first thing I'm doing — I haven't touched anything else yet. What's the right diagnostic flow?
+  assert:
+    - type: contains
+      value: workshop changes
+    - type: contains
+      value: workshop tasks
+    - type: contains-any
+      value:
+        - --wait-on-error
+        - --verbose
+
+- description: Multi-turn recovery — turn 2, paused in Waiting after fixing
+  vars:
+    user: |
+      Following on from before: I re-ran refresh with `--wait-on-error`, it stopped in `Waiting`, I `workshop shell`'d in, fixed the broken config file by hand, and exited the shell. The workshop is still in `Waiting`. What command tells it to keep going from where it stopped?
+  assert:
+    - type: contains
+      value: --continue
+    - type: contains-any
+      value:
+        - workshop refresh --continue
+        - workshop launch --continue
+    - type: not-contains
+      value: workshop remove
+
+- description: Multi-turn recovery — turn 3, succeeded, what to verify
+  vars:
+    user: |
+      `workshop refresh --continue` just succeeded and the workshop is back to `Ready`. Before I call this done and move on, what should I check to be confident the recovery actually worked?
+  assert:
+    - type: contains-any
+      value:
+        - workshop info
+        - workshop list
+    - type: contains-any
+      value:
+        - workshop changes
+        - workshop warnings
+    - type: contains-any
+      value:
+        - verify
+        - confirm
+        - check
+        - "make sure"
+    - type: llm-rubric
+      value: |
+        The response recommends concrete verification steps, at least
+        including (a) running `workshop info` (and/or `workshop list`) to
+        confirm `Ready` and that connections / mounts / SDKs are as
+        expected, and (b) optionally running an action or `workshop
+        warnings` to confirm nothing carries forward from the failed
+        attempt. It does NOT suggest re-running `workshop refresh` or
+        `workshop launch` as the verification step.

@@ -1,0 +1,132 @@
+- description: User wants ruff installed against the project via an in-project SDK
+  vars:
+    user: |
+      Add a `ruff` install to my workshop. I want it project-scoped (not a Store SDK), and committed to the repo so my colleagues get it on next launch. The base already has `uv` available.
+  assert:
+    - type: contains
+      value: .workshop/ruff
+    - type: contains
+      value: setup-project
+    - type: contains-any
+      value:
+        - "chmod +x"
+        - executable
+    - type: contains-any
+      value:
+        - "project-ruff"
+        - "name: project-"
+    - type: contains
+      value: workshop refresh
+    - type: llm-rubric
+      value: |
+        The response describes writing `.workshop/ruff/sdk.yaml` with a
+        `hooks:` list that includes `setup-project`, plus a hook script
+        at `.workshop/ruff/hooks/setup-project` that installs ruff
+        (typically via `uv tool install ruff`). It explicitly notes the
+        executable bit (`chmod +x`) and references the SDK as
+        `project-ruff` in the workshop definition's `sdks:` list. It
+        recommends `workshop refresh` (ideally with `--wait-on-error` on
+        first install) to apply.
+
+- description: User asks about setup-base for system packages on every workshop
+  vars:
+    user: |
+      I want every workshop on `ubuntu@24.04` that uses my custom SDK to come with `build-essential` and `pkg-config` baked in at the OS level — not reinstalled per project. Which hook do I use, and what's the catch?
+  assert:
+    - type: contains
+      value: setup-base
+    - type: contains-any
+      value:
+        - root
+        - "as root"
+    - type: contains-any
+      value:
+        - "does not re-run"
+        - "doesn't re-run"
+        - "won't re-run"
+        - "remove"
+        - "recreate"
+    - type: llm-rubric
+      value: |
+        The response identifies `setup-base` as the right hook (runs
+        once per (base, SDK) combination, as `root`, before the SDK is
+        mounted into a workshop). It warns that `workshop refresh` does
+        NOT re-run `setup-base` — picking up an edit to `setup-base`
+        requires recreating the workshop (`workshop remove` then
+        `workshop launch`).
+
+- description: User reports a hook script that isn't running
+  vars:
+    user: |
+      I added a `hooks/setup-project` script under my in-project SDK and pointed `sdk.yaml`'s `hooks:` at it, but `workshop refresh` claims success and the tool isn't installed. The hook seems to be skipped entirely. What's going on?
+  assert:
+    - type: contains
+      value: chmod +x
+    - type: contains-any
+      value:
+        - executable
+        - "silently ignored"
+        - "silently skipped"
+        - "+x"
+    - type: contains-any
+      value:
+        - shebang
+        - "#!"
+    - type: llm-rubric
+      value: |
+        The response identifies the missing executable bit on the hook
+        script (Workshop execs hooks rather than sourcing them; a hook
+        without `+x` is silently ignored) and tells the user to
+        `chmod +x` the file. It also mentions the shebang requirement
+        (e.g., `#!/bin/bash`) and how to verify by re-running
+        `workshop refresh` and inspecting `workshop tasks <ID>`.
+
+- description: User asks where hooks go in sdk.yaml
+  vars:
+    user: |
+      Can I just put my hook's bash script directly inside `sdk.yaml` under a `hooks:` key, like a YAML literal block? It would be tidier than a separate file.
+  assert:
+    - type: not-contains
+      value: "hooks: |"
+    - type: contains
+      value: hooks/
+    - type: contains-any
+      value:
+        - "separate file"
+        - "separate executable"
+        - "executable script"
+        - "executable file"
+        - "hook script"
+        - "list of hook names"
+        - "lives elsewhere"
+    - type: llm-rubric
+      value: |
+        The response explains that in-project SDK hooks are NOT inline
+        YAML scripts. The `hooks:` field in `sdk.yaml` is a LIST of hook
+        names; the actual scripts live in a sibling `hooks/` directory
+        as executable files (one per hook name listed). It does not
+        invent an inline-script form.
+
+- description: User asks how to update an existing in-project SDK's setup-project
+  vars:
+    user: |
+      I've already got an in-project SDK with a `setup-project` hook installed. I want to change what it installs — what's the loop for iterating?
+  assert:
+    - type: contains
+      value: workshop refresh
+    - type: contains-any
+      value:
+        - "--wait-on-error"
+        - "wait-on-error"
+    - type: contains-any
+      value:
+        - "workshop tasks"
+        - "workshop changes"
+    - type: llm-rubric
+      value: |
+        The response describes editing the hook script in place and
+        running `workshop refresh` to re-run `setup-project`. It
+        recommends `--wait-on-error` for live debugging if the hook
+        might fail, and points the user at `workshop changes` /
+        `workshop tasks <ID>` for inspecting hook stdout/stderr after
+        a failure.

@@ -1,0 +1,53 @@
+- description: bootstrap-project — greenfield Python workshop
+  vars:
+    workshop_name: agentic-bootstrap
+    cleanup_workshops: ["agentic-bootstrap"]
+    timeout_ms: 900000
+    task: |
+      You are in an empty project directory. Set up a workshop here for a
+      simple Python project so I can run scripts inside an isolated
+      Ubuntu 24.04 environment with Python available.
+
+      Requirements:
+        - The workshop must be named exactly: agentic-bootstrap
+        - Create the workshop definition file in this directory.
+        - Launch the workshop and confirm it reaches `Ready`.
+        - Print a final `workshop info` so I can see the result.
+
+      Use the use-workshop skill's guidance for definition file shape,
+      SDK selection, and launch verification. Stop once the workshop is
+      Ready (no need to install packages or run code inside it).
+  assert:
+    # Skill was loaded and the agent ran the canonical bootstrap path.
+    - type: contains
+      value: "[BASH] workshop launch"
+    - type: contains-any
+      value:
+        - "[BASH] workshop info"
+        - "[BASH] workshop list"
+    # SDK discovery is the skill's recommended first step before authoring.
+    - type: contains-any
+      value:
+        - "[BASH] sdk find"
+        - "[BASH] sdk info"
+    # Final captured state shows the workshop reached Ready.
+    - type: contains
+      value: "Ready"
+    # The harness appends the captured `workshop info` for the named workshop
+    # into the output string under the WORKSHOP STATE AFTER fence. A literal
+    # "Status: Ready" line in there means the workshop genuinely reached
+    # Ready before teardown — independent of what the agent said.
+    - type: javascript
+      value: /"stdout":\s*"[^"]*Status:\s*Ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        Looking at the agent's transcript and the captured workshop state,
+        the agent: (a) consulted the skill's bootstrap workflow (SDK
+        discovery before authoring, definition file matching the schema,
+        explicit `workshop launch`, post-launch verification with
+        `workshop info` or `workshop list`); (b) created a syntactically
+        valid workshop definition with a non-empty `name:` and a real
+        `base:` like `ubuntu@24.04`; (c) reached a Ready workshop. The
+        agent did NOT improvise SDK names without first checking the SDK
+        store (e.g., did NOT just guess `python` without `sdk find` /
+        `sdk info` confirming it).

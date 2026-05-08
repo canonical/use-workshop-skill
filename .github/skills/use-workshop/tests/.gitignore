@@ -1,0 +1,13 @@
+# Generated bundle (regenerate with scripts/regenerate-bundle.sh)
+skill-bundle.md
+
+# Promptfoo local cache and per-run raw outputs
+.promptfoo*
+output.html
+output.json
+output.csv
+output.yaml
+
+# Per-run raw artifacts kept out of source control;
+# only the curated summaries under results/ are committed.
+results/raw/
