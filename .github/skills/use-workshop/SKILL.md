@@ -19,9 +19,9 @@ Five rules that always apply to operating Workshop. These come first; every work
 
 <docs>
 Authoritative readable docs:
-- Base URL: `https://canonical-workshop.readthedocs-hosted.com/latest/`
-  Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop-launch.md`). Fetch by concatenating `<base>` + relative path → `https://canonical-workshop.readthedocs-hosted.com/latest/reference/cli/workshop-launch.md`.
-- Whole-tree fallback: `<base>/llms.txt` — `https://canonical-workshop.readthedocs-hosted.com/latest/llms.txt`. Load this when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree).
+- Base URL: `https://ubuntu.com/workshop/docs/`
+  Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop-launch.md`). Fetch by concatenating `<base>` + relative path → `https://ubuntu.com/workshop/docs/reference/cli/workshop-launch.md`.
+- Whole-tree fallback: `<base>/llms.txt` — `https://ubuntu.com/workshop/docs/llms.txt`. Load this when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree).
 
 The base URL may change. It is recorded HERE only — every other file lists relative paths so a single edit re-points the whole skill. Do not embed local `docs/` paths in any file under this skill; the docs site is the source of truth.
 </docs>

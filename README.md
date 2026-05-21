@@ -1,7 +1,7 @@
 # use-workshop skill
 
-Claude Code / Copilot skill for operating the
-[Workshop](https://canonical-workshop.readthedocs-hosted.com/latest/) CLI —
+Agentic skill for operating the
+[Workshop](https://ubuntu.com/workshop/docs/) CLI —
 launching workshops, refreshing them, running commands inside, wiring
 interfaces, debugging failed changes, and orchestrating parallel
 environments via git worktrees.
@@ -13,8 +13,10 @@ Copy `.github/skills/use-workshop/` into the target repo:
 - Claude Code: `.claude/skills/use-workshop/`
 - Copilot:     `.github/skills/use-workshop/`
 
+And so on.
+
 For the Workshop CLI itself, see the
-[Workshop docs](https://canonical-workshop.readthedocs-hosted.com/latest/).
+[Workshop docs](https://ubuntu.com/workshop/docs/).
 
 ## Design principles
 
