@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 - description: customize-actions — add a new action and run it
   vars:
     workshop_name: agentic-customize

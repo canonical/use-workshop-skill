@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Workshop operations that mutate state are async: they produce a **change** (numeric ID) that contains a sequence of **tasks**. Knowing this model is what separates an agent that guesses from one that diagnoses.
 </overview>

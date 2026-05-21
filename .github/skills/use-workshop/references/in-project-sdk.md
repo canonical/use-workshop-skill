@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 In-project SDKs live inside the project at `.workshop/<NAME>/` and are version-controlled with the project. They install at workshop launch/refresh and are the right tool for tooling that's specific to one project (or a small set of related projects) and not appropriate for the public Store.
 

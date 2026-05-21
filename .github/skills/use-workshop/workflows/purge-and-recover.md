@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Remove a workshop cleanly when standard `workshop remove` works, and recover from orphaned/stuck workshops by interacting directly with LXD when it doesn't. Last-resort: a full snap purge.
 </objective>

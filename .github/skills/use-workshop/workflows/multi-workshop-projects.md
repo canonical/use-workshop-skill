@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Define and operate multiple workshops in a single project, with optional cross-workshop networking through the host. Useful when one project has independent toolchains (e.g., separate runtimes for separate components).
 </objective>

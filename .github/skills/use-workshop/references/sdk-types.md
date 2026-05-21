@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Five kinds of SDKs are referenced in workshop definitions and on the CLI. They differ in origin, lifetime, and how they're named in YAML. Pick the right kind for the user's intent.
 </overview>

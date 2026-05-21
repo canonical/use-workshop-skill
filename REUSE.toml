@@ -1,0 +1,10 @@
+version = 1
+
+# JSON does not support inline comments, so SPDX headers cannot be embedded
+# in .json files. This stanza covers all JSON files in the repo
+# (promptfoo prompt template and eval result snapshots).
+[[annotations]]
+path = ["**.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Canonical Ltd."
+SPDX-License-Identifier = "GPL-3.0-only"

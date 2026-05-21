@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 # Canonical user prompts referenced by the scenario files.
 # These are kept here as a single, easy-to-scan corpus so reviewers can audit
 # the eval surface without grepping through every YAML file.

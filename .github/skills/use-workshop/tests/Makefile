@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 # Convenience targets for the use-workshop eval suite.
 #
 # All targets delegate to the shell scripts under scripts/ so the underlying

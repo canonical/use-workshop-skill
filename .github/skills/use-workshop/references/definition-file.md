@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. The schema is enforced; small errors will surface only at `workshop launch` or `workshop refresh` time.
 </overview>

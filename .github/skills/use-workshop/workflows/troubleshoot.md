@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Diagnose and recover from a failed `workshop launch`/`refresh`/`start` (or any other mutating change). Walk a deterministic decision tree from the error symptom to a fix, using `workshop changes`/`workshop tasks`/`--wait-on-error` rather than guessing.
 </objective>

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 - description: User wants to attach a remote IDE over SSH (vendor-agnostic)
   vars:
     user: |

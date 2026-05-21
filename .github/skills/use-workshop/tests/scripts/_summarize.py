@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
 """Reduce a promptfoo eval output JSON to a slim, commit-safe summary.
 
 Drops full model outputs and prompts (multi-MB). Keeps:

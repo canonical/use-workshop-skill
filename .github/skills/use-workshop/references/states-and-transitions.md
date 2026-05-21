@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Workshop status diagram, encoded for routing decisions. Each status pins down which commands the workshop will accept and which transitions are possible. Authoritative source: `reference/workshop-status.md` (resolve via `<base>` from SKILL.md `<docs>`).
 </overview>

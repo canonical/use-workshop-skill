@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
 # Run the agentic E2E suite for the use-workshop skill.
 #
 # Each task spawns `claude -p` in an isolated sandbox, drives a real

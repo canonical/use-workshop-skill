@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 # Eval suite for `use-workshop`
 
 Two complementary [promptfoo](https://promptfoo.dev) suites that validate

@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Wire and unwire interface connections: forward ports, attach/detach mounts, share host SSH agent, expose GPU, hook up display, resolve plug conflicts via binding. Decide when manual `workshop connect` is required vs when auto-connect handles it.
 </objective>

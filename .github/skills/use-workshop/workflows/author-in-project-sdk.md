@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Author or update an in-project SDK at `.workshop/<NAME>/` with one or more hooks, then verify it installs cleanly into the workshop. Covers writing a fresh SDK, adding a hook to an existing one, and diagnosing a hook failure.
 </objective>

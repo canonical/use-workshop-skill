@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright 2026 Canonical Ltd.
+//
 // Promptfoo custom provider: shells out to `claude -p` against an isolated
 // sandbox where the use-workshop skill is the only skill installed, real LXD
 // is exercised, and the workshop is torn down after each task.

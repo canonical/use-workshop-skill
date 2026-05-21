@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
 # Regenerate tests/skill-bundle.md from SKILL.md + references/*.md + workflows/*.md.
 #
 # The bundle is the system prompt for the routing eval. It simulates the

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 # Three sequential cases that walk through the failed-refresh recovery
 # decision tree. Each case carries narrated prior context so the skill is
 # tested mid-flow, not just at the entry point. Together they exercise the

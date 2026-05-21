@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Run commands inside an existing workshop, refresh after definition edits, restart after a stop. The "what do I do today" workflow.
 </objective>

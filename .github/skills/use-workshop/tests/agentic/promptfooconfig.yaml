@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 description: |
   Agentic end-to-end eval for the use-workshop skill.
   Each task spawns `claude -p` in an isolated sandbox where the skill is

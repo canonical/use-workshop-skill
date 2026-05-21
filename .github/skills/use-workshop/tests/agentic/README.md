@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 # Agentic E2E suite for `use-workshop`
 
 A real, LXD-backed end-to-end eval. Each task spawns `claude -p` in an

@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Dense reference for every `workshop` and `sdk` subcommand. One block per command: signature, purpose, key flags, single-line example. The most-loaded reference — read this first when you know roughly what you want and need to confirm the flag.
 

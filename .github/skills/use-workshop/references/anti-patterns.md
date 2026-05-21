@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Common mistakes when an agent operates the workshop CLI. Each entry is a thing TO AVOID, with the right alternative.
 </overview>

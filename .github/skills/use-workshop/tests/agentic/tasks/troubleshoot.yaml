@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
 - description: troubleshoot — diagnose a failed launch and recover to Ready
   vars:
     workshop_name: agentic-troubleshoot

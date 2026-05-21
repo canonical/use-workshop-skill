@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Set up a project to use Workshop for the first time, or launch an existing definition that the user just received (e.g., from a clone or a colleague). End state: a `Ready` workshop with the project mounted at `/project/`.
 </objective>

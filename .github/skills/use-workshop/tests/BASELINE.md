@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 # Eval baseline for `use-workshop`
 
 This file pins the **expected** pass rates per (model × eval mode). PRs

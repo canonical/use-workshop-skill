@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Run multiple isolated workloads over the same codebase in parallel: side-by-side test runs, A/B comparisons across base images or SDK versions, multi-branch experiments, agent-driven concurrent tasks, and similar. Combines `git worktree` with one workshop per worktree (or a single shared workshop, per the user's preference).
 </objective>

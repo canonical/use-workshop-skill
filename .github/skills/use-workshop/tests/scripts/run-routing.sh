@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
 # Run the routing eval for the use-workshop skill.
 #
 # - Regenerates skill-bundle.md from current SKILL.md/references/workflows.

@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <overview>
 Core conceptual model an agent must hold to operate Workshop fluently. These are the nouns the user will use; getting them right keeps your suggestions accurate.
 </overview>

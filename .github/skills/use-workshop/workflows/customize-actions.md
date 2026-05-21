@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Add or change customizations to an existing workshop's `actions:` block — reusable shell commands invoked via `workshop run`. For authoring an in-project SDK with hooks, see `author-in-project-sdk.md`.
 </objective>

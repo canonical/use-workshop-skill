@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <objective>
 Make a workshop reachable from a remote IDE or a host browser. Two general patterns cover essentially all such cases: (a) tunnel a workshop service (HTTP, SSH, custom protocol) to a host port; (b) tunnel a host service into the workshop. This workflow stays generic — concrete IDEs/tools are listed in the docs as worked examples; the skill itself only teaches the pattern.
 </objective>

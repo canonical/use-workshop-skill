@@ -3,6 +3,9 @@ name: use-workshop
 description: Operate the Workshop CLI fluently — launch and refresh workshops, run commands inside them, manage interfaces, debug failed changes, and orchestrate parallel environments via git worktrees. Use when the user mentions workshop, .workshop.yaml, an LXD-backed dev environment, or wants to plan/edit a workshop definition.
 ---
 
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Copyright 2026 Canonical Ltd. -->
+
 <essential_principles>
 Five rules that always apply to operating Workshop. These come first; every workflow assumes them.
 
