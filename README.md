@@ -13,30 +13,49 @@ environments via git worktrees.
 
 ### Claude Code (plugin)
 
-Add the repo as a plugin marketplace, then install:
+Add the marketplace, then install the plugin:
 
 ```
-/plugin marketplace add mz2/use-workshop-skill
-/plugin install use-workshop@use-workshop-skill
+/plugin marketplace add canonical/use-workshop-skill
+/plugin install use-workshop@canonical
 ```
+
+Then run `/reload-plugins` (or restart Claude Code) to activate.
 
 Claude Code discovers skills under a top-level `skills/` directory, so
-this repo ships a `skills` → `.github/skills` symlink and a
-`.claude-plugin/plugin.json` manifest. The skill files themselves stay
-at `.github/skills/use-workshop/` (single source of truth, shared with
-Copilot).
+this repo ships a `skills` → `.github/skills` symlink alongside the
+`.claude-plugin/` manifests (`plugin.json` + `marketplace.json`). The
+skill files themselves stay at `.github/skills/use-workshop/` (single
+source of truth, shared with Copilot and any other consumer).
 
 To install from a local clone instead of the marketplace, point Claude
 Code at the checkout directly:
 
 ```
-git clone https://github.com/mz2/use-workshop-skill
+git clone https://github.com/canonical/use-workshop-skill
 claude --plugin-dir ./use-workshop-skill
 ```
 
 Windows note: the top-level `skills` entry is a symlink. On Windows
 you may need Developer Mode or to run `git config core.symlinks true`
 before clone, or replace the link with a copy of `.github/skills/`.
+
+#### Updating
+
+Updates from the marketplace are manual by default:
+
+```
+/plugin marketplace update canonical
+/plugin update use-workshop
+/reload-plugins
+```
+
+To have Claude Code pick up new commits automatically at startup,
+enable auto-update for the `canonical` marketplace via the
+**Marketplaces** tab in `/plugin`. Updates are tracked by commit SHA,
+so any new commit to this repo registers as an update — the
+`plugin.json` `version` field does not need to be bumped for skill
+content edits to flow through.
 
 ### Copy into a single repo
 

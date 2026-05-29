@@ -5,7 +5,7 @@
   "author": {
     "name": "Canonical Ltd."
   },
-  "homepage": "https://github.com/mz2/use-workshop-skill",
-  "repository": "https://github.com/mz2/use-workshop-skill",
+  "homepage": "https://github.com/canonical/use-workshop-skill",
+  "repository": "https://github.com/canonical/use-workshop-skill",
   "license": "GPL-3.0-only"
 }
