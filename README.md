@@ -36,10 +36,6 @@ git clone https://github.com/canonical/use-workshop-skill
 claude --plugin-dir ./use-workshop-skill
 ```
 
-Windows note: the top-level `skills` entry is a symlink. On Windows
-you may need Developer Mode or to run `git config core.symlinks true`
-before clone, or replace the link with a copy of `.github/skills/`.
-
 #### Updating
 
 Updates from the marketplace are manual by default:
