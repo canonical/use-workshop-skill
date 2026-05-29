@@ -9,14 +9,42 @@ launching workshops, refreshing them, running commands inside, wiring
 interfaces, debugging failed changes, and orchestrating parallel
 environments via git worktrees.
 
-## Quickstart
+## Install
 
-Copy `.github/skills/use-workshop/` into the target repo:
+### Claude Code (plugin)
 
-- Claude Code: `.claude/skills/use-workshop/`
-- Copilot:     `.github/skills/use-workshop/`
+Add the repo as a plugin marketplace, then install:
 
-And so on.
+```
+/plugin marketplace add mz2/use-workshop-skill
+/plugin install use-workshop@use-workshop-skill
+```
+
+Claude Code discovers skills under a top-level `skills/` directory, so
+this repo ships a `skills` → `.github/skills` symlink and a
+`.claude-plugin/plugin.json` manifest. The skill files themselves stay
+at `.github/skills/use-workshop/` (single source of truth, shared with
+Copilot).
+
+To install from a local clone instead of the marketplace, point Claude
+Code at the checkout directly:
+
+```
+git clone https://github.com/mz2/use-workshop-skill
+claude --plugin-dir ./use-workshop-skill
+```
+
+Windows note: the top-level `skills` entry is a symlink. On Windows
+you may need Developer Mode or to run `git config core.symlinks true`
+before clone, or replace the link with a copy of `.github/skills/`.
+
+### Copy into a single repo
+
+If you'd rather vendor the skill into one project (Claude Code or
+Copilot), copy the directory:
+
+- Claude Code: `.github/skills/use-workshop/` → `.claude/skills/use-workshop/`
+- Copilot:     `.github/skills/use-workshop/` → `.github/skills/use-workshop/`
 
 For the Workshop CLI itself, see the
 [Workshop docs](https://ubuntu.com/workshop/docs/).
