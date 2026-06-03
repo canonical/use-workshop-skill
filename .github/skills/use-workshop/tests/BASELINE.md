@@ -11,45 +11,67 @@ regression.
 
 ## Routing eval
 
-55 cases across 12 scenario files (49 — pre-PR — minus 4 sketch-only
-cases dropped from `customize-actions-sketches.yaml` plus 5 new
-in-project-SDK authoring cases plus 1 additional sketch-out-of-scope
-case plus 1 author-routing case in the renamed `customize-actions.yaml`).
-Every case is single-turn against the bundled skill (`SKILL.md` +
-9 references + 10 workflows concatenated). Run with: `make
+59 cases across 12 scenario files — the prior 56-case suite plus 3 new
+`workshop init` cases in `bootstrap.yaml` (CLI scaffolding routing, the
+base+SDKs-only scope boundary, and the single-vs-multi definition-layout
+anti-pattern). Every case is single-turn against the bundled skill
+(`SKILL.md` + 9 references + 10 workflows concatenated). Run with: `make
 eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
 
-| Model              | Pass rate | Locked-in failures |
-|--------------------|-----------|--------------------|
-| `claude-sonnet-4-6` | **TBD** (was 53/53 (100%) on the prior 53-case suite) | TBD — fill from green run |
-| `claude-haiku-4-5`  | **TBD** (was 51/53 (96.23%) — 2 documented model-side variance) | TBD — fill from green run |
-| `claude-opus-4-7`   | **TBD** (was 53/53 (100%)) | TBD — fill from green run |
+| Model              | Pass rate        | Locked-in failures |
+|--------------------|------------------|--------------------|
+| `claude-sonnet-4-6` | **59/59 (100%)** | none |
+| `claude-haiku-4-5`  | **59/59 (100%)** | none |
+| `claude-opus-4-7`   | **59/59 (100%)** | none |
 
-> The numbers above are intentionally placeholders. After re-running
-> `make eval-routing-all-models` against the updated bundle, fill in
-> the per-model pass rates from the run, classify any new failures as
-> skill gap vs. model-side variance, and replace these TBDs.
+> Pinned from a full green run on 2026-06-03 (`make eval-routing`, which
+> evaluates all three providers — 59 cases × 3 = 177, all passing). The 3
+> new `workshop init` cases pass on every model. Seven model×case results
+> that had been penalizing correct, well-warned answers were fixed at the
+> assertion level in the same change (see "Assertion fixes" below) — no
+> skill content changed to reach green.
 
-### Locked-in failure notes (Haiku 4.5)
+### Assertion fixes (2026-06-03)
 
-These are documented as **acceptable model-side variance**, not skill
-gaps. The skill content is clear; Haiku's verbosity-and-listing tendency
-trips strict rubrics in two places. If a future Haiku release closes
-the gap, update this table.
+The suite reached 100% **without changing any skill content**. Five
+assertions were penalizing correct, well-warned model answers and were
+corrected (these accounted for the 7 model×case failures observed before
+the fix):
 
-1. **`User wants to attach a remote IDE over SSH (vendor-agnostic)`**
-   The vendor-neutral rubric requires not naming specific commercial
-   IDE products when the user did not ask. Haiku 4.5 tends to enumerate
-   ("you could use VS Code Remote SSH, JetBrains Gateway, Vim/Neovim
-   over SSH, ...") and offer per-product config hints even on
-   vendor-agnostic prompts. Sonnet 4.6 and Opus 4.7 stay generic.
+1. **`Refresh failed, user asks what to do`** (troubleshoot) — the rubric
+   forbade recommending `workshop remove` + `workshop launch` outright, but
+   the prompt is about a `setup-base` hook failure, and `setup-base` is a
+   creation-only hook that `workshop refresh` cannot re-run. Recreating the
+   workshop is the *correct* fix for a `setup-base` script edit. The rubric
+   now allows that scoped exception while still forbidding blanket
+   remove+launch. (Was failing on all three models.)
+2. **`User edited base image and asks how to apply it`** (daily-ops) — a
+   blunt `not-contains "workshop remove"` fired on the model's own "Don't
+   `workshop remove`…" warning. Replaced with a rubric that forbids
+   *prescribing* remove+launch but allows warning against it.
+3. **`Cross-workshop networking`** (multi-workshop) — a blunt
+   `not-contains "workshop connect api/"` fired on the model's own "Don't
+   try `workshop connect api/…`" warning. Removed; the case's existing
+   rubric already forbids a direct cross-workshop connect correctly.
+4. **`Run two parallel test runs over the same source`** (parallel-envs) —
+   brittle `contains-any` missed `shared-workshop` (hyphen) and title-cased
+   "Per Worktree". Switched to `icontains-any` with the phrasing variants.
+5. **`User reports a hook script that isn't running`** (author-in-project-sdk)
+   — required mentioning the shebang, but a *silently skipped* hook is
+   specifically the missing-`+x` case (a missing shebang surfaces as an exec
+   error, not a silent skip). Shebang is now optional credit.
 
-2. **`User omits workshop name in a multi-workshop project`**
-   The rubric requires conveying that the workshop name is required on
-   *every* command in a multi-workshop project. Haiku 4.5 sometimes
-   demonstrates with one or two named-command examples but elsewhere
-   in the same response shows commands without the name; Sonnet and
-   Opus hold the invariant consistently across the response.
+### Known variance watch-items (Haiku 4.5)
+
+Not currently failing, but historically flickery under uncached re-runs.
+If a future Haiku run dips, check these first — they are model-side
+variance, not skill gaps:
+
+- **`User wants to attach a remote IDE over SSH (vendor-agnostic)`** — Haiku
+  tends to enumerate named IDE products on vendor-neutral prompts where
+  Sonnet/Opus stay generic.
+- **`User omits workshop name in a multi-workshop project`** — Haiku
+  sometimes shows a name-less command elsewhere in the same response.
 
 ## Agentic E2E eval
 

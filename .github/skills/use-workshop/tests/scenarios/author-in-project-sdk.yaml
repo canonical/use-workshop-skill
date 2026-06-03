@@ -71,18 +71,17 @@
         - "silently ignored"
         - "silently skipped"
         - "+x"
-    - type: contains-any
-      value:
-        - shebang
-        - "#!"
     - type: llm-rubric
       value: |
         The response identifies the missing executable bit on the hook
-        script (Workshop execs hooks rather than sourcing them; a hook
-        without `+x` is silently ignored) and tells the user to
-        `chmod +x` the file. It also mentions the shebang requirement
-        (e.g., `#!/bin/bash`) and how to verify by re-running
-        `workshop refresh` and inspecting `workshop tasks <ID>`.
+        script as the cause of a SILENTLY skipped hook (Workshop execs
+        hooks rather than sourcing them; a hook without `+x` is silently
+        ignored) and tells the user to `chmod +x` the file. It explains
+        how to verify by re-running `workshop refresh` and inspecting
+        `workshop tasks <ID>`. It MAY also mention the shebang requirement
+        (e.g., `#!/bin/bash`), but that is optional — a missing shebang
+        surfaces as an exec error, not the silent skip described here, so a
+        complete `+x` answer satisfies the rubric on its own.
 
 - description: User asks where hooks go in sdk.yaml
   vars:

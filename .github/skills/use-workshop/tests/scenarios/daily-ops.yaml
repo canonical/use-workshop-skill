@@ -69,7 +69,10 @@
   assert:
     - type: contains
       value: workshop refresh
-    - type: not-contains
-      value: workshop remove
-    - type: not-contains
-      value: re-launch
+    - type: llm-rubric
+      value: |
+        The PRIMARY recommendation is `workshop refresh` — a `base:` change
+        needs a refresh, not just a re-run. The response does NOT prescribe
+        `workshop remove` + `workshop launch` (or "delete and re-launch") as
+        the way to apply a base change. Mentioning remove/launch only to warn
+        against it is fine.

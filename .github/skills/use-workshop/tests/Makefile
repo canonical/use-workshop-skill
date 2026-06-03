@@ -11,21 +11,26 @@
 
 SHELL := /usr/bin/env bash
 
-ROUTING_SH := scripts/run-routing.sh
-AGENTIC_SH := scripts/run-agentic.sh
-BUNDLE_SH  := scripts/regenerate-bundle.sh
+ROUTING_SH   := scripts/run-routing.sh
+AGENTIC_SH   := scripts/run-agentic.sh
+BUNDLE_SH    := scripts/regenerate-bundle.sh
+DOC_PATHS_SH := scripts/check-doc-paths.sh
 
-.PHONY: help eval-bundle eval-routing eval-routing-all-models \
+.PHONY: help check-doc-paths eval-bundle eval-routing eval-routing-all-models \
         eval-agentic eval-all eval-clean
 
 help:
 	@echo "use-workshop eval targets:"
+	@echo "  check-doc-paths          assert all reference/cli/ doc paths map to the 4 combined pages (fast, no API)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
 	@echo "  eval-all                 routing-all-models + agentic"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
+
+check-doc-paths:
+	bash $(DOC_PATHS_SH)
 
 eval-bundle:
 	bash $(BUNDLE_SH)

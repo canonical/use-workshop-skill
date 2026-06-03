@@ -32,6 +32,7 @@ the manual run summary diff.
 
 ```sh
 make help                       # list all targets
+make check-doc-paths            # assert reference/cli/ paths map to the 4 combined pages (fast, no API)
 make eval-routing               # routing eval, Sonnet 4.6 only
 make eval-routing-all-models    # routing eval against Sonnet 4.6, Haiku 4.5, Opus 4.7
 make eval-agentic               # agentic E2E suite, Sonnet 4.6 only (slow, real LXD)
@@ -58,7 +59,7 @@ promptfoo view
 
 ## What the suites test
 
-### Routing (53 cases across 11 scenario files)
+### Routing (59 cases across 12 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three
@@ -113,6 +114,11 @@ tests/
 When you change SKILL.md or a workflow file, re-run the affected
 suite(s) to confirm nothing regressed:
 
+0. `make check-doc-paths` — instant, no API. Fails if any
+   `reference/cli/` doc path drifts off the four combined CLI pages
+   (`workshop.md`, `sdk.md`, `sdkcraft.md`, `workshopctl.md`). The CLI
+   reference has no per-subcommand pages, so a path like
+   `reference/cli/workshop-launch.md` is a regression.
 1. `make eval-routing` — fast, deterministic; the canonical regression
    gate. If pass rate drops below the BASELINE.md value for Sonnet
    4.6, investigate before merging.

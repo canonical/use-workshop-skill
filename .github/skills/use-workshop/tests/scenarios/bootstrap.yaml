@@ -77,3 +77,62 @@
         - /project
         - workshop exec
         - workshop shell
+
+- description: User wants to scaffold a definition from the CLI (workshop init)
+  vars:
+    user: |
+      I want to create a workshop definition called dev for a Go project straight from the CLI, without hand-writing any YAML. What do I run?
+  assert:
+    - type: contains
+      value: workshop init
+    - type: contains
+      value: --sdks
+    - type: contains-any
+      value:
+        - .workshop/dev.yaml
+        - .workshop/
+    - type: contains
+      value: workshop launch
+    - type: not-contains
+      value: sdkcraft
+
+- description: User asks whether workshop init can set up actions and connections
+  vars:
+    user: |
+      Can `workshop init` set up my actions: block and a connection to another workshop for me, or does it only do the basics?
+  assert:
+    - type: contains
+      value: workshop init
+    - type: contains-any
+      value:
+        - actions
+        - connections
+    - type: llm-rubric
+      value: |
+        The response makes clear that `workshop init` scaffolds the base
+        image and SDKs only — it does NOT generate an `actions:` block,
+        `connections:`, or plug/slot grafts. It explains those must be added
+        afterward by editing the generated `.workshop/<name>.yaml` (or by
+        starting from a templates/ file). It does NOT invent `workshop init`
+        flags that create actions or connections.
+
+- description: User asks to mix a root workshop.yaml with a workshop init definition
+  vars:
+    user: |
+      I already have a workshop.yaml at the project root. Can I also run `workshop init backend --sdks node` to add a second definition alongside it?
+  assert:
+    - type: contains-any
+      value:
+        - reject
+        - "can't"
+        - cannot
+        - "won't"
+        - not allowed
+        - mix
+    - type: llm-rubric
+      value: |
+        The response explains that a project cannot mix a root workshop.yaml
+        with .workshop/<name>.yaml files — Workshop rejects this layout. To
+        run multiple workshops you must migrate the root workshop.yaml into
+        the .workshop/<name>.yaml form first (so all definitions live under
+        .workshop/). It does not tell the user they can simply keep both.

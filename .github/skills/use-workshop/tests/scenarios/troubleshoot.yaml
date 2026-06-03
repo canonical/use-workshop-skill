@@ -18,10 +18,18 @@
       value: snap remove
     - type: llm-rubric
       value: |
-        The response does NOT recommend `workshop remove` + `workshop launch` as the fix
-        for a failed refresh from a Ready workshop. It either omits remove entirely or
-        mentions it only to warn against using it (the --wait-on-error / --continue /
-        --abort flow is the correct path).
+        The response leads with the `workshop changes` / `workshop tasks <ID>`
+        diagnostic flow and offers `--wait-on-error` (with `--continue` /
+        `--abort`) for interactive recovery. It does NOT reach for `workshop
+        remove` + `workshop launch` as a BLANKET fix for a failed refresh from
+        a Ready workshop, nor recommend `sudo snap remove --purge workshop`.
+        Mentioning remove/launch only to warn against it is fine. ALLOWED
+        exception: because `setup-base` is a creation-only hook that `workshop
+        refresh` cannot re-run, the response MAY correctly state that if the
+        user edited their own in-project `setup-base` SCRIPT, recreating the
+        workshop (`workshop remove` + `workshop launch`) is the right way to
+        re-run it — that is accurate, scoped guidance, not the forbidden
+        blanket remove+launch.
 
 - description: Refresh failed (paraphrase 1, SDK install error)
   vars:

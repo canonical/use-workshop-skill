@@ -83,8 +83,6 @@
         - "through the host"
     - type: contains
       value: workshop connect
-    - type: not-contains
-      value: workshop connect api/
     - type: llm-rubric
       value: |
         The response describes bridging through the host: the provider
@@ -92,7 +90,9 @@
         host port (auto-connect), and the consumer workshop ("web") reaches
         that host port through its own system-SDK tunnel slot, requiring a
         manual `workshop connect`. The response does NOT suggest a direct
-        cross-workshop `workshop connect <a>/sdk:plug <b>/sdk:slot`.
+        cross-workshop `workshop connect <a>/sdk:plug <b>/sdk:slot` as the
+        wiring mechanism (it MAY mention that form only to warn it is
+        rejected).
 
 - description: User attempts a direct cross-workshop connect
   vars:

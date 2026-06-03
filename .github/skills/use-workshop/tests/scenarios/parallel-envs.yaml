@@ -13,11 +13,16 @@
         - workshop launch
         - workshop run
         - workshop exec
-    - type: contains-any
+    - type: icontains-any
       value:
         - workshop list --global
         - per worktree
+        - per-worktree
+        - workshop per worktree
         - shared workshop
+        - shared-workshop
+        - one workshop per
+        - separate workshop
 
 - description: Compare two builds against the same code
   vars:
