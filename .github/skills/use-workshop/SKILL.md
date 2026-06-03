@@ -23,7 +23,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 <docs>
 Authoritative readable docs:
 - Base URL: `https://ubuntu.com/workshop/docs/`
-  Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop-launch.md`). Fetch by concatenating `<base>` + relative path → `https://ubuntu.com/workshop/docs/reference/cli/workshop-launch.md`.
+  Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop.md`). Fetch by concatenating `<base>` + relative path → `https://ubuntu.com/workshop/docs/reference/cli/workshop.md`. The CLI reference is four combined pages — `workshop.md`, `sdk.md`, `sdkcraft.md`, `workshopctl.md` — each holding every subcommand of that tool as a section; there are no per-subcommand pages.
 - Whole-tree fallback: `<base>/llms.txt` — `https://ubuntu.com/workshop/docs/llms.txt`. Load this when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree).
 
 The base URL may change. It is recorded HERE only — every other file lists relative paths so a single edit re-points the whole skill. Do not embed local `docs/` paths in any file under this skill; the docs site is the source of truth.
@@ -32,7 +32,7 @@ The base URL may change. It is recorded HERE only — every other file lists rel
 <intake>
 Pick the matching workflow based on what the user wants to do:
 
-1. Bootstrap a new project / launch a workshop for the first time
+1. Bootstrap a new project / scaffold a definition (`workshop init`) / launch a workshop for the first time
 2. Day-to-day ops (run a command, refresh, restart)
 3. Customize the workshop (add or edit `actions:`)
 4. Author an in-project SDK with hooks (`.workshop/<name>/`)
@@ -49,7 +49,7 @@ Then read the matching workflow under `workflows/` and follow it.
 <routing>
 | User intent (paraphrases) | Workflow |
 |---------------------------|----------|
-| "set up", "first time", "bootstrap", "I just cloned", "what do I do" | `workflows/bootstrap-project.md` |
+| "set up", "first time", "bootstrap", "init", "scaffold a definition", "create a workshop definition", "workshop init", "I just cloned", "what do I do" | `workflows/bootstrap-project.md` |
 | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
 | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
 | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-sdk", "setup-base", "check-health", "save-state", "restore-state", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
@@ -80,7 +80,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 <workflows_index>
 | Workflow | Purpose |
 |----------|---------|
-| `bootstrap-project.md` | First-time setup: write definition + launch + verify |
+| `bootstrap-project.md` | First-time setup: scaffold a definition (via `workshop init` or a template) + launch + verify |
 | `daily-ops.md` | Run commands, edit, refresh, start/stop |
 | `customize-actions.md` | Add reusable shell commands via `actions:` |
 | `author-in-project-sdk.md` | Write or update an in-project SDK at `.workshop/<name>/` with hooks |
@@ -116,10 +116,10 @@ It does NOT cover:
 
 For these, point the user at the docs (resolve via `<base>` from `<docs>` above):
 - `<base>/explanation/sdks/concepts.md` for the SDK-publisher mental model
-- `<base>/reference/cli/sdkcraft-*.md` for the `sdkcraft` CLI surface
+- `<base>/reference/cli/sdkcraft.md` for the `sdkcraft` CLI surface
 - `<base>/reference/cli/workshopctl.md` for the standalone `workshopctl` CLI
 - `<base>/tutorial/part-3-sketch-sdks.md` and `<base>/tutorial/part-4-craft-sdks.md` for hands-on SDK development
-- `<base>/reference/cli/workshop-sketch-sdk.md` — for the user's own reading, NOT to be summarized step-by-step in the skill's response
+- `<base>/reference/cli/workshop.md` (the `workshop sketch-sdk` section) — for the user's own reading, NOT to be summarized step-by-step in the skill's response
 
 Then stop. Do not improvise standalone `sdkcraft` / `workshopctl` invocations or step-by-step sketch sessions.
 </out_of_scope>

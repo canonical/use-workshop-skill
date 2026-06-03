@@ -123,5 +123,5 @@ workshop connections               # only auto-connections present
 <source_docs>
 - `how-to/fix-workshops/purge.md`
 - `how-to/fix-workshops/fix-installation.md` (LXC exploration)
-- `reference/cli/workshop-remove.md`, `reference/cli/workshop-restore.md`, `reference/cli/workshop-list.md`
+- `reference/cli/workshop.md` (remove, restore, list sections)
 </source_docs>

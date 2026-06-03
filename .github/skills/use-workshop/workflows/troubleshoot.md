@@ -112,5 +112,5 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 - `how-to/fix-workshops/debug-issues.md`
 - `how-to/fix-workshops/fix-installation.md`
 - `explanation/workshops/changes-tasks.md`
-- `reference/cli/workshop-changes.md`, `reference/cli/workshop-tasks.md`, `reference/cli/workshop-launch.md`, `reference/cli/workshop-refresh.md`, `reference/cli/workshop-warnings.md`, `reference/cli/workshop-okay.md`
+- `reference/cli/workshop.md` (changes, tasks, launch, refresh, warnings, okay sections)
 </source_docs>

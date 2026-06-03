@@ -149,6 +149,6 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 - `tutorial/part-3-sketch-sdks.md` (eject layout + minimal working hook)
 - `explanation/sdks/concepts.md` (hook taxonomy, lifecycle, set-health)
 - `reference/definition-files/sdk-definition.md`
-- `reference/cli/workshop-refresh.md`, `reference/cli/workshop-tasks.md`, `reference/cli/workshop-info.md`
+- `reference/cli/workshop.md` (refresh, tasks, info sections)
 - `reference/cli/workshopctl.md` (in-hook only)
 </source_docs>

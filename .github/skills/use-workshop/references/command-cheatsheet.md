@@ -6,10 +6,16 @@ Dense reference for every `workshop` and `sdk` subcommand. One block per command
 
 All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them.
 
-**Workshop-name argument rule.** In single-workshop projects the workshop name is OPTIONAL and may be omitted on most subcommands. In multi-workshop projects (definitions under `.workshop/<NAME>.yaml`) the workshop name is REQUIRED on every subcommand that takes one — bare `workshop refresh`, `workshop exec`, `workshop run`, etc. are rejected with a name-required error, NOT silently expanded across all workshops. Always surface this when diagnosing a multi-workshop "command complained" symptom.
+**Workshop-name argument rule.** What matters is the *number* of workshops in the project, not the file layout. In a single-workshop project the workshop name is OPTIONAL and may be omitted on most subcommands — this holds whether the definition is a root `workshop.yaml` or a lone `.workshop/<NAME>.yaml` (e.g. one created by `workshop init`; tutorial part 1 runs `workshop launch`/`info`/`stop`/`start`/`refresh` with no name against `.workshop/dev.yaml`). In a multi-workshop project (two or more definitions under `.workshop/`) the workshop name is REQUIRED on every subcommand that takes one — bare `workshop refresh`, `workshop exec`, `workshop run`, etc. are rejected with a name-required error, NOT silently expanded across all workshops. Always surface this when diagnosing a multi-workshop "command complained" symptom.
 </overview>
 
 <workshop_lifecycle>
+**`workshop init <NAME> --sdks <SDKs> [--base <BASE>] [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml`. Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`.
+- `--sdks` — comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.26/stable`). Example: `--sdks go,uv/latest/stable`.
+- `--base` — base image for the workshop (e.g. `ubuntu@24.04`); optional.
+- Scaffolds base + SDKs only. For `actions:`, `connections:`, or plug/slot grafts, edit the generated `.workshop/<NAME>.yaml` afterward (or start from a `templates/` file).
+- Example: `workshop init dev --sdks ollama/cpu/stable --base ubuntu@22.04`
+
 **`workshop launch <WORKSHOP>... [flags]`** — Construct workshop(s) from definition; runs SDK setup hooks; on success ties the workshop to the project and starts it. Exists in `Off` → moves to `Ready` (or `Error`/`Waiting` on failure).
 - `--wait-on-error` pauses on error (single workshop only; mutually exclusive with `--continue` and `--abort`); resume with `--continue`, undo with `--abort`.
 - `--no-wait` returns the change ID immediately without blocking.
@@ -139,7 +145,7 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 </sdk_cli>
 
 <source_docs>
-- `reference/cli/workshop-*.md` — per-subcommand reference
-- `reference/cli/sdk-*.md` — per-subcommand reference
+- `reference/cli/workshop.md` — combined reference for every `workshop` subcommand
+- `reference/cli/sdk.md` — combined reference for every `sdk` subcommand
 - `reference/workshop-status.md` — state transition diagrams
 </source_docs>

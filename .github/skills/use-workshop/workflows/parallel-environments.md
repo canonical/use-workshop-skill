@@ -108,5 +108,5 @@ git worktree list                  # the removed worktree should be gone
 - `how-to/develop-with-workshops/use-git.md` (worktree + workshop pattern; canonical source)
 - `how-to/develop-with-workshops/use-workshops-with-ai-agents.md` (one applied example, among others)
 - `how-to/customize-workshops/move-projects.md` (move/copy semantics)
-- `reference/cli/workshop-launch.md`, `reference/cli/workshop-remove.md`, `reference/cli/workshop-list.md`, `reference/cli/workshop-exec.md`, `reference/cli/workshop-run.md`
+- `reference/cli/workshop.md` (launch, remove, list, exec, run sections)
 </source_docs>

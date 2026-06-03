@@ -10,7 +10,7 @@ Read these references before acting:
 1. `references/concepts.md` — vocabulary
 2. `references/definition-file.md` — workshop.yaml anatomy
 3. `references/states-and-transitions.md` — what states exist
-4. `references/command-cheatsheet.md` — `workshop launch`/`info`/`list`/`shell` flags
+4. `references/command-cheatsheet.md` — `workshop init`/`launch`/`info`/`list`/`shell` flags
 5. `references/sdk-types.md` — picking the right kind of SDK
 </required_reading>
 
@@ -36,9 +36,19 @@ sdk info <name>        # confirms channels and supported bases
 
 If the tool isn't in the Store, or the user wants a project-specific install recipe, defer to `author-in-project-sdk.md` (write `.workshop/<name>/sdk.yaml` with hooks).
 
-**Step 3. Write the definition.**
-Copy `templates/workshop-minimal.yaml` if there is a single SDK, or `templates/workshop-multi-sdk.yaml` if more. Replace placeholders. Keep:
-- `name:` — lowercase letters, digits, hyphens; for multi-workshop projects, file basename must match.
+**Step 3. Create the definition.**
+Two first-class paths — pick by what the definition needs:
+
+*Path A — `workshop init` (base + SDKs only).* Scaffold a named definition straight from the command line:
+```
+workshop init <name> --sdks <sdk1>,<sdk2>/<channel> --base <base>
+```
+This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). Each `--sdks` entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`). Fast when the workshop is just a base plus Store SDKs. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or in-project SDKs — add those by editing the generated file, or use Path B.
+
+*Path B — copy a template (when you need more).* Copy `templates/workshop-minimal.yaml` (single SDK) or `templates/workshop-multi-sdk.yaml` (more); reach for `templates/workshop-with-actions.yaml` or `templates/workshop-with-connections.yaml` when the definition needs those. Save it as a root `workshop.yaml` (single-file layout) or `.workshop/<name>.yaml` (named layout), then replace placeholders.
+
+Either way, keep:
+- `name:` — lowercase letters, digits, hyphens; in the named (`.workshop/<name>.yaml`) layout the file basename must match `name:`.
 - `base:` — confirmed Store-supported base.
 - `sdks:` — entries in install order (system SDK is implicit and first; don't list it unless you need to graft plugs/slots).
 
@@ -82,7 +92,7 @@ Report to the user:
 </verification>
 
 <anti_patterns>
-- Writing a `workshop.yaml` and `.workshop/<name>.yaml` in the same project — Workshop rejects this.
+- Writing a `workshop.yaml` and `.workshop/<name>.yaml` in the same project — Workshop rejects this. `workshop init` always writes the `.workshop/<name>.yaml` form, so don't also keep a root `workshop.yaml` for the same project.
 - Suggesting `latest/stable` as universally safe. Verify channels with `sdk info`.
 - Forgetting `.workshop.lock` in `.gitignore` — committing it causes cross-machine grief.
 - Running `workshop start` before `workshop launch`. Initial creation is `launch`; `start`/`stop` cycle a launched workshop.
@@ -98,6 +108,6 @@ Report to the user:
 <source_docs>
 - `tutorial/part-1-get-started.md`
 - `how-to/develop-with-workshops/use-git.md`
-- `reference/cli/workshop-launch.md`, `reference/cli/workshop-info.md`, `reference/cli/workshop-list.md`, `reference/cli/workshop-shell.md`
+- `reference/cli/workshop.md` (init, launch, info, list, shell sections)
 - `reference/definition-files/workshop-definition.md`
 </source_docs>

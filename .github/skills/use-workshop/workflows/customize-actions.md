@@ -82,5 +82,5 @@ workshop info
 
 <source_docs>
 - `how-to/customize-workshops/add-actions.md`
-- `reference/cli/workshop-actions.md`, `reference/cli/workshop-run.md`
+- `reference/cli/workshop.md` (actions, run sections)
 </source_docs>

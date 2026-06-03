@@ -95,5 +95,5 @@ After an `exec` or `run`: confirm exit code = 0 and inspect output. The user is 
 <source_docs>
 - `tutorial/part-1-get-started.md`
 - `how-to/customize-workshops/add-actions.md`
-- `reference/cli/workshop-exec.md`, `reference/cli/workshop-run.md`, `reference/cli/workshop-shell.md`, `reference/cli/workshop-refresh.md`, `reference/cli/workshop-start.md`, `reference/cli/workshop-stop.md`, `reference/cli/workshop-actions.md`
+- `reference/cli/workshop.md` (exec, run, shell, refresh, start, stop, actions sections)
 </source_docs>

@@ -122,5 +122,5 @@ workshop list --global                       # workshops gone everywhere
 - `how-to/customize-workshops/use-multiple-workshops.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `explanation/workshops/projects.md`
-- `reference/cli/workshop-launch.md`, `reference/cli/workshop-list.md`, `reference/cli/workshop-run.md`, `reference/cli/workshop-connect.md`
+- `reference/cli/workshop.md` (launch, list, run, connect sections)
 </source_docs>

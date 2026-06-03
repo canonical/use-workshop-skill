@@ -77,8 +77,6 @@ Warnings don't pause anything; they're just observability. Surface them when the
 
 <source_docs>
 - `explanation/workshops/changes-tasks.md`
-- `reference/cli/workshop-changes.md`, `reference/cli/workshop-tasks.md`
-- `reference/cli/workshop-launch.md`, `reference/cli/workshop-refresh.md` (the `--wait-on-error`/`--continue`/`--abort` flags)
-- `reference/cli/workshop-warnings.md`, `reference/cli/workshop-okay.md`
+- `reference/cli/workshop.md` (changes, tasks, launch/refresh `--wait-on-error`/`--continue`/`--abort`, warnings, okay sections)
 - `how-to/fix-workshops/debug-issues.md`
 </source_docs>

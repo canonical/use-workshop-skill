@@ -89,5 +89,5 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `how-to/fix-workshops/debug-issues.md`, `how-to/fix-workshops/purge.md`, `how-to/fix-workshops/fix-installation.md`
 - `how-to/customize-workshops/move-projects.md`
 - `explanation/workshops/concepts.md`
-- `reference/cli/workshop-launch.md`, `reference/cli/workshop-refresh.md`
+- `reference/cli/workshop.md` (launch, refresh sections)
 </source_docs>

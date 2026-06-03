@@ -71,6 +71,6 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 - `explanation/sdks/concepts.md`
 - `explanation/workshops/concepts.md` (Origins and locations table)
 - `reference/definition-files/workshop-definition.md` (System SDK, Try, In-project subsections)
-- `reference/cli/workshop-sketch-sdk.md`, `reference/cli/workshop-sketches.md`
-- `reference/cli/sdk-find.md`, `reference/cli/sdk-info.md`, `reference/cli/sdk-list.md`
+- `reference/cli/workshop.md` (sketch-sdk, sketches sections)
+- `reference/cli/sdk.md` (find, info, list sections)
 </source_docs>

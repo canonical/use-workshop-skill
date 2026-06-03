@@ -134,5 +134,5 @@ For tunnels, also surface a curl or netcat one-liner the user can run on the hos
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`
 - `explanation/interfaces/concepts.md` and the per-interface pages
-- `reference/cli/workshop-connect.md`, `reference/cli/workshop-disconnect.md`, `reference/cli/workshop-connections.md`, `reference/cli/workshop-remount.md`
+- `reference/cli/workshop.md` (connect, disconnect, connections, remount sections)
 </source_docs>
