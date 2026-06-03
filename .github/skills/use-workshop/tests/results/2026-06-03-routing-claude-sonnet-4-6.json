@@ -1,1259 +1,440 @@
 {
   "meta": {
-    "generated_at": "2026-06-03T18:52:26+00:00",
+    "generated_at": "2026-06-03T19:29:41+00:00",
     "model": "claude-sonnet-4-6",
     "provider": "anthropic:messages",
-    "total_cases": 177,
-    "passed": 177,
+    "total_cases": 60,
+    "passed": 60,
     "failed": 0,
     "pass_rate": 1.0,
     "tokens": {
-      "total": 6654548,
+      "total": 2034292,
       "prompt": 0,
       "completion": 0,
-      "cached": 6654548
+      "cached": 2034292
     },
-    "cost_usd": 22.9118
+    "cost_usd": 6.4666
   },
   "cases": [
     {
       "description": "First-time setup, user has cloned a repo with workshop.yaml",
       "passed": true,
       "score": 1,
-      "latency_ms": 84,
-      "cost": 0.10125
-    },
-    {
-      "description": "First-time setup, user has cloned a repo with workshop.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 84,
-      "cost": 0.033994
-    },
-    {
-      "description": "First-time setup, user has cloned a repo with workshop.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 84,
-      "cost": 0.24291
+      "latency_ms": 101,
+      "cost": 0.10401
     },
     {
       "description": "Greenfield project, user wants a Go-based workshop",
       "passed": true,
       "score": 1,
-      "latency_ms": 84,
-      "cost": 0.104604
-    },
-    {
-      "description": "Greenfield project, user wants a Go-based workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.034367
-    },
-    {
-      "description": "Greenfield project, user wants a Go-based workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.250345
+      "latency_ms": 101,
+      "cost": 0.109449
     },
     {
       "description": "User wants to know what to commit and what to gitignore",
       "passed": true,
       "score": 1,
-      "latency_ms": 14,
-      "cost": 0.102654
-    },
-    {
-      "description": "User wants to know what to commit and what to gitignore",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.034332
-    },
-    {
-      "description": "User wants to know what to commit and what to gitignore",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.246535
+      "latency_ms": 101,
+      "cost": 0.105444
     },
     {
       "description": "User wants to discover SDKs first",
       "passed": true,
       "score": 1,
-      "latency_ms": 16,
-      "cost": 0.10548
-    },
-    {
-      "description": "User wants to discover SDKs first",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 13,
-      "cost": 0.034589
-    },
-    {
-      "description": "User wants to discover SDKs first",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 13,
-      "cost": 0.245655
+      "latency_ms": 101,
+      "cost": 0.108405
     },
     {
       "description": "User asks how to confirm a launch worked",
       "passed": true,
       "score": 1,
-      "latency_ms": 16,
-      "cost": 0.10188
-    },
-    {
-      "description": "User asks how to confirm a launch worked",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.033819
-    },
-    {
-      "description": "User asks how to confirm a launch worked",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.242745
-    },
-    {
-      "description": "User wants to scaffold a definition from the CLI (workshop init)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.101373
+      "latency_ms": 17,
+      "cost": 0.105405
     },
     {
       "description": "User wants to scaffold a definition from the CLI (workshop init)",
       "passed": true,
       "score": 1,
       "latency_ms": 15,
-      "cost": 0.03386
+      "cost": 0.105378
     },
     {
-      "description": "User wants to scaffold a definition from the CLI (workshop init)",
+      "description": "User asks whether workshop init can set up actions and connections",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.106254
+    },
+    {
+      "description": "User asks to mix a root workshop.yaml with a workshop init definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.105699
+    },
+    {
+      "description": "Run a one-off command inside an existing workshop",
       "passed": true,
       "score": 1,
       "latency_ms": 15,
-      "cost": 0.24794
-    },
-    {
-      "description": "User asks whether workshop init can set up actions and connections",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.102564
-    },
-    {
-      "description": "User asks whether workshop init can set up actions and connections",
-      "passed": true,
-      "score": 0.9666666666666667,
-      "latency_ms": 8,
-      "cost": 0.033872
-    },
-    {
-      "description": "User asks whether workshop init can set up actions and connections",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 36,
-      "cost": 0.24656
-    },
-    {
-      "description": "User asks to mix a root workshop.yaml with a workshop init definition",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 36,
-      "cost": 0.102279
-    },
-    {
-      "description": "User asks to mix a root workshop.yaml with a workshop init definition",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034157
-    },
-    {
-      "description": "User asks to mix a root workshop.yaml with a workshop init definition",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.24758
-    },
-    {
-      "description": "Run a one-off command inside an existing workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.098574
-    },
-    {
-      "description": "Run a one-off command inside an existing workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.033692
-    },
-    {
-      "description": "Run a one-off command inside an existing workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.235075
+      "cost": 0.101799
     },
     {
       "description": "User edited only the actions block, asks if refresh is needed",
       "passed": true,
       "score": 1,
-      "latency_ms": 8,
-      "cost": 0.098436
-    },
-    {
-      "description": "User edited only the actions block, asks if refresh is needed",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.032841
-    },
-    {
-      "description": "User edited only the actions block, asks if refresh is needed",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.23567
-    },
-    {
-      "description": "User wants to forward arguments through workshop run",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.100365
+      "latency_ms": 14,
+      "cost": 0.101511
     },
     {
       "description": "User wants to forward arguments through workshop run",
       "passed": true,
       "score": 1,
       "latency_ms": 8,
-      "cost": 0.034059
-    },
-    {
-      "description": "User wants to forward arguments through workshop run",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.23892
-    },
-    {
-      "description": "User reports a workshop is Stopped, wants to use it",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.099093
-    },
-    {
-      "description": "User reports a workshop is Stopped, wants to use it",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.033065
+      "cost": 0.10368
     },
     {
       "description": "User reports a workshop is Stopped, wants to use it",
       "passed": true,
       "score": 1,
       "latency_ms": 8,
-      "cost": 0.238325
+      "cost": 0.102378
     },
     {
       "description": "User edited base image and asks how to apply it",
       "passed": true,
       "score": 1,
-      "latency_ms": 7,
-      "cost": 0.099027
+      "latency_ms": 12,
+      "cost": 0.102552
     },
     {
-      "description": "User edited base image and asks how to apply it",
+      "description": "Expose a workshop service on the host (auto-connect tunnel)",
       "passed": true,
       "score": 1,
       "latency_ms": 11,
-      "cost": 0.033598
-    },
-    {
-      "description": "User edited base image and asks how to apply it",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.24712
-    },
-    {
-      "description": "Expose a workshop service on the host (auto-connect tunnel)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.104274
-    },
-    {
-      "description": "Expose a workshop service on the host (auto-connect tunnel)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.034552
-    },
-    {
-      "description": "Expose a workshop service on the host (auto-connect tunnel)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 13,
-      "cost": 0.25057
-    },
-    {
-      "description": "Reach a host service from inside the workshop (manual connect)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 13,
-      "cost": 0.10407
+      "cost": 0.107859
     },
     {
       "description": "Reach a host service from inside the workshop (manual connect)",
       "passed": true,
       "score": 1,
       "latency_ms": 9,
-      "cost": 0.035384
-    },
-    {
-      "description": "Reach a host service from inside the workshop (manual connect)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.25465
+      "cost": 0.10971
     },
     {
       "description": "Plug conflict between two SDKs wanting the same mount target",
       "passed": true,
       "score": 1,
       "latency_ms": 11,
-      "cost": 0.10482
-    },
-    {
-      "description": "Plug conflict between two SDKs wanting the same mount target",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.034289
-    },
-    {
-      "description": "Plug conflict between two SDKs wanting the same mount target",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.254535
+      "cost": 0.106545
     },
     {
       "description": "Reassign a mount source to a different host directory",
       "passed": true,
       "score": 1,
-      "latency_ms": 11,
-      "cost": 0.102135
-    },
-    {
-      "description": "Reassign a mount source to a different host directory",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.033929
-    },
-    {
-      "description": "Reassign a mount source to a different host directory",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.24814
-    },
-    {
-      "description": "User asks about ssh-agent forwarding",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.1059
-    },
-    {
-      "description": "User asks about ssh-agent forwarding",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.034604
+      "latency_ms": 12,
+      "cost": 0.106965
     },
     {
       "description": "User asks about ssh-agent forwarding",
       "passed": true,
       "score": 1,
       "latency_ms": 12,
-      "cost": 0.253605
+      "cost": 0.109485
     },
     {
       "description": "Run two parallel test runs over the same source",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.108846
-    },
-    {
-      "description": "Run two parallel test runs over the same source",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.035956
-    },
-    {
-      "description": "Run two parallel test runs over the same source",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.2573
-    },
-    {
-      "description": "Compare two builds against the same code",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 36,
-      "cost": 0.109572
-    },
-    {
-      "description": "Compare two builds against the same code",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 34,
-      "cost": 0.036358
-    },
-    {
-      "description": "Compare two builds against the same code",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.257805
-    },
-    {
-      "description": "Cleanup ordering for worktrees with workshops",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.099993
-    },
-    {
-      "description": "Cleanup ordering for worktrees with workshops",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.0336
-    },
-    {
-      "description": "Cleanup ordering for worktrees with workshops",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.239735
-    },
-    {
-      "description": "Optional case mentioning AI agents (one example among others)",
       "passed": true,
       "score": 1,
       "latency_ms": 7,
-      "cost": 0.107736
+      "cost": 0.113646
+    },
+    {
+      "description": "Compare two builds against the same code",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.113757
+    },
+    {
+      "description": "Cleanup ordering for worktrees with workshops",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27,
+      "cost": 0.104268
     },
     {
       "description": "Optional case mentioning AI agents (one example among others)",
       "passed": true,
       "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034966
-    },
-    {
-      "description": "Optional case mentioning AI agents (one example among others)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.257815
+      "latency_ms": 19,
+      "cost": 0.111366
     },
     {
       "description": "Refresh failed, user asks what to do",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15,
+      "cost": 0.113685
+    },
+    {
+      "description": "Refresh failed (paraphrase 1, SDK install error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10,
+      "cost": 0.113769
+    },
+    {
+      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6,
+      "cost": 0.111519
+    },
+    {
+      "description": "User wants to inspect a paused workshop interactively",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14,
+      "cost": 0.108591
+    },
+    {
+      "description": "User asks how to resume after fixing the issue",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9,
+      "cost": 0.102459
+    },
+    {
+      "description": "User asks about warnings vs errors",
       "passed": true,
       "score": 1,
       "latency_ms": 5,
-      "cost": 0.110535
-    },
-    {
-      "description": "Refresh failed, user asks what to do",
-      "passed": true,
-      "score": 0.9875,
-      "latency_ms": 7,
-      "cost": 0.035484
-    },
-    {
-      "description": "Refresh failed, user asks what to do",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.257715
-    },
-    {
-      "description": "Refresh failed (paraphrase 1, SDK install error)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.107409
-    },
-    {
-      "description": "Refresh failed (paraphrase 1, SDK install error)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 6,
-      "cost": 0.034547
-    },
-    {
-      "description": "Refresh failed (paraphrase 1, SDK install error)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.257385
-    },
-    {
-      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.106974
-    },
-    {
-      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.036217
-    },
-    {
-      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
-      "passed": true,
-      "score": 0.9666666666666667,
-      "latency_ms": 6,
-      "cost": 0.25776
-    },
-    {
-      "description": "User wants to inspect a paused workshop interactively",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.103236
-    },
-    {
-      "description": "User wants to inspect a paused workshop interactively",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 26,
-      "cost": 0.034711
-    },
-    {
-      "description": "User wants to inspect a paused workshop interactively",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 18,
-      "cost": 0.25318
-    },
-    {
-      "description": "User asks how to resume after fixing the issue",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.098874
-    },
-    {
-      "description": "User asks how to resume after fixing the issue",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.033127
-    },
-    {
-      "description": "User asks how to resume after fixing the issue",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.240075
-    },
-    {
-      "description": "User asks about warnings vs errors",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.102507
-    },
-    {
-      "description": "User asks about warnings vs errors",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.034143
-    },
-    {
-      "description": "User asks about warnings vs errors",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.24631
+      "cost": 0.107232
     },
     {
       "description": "User reaches for snap purge prematurely",
       "passed": true,
       "score": 1,
       "latency_ms": 12,
-      "cost": 0.103512
-    },
-    {
-      "description": "User reaches for snap purge prematurely",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.033823
-    },
-    {
-      "description": "User reaches for snap purge prematurely",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.24652
+      "cost": 0.108162
     },
     {
       "description": "Snap purge prematurely (paraphrase 1, hopeful framing)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8,
+      "cost": 0.106695
+    },
+    {
+      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
       "passed": true,
       "score": 1,
       "latency_ms": 6,
-      "cost": 0.103245
+      "cost": 0.106527
     },
     {
-      "description": "Snap purge prematurely (paraphrase 1, hopeful framing)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.033924
-    },
-    {
-      "description": "Snap purge prematurely (paraphrase 1, hopeful framing)",
+      "description": "No space left on device with free host disk (full storage pool)",
       "passed": true,
       "score": 1,
       "latency_ms": 12,
-      "cost": 0.245085
+      "cost": 0.109173
     },
     {
-      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
+      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
       "passed": true,
       "score": 1,
-      "latency_ms": 10,
-      "cost": 0.101652
+      "latency_ms": 8,
+      "cost": 0.111918
     },
     {
-      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
+      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
       "passed": true,
       "score": 1,
       "latency_ms": 5,
-      "cost": 0.034138
+      "cost": 0.102
     },
     {
-      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
+      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
       "passed": true,
       "score": 1,
       "latency_ms": 11,
-      "cost": 0.25071
+      "cost": 0.108264
     },
     {
-      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.106878
-    },
-    {
-      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
+      "description": "Standard workshop removal",
       "passed": true,
       "score": 1,
       "latency_ms": 10,
-      "cost": 0.034845
+      "cost": 0.103239
     },
     {
-      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
+      "description": "Project deleted before workshop was removed (orphan)",
       "passed": true,
       "score": 1,
-      "latency_ms": 5,
-      "cost": 0.25777
+      "latency_ms": 8,
+      "cost": 0.106848
     },
     {
-      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
+      "description": "User asks about workshop restore vs remove",
       "passed": true,
       "score": 1,
-      "latency_ms": 16,
-      "cost": 0.099105
+      "latency_ms": 14,
+      "cost": 0.106068
     },
     {
-      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.032734
-    },
-    {
-      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
+      "description": "After manual lxc cleanup, what to verify",
       "passed": true,
       "score": 1,
       "latency_ms": 13,
-      "cost": 0.235495
+      "cost": 0.107154
     },
     {
-      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 5,
-      "cost": 0.105474
-    },
-    {
-      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.034917
-    },
-    {
-      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.25464
-    },
-    {
-      "description": "Standard workshop removal",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.099954
-    },
-    {
-      "description": "Standard workshop removal",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.033792
-    },
-    {
-      "description": "Standard workshop removal",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.23959
-    },
-    {
-      "description": "Project deleted before workshop was removed (orphan)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.104058
-    },
-    {
-      "description": "Project deleted before workshop was removed (orphan)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.03464
-    },
-    {
-      "description": "Project deleted before workshop was removed (orphan)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.25062
-    },
-    {
-      "description": "User asks about workshop restore vs remove",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.104553
-    },
-    {
-      "description": "User asks about workshop restore vs remove",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.03397
-    },
-    {
-      "description": "User asks about workshop restore vs remove",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.253435
-    },
-    {
-      "description": "After manual lxc cleanup, what to verify",
+      "description": "User asks about publishing an SDK to the Store",
       "passed": true,
       "score": 1,
       "latency_ms": 6,
-      "cost": 0.103674
-    },
-    {
-      "description": "After manual lxc cleanup, what to verify",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 16,
-      "cost": 0.034662
-    },
-    {
-      "description": "After manual lxc cleanup, what to verify",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.25543
-    },
-    {
-      "description": "User asks about publishing an SDK to the Store",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.102984
-    },
-    {
-      "description": "User asks about publishing an SDK to the Store",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034192
-    },
-    {
-      "description": "User asks about publishing an SDK to the Store",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 22,
-      "cost": 0.246125
+      "cost": 0.104484
     },
     {
       "description": "User asks about workshopctl",
       "passed": true,
       "score": 1,
       "latency_ms": 17,
-      "cost": 0.103416
-    },
-    {
-      "description": "User asks about workshopctl",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.035836
-    },
-    {
-      "description": "User asks about workshopctl",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.24625
+      "cost": 0.109491
     },
     {
       "description": "User asks about sdkcraft pack vs workshop launch",
       "passed": true,
       "score": 1,
-      "latency_ms": 9,
-      "cost": 0.104889
-    },
-    {
-      "description": "User asks about sdkcraft pack vs workshop launch",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034767
-    },
-    {
-      "description": "User asks about sdkcraft pack vs workshop launch",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.24301
+      "latency_ms": 12,
+      "cost": 0.107589
     },
     {
       "description": "User asks the agent to drive a workshop sketch-sdk session",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.10341
-    },
-    {
-      "description": "User asks the agent to drive a workshop sketch-sdk session",
-      "passed": true,
-      "score": 0.9875,
-      "latency_ms": 9,
-      "cost": 0.034404
-    },
-    {
-      "description": "User asks the agent to drive a workshop sketch-sdk session",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.250965
-    },
-    {
-      "description": "User wants a reusable build script for the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.103572
-    },
-    {
-      "description": "User wants a reusable build script for the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034048
-    },
-    {
-      "description": "User wants a reusable build script for the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.247005
-    },
-    {
-      "description": "User wants a project-specific tool install (route to author-in-project-sdk)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.108168
-    },
-    {
-      "description": "User wants a project-specific tool install (route to author-in-project-sdk)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.03562
-    },
-    {
-      "description": "User wants a project-specific tool install (route to author-in-project-sdk)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.25787
-    },
-    {
-      "description": "User wants ruff installed against the project via an in-project SDK",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.106074
-    },
-    {
-      "description": "User wants ruff installed against the project via an in-project SDK",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.034867
-    },
-    {
-      "description": "User wants ruff installed against the project via an in-project SDK",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 22,
-      "cost": 0.257865
-    },
-    {
-      "description": "User asks about setup-base for system packages on every workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.108486
-    },
-    {
-      "description": "User asks about setup-base for system packages on every workshop",
-      "passed": true,
-      "score": 0.9625,
-      "latency_ms": 9,
-      "cost": 0.035066
-    },
-    {
-      "description": "User asks about setup-base for system packages on every workshop",
-      "passed": true,
-      "score": 0.975,
-      "latency_ms": 8,
-      "cost": 0.256265
-    },
-    {
-      "description": "User reports a hook script that isn't running",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.104403
-    },
-    {
-      "description": "User reports a hook script that isn't running",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.03493
-    },
-    {
-      "description": "User reports a hook script that isn't running",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.25769
-    },
-    {
-      "description": "User asks where hooks go in sdk.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.102543
-    },
-    {
-      "description": "User asks where hooks go in sdk.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.034255
-    },
-    {
-      "description": "User asks where hooks go in sdk.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.247635
-    },
-    {
-      "description": "User asks how to update an existing in-project SDK's setup-project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.104283
-    },
-    {
-      "description": "User asks how to update an existing in-project SDK's setup-project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.03545
-    },
-    {
-      "description": "User asks how to update an existing in-project SDK's setup-project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.257345
-    },
-    {
-      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.112455
-    },
-    {
-      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.037489
-    },
-    {
-      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.257775
-    },
-    {
-      "description": "User asks about a specific remote-IDE vendor",
-      "passed": true,
-      "score": 0.9875,
-      "latency_ms": 8,
-      "cost": 0.112461
-    },
-    {
-      "description": "User asks about a specific remote-IDE vendor",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.037216
-    },
-    {
-      "description": "User asks about a specific remote-IDE vendor",
-      "passed": true,
-      "score": 0.9875,
-      "latency_ms": 22,
-      "cost": 0.257745
-    },
-    {
-      "description": "User wants ssh-agent forwarding for git inside the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.106554
-    },
-    {
-      "description": "User wants ssh-agent forwarding for git inside the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 11,
-      "cost": 0.034417
-    },
-    {
-      "description": "User wants ssh-agent forwarding for git inside the workshop",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.248755
-    },
-    {
-      "description": "User asks for the host address to point their tool at",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.101346
-    },
-    {
-      "description": "User asks for the host address to point their tool at",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 7,
-      "cost": 0.033636
-    },
-    {
-      "description": "User asks for the host address to point their tool at",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.24422
-    },
-    {
-      "description": "User picks a privileged port for a system tunnel plug",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.103035
-    },
-    {
-      "description": "User picks a privileged port for a system tunnel plug",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 10,
-      "cost": 0.034104
-    },
-    {
-      "description": "User picks a privileged port for a system tunnel plug",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.250295
-    },
-    {
-      "description": "User wants two workshops in the same project",
       "passed": true,
       "score": 1,
       "latency_ms": 5,
-      "cost": 0.111081
+      "cost": 0.10683
     },
     {
-      "description": "User wants two workshops in the same project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 12,
-      "cost": 0.036651
-    },
-    {
-      "description": "User wants two workshops in the same project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 9,
-      "cost": 0.257765
-    },
-    {
-      "description": "User asks how to migrate from a single workshop.yaml",
+      "description": "User wants a reusable build script for the workshop",
       "passed": true,
       "score": 1,
       "latency_ms": 8,
-      "cost": 0.104397
+      "cost": 0.106452
     },
     {
-      "description": "User asks how to migrate from a single workshop.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 5,
-      "cost": 0.034978
-    },
-    {
-      "description": "User asks how to migrate from a single workshop.yaml",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 15,
-      "cost": 0.249925
-    },
-    {
-      "description": "User omits workshop name in a multi-workshop project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 14,
-      "cost": 0.101559
-    },
-    {
-      "description": "User omits workshop name in a multi-workshop project",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.033872
-    },
-    {
-      "description": "User omits workshop name in a multi-workshop project",
+      "description": "User wants a project-specific tool install (route to author-in-project-sdk)",
       "passed": true,
       "score": 1,
       "latency_ms": 6,
-      "cost": 0.24086
+      "cost": 0.109488
     },
     {
-      "description": "Cross-workshop networking",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 18,
-      "cost": 0.107565
-    },
-    {
-      "description": "Cross-workshop networking",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 19,
-      "cost": 0.035294
-    },
-    {
-      "description": "Cross-workshop networking",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 8,
-      "cost": 0.257795
-    },
-    {
-      "description": "User attempts a direct cross-workshop connect",
+      "description": "User wants ruff installed against the project via an in-project SDK",
       "passed": true,
       "score": 1,
       "latency_ms": 5,
-      "cost": 0.10536
+      "cost": 0.110949
+    },
+    {
+      "description": "User asks about setup-base for system packages on every workshop",
+      "passed": true,
+      "score": 0.9875,
+      "latency_ms": 8,
+      "cost": 0.111051
+    },
+    {
+      "description": "User reports a hook script that isn't running",
+      "passed": true,
+      "score": 0.9833333333333334,
+      "latency_ms": 7,
+      "cost": 0.107493
+    },
+    {
+      "description": "User asks where hooks go in sdk.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4,
+      "cost": 0.105333
+    },
+    {
+      "description": "User asks how to update an existing in-project SDK's setup-project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.107103
+    },
+    {
+      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.1149
+    },
+    {
+      "description": "User asks about a specific remote-IDE vendor",
+      "passed": true,
+      "score": 0.975,
+      "latency_ms": 4,
+      "cost": 0.115536
+    },
+    {
+      "description": "User wants ssh-agent forwarding for git inside the workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9,
+      "cost": 0.110544
+    },
+    {
+      "description": "User asks for the host address to point their tool at",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.104256
+    },
+    {
+      "description": "User picks a privileged port for a system tunnel plug",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7,
+      "cost": 0.10638
+    },
+    {
+      "description": "User wants two workshops in the same project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12,
+      "cost": 0.115536
+    },
+    {
+      "description": "User asks how to migrate from a single workshop.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5,
+      "cost": 0.108777
+    },
+    {
+      "description": "User omits workshop name in a multi-workshop project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22,
+      "cost": 0.105339
+    },
+    {
+      "description": "Cross-workshop networking",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15,
+      "cost": 0.111885
     },
     {
       "description": "User attempts a direct cross-workshop connect",
       "passed": true,
       "score": 1,
-      "latency_ms": 14,
-      "cost": 0.034989
-    },
-    {
-      "description": "User attempts a direct cross-workshop connect",
-      "passed": true,
-      "score": 1,
-      "latency_ms": 13,
-      "cost": 0.253145
+      "latency_ms": 6,
+      "cost": 0.10836
     }
   ]
 }

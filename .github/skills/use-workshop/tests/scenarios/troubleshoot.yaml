@@ -70,9 +70,14 @@
       value: |
         The response treats the Error status as a diagnostic starting point (drilling
         into `workshop tasks <ID>` for the failed task's logs, optionally retrying with
-        `--wait-on-error` to inspect interactively). It does NOT recommend `workshop
-        remove` + `workshop launch` as the primary fix for an Error change from a
-        Ready workshop.
+        `--wait-on-error` to inspect interactively). It leads with diagnosis rather than
+        reflexively prescribing `workshop remove` + `workshop launch` as the FIRST move.
+        It IS acceptable for the response to note — as a conditional, scoped fallback —
+        that a workshop genuinely stuck in `Error` status (one that did NOT auto-revert
+        to `Ready`) can only be recovered with `workshop remove` + `workshop launch`,
+        since `states-and-transitions` says `remove` is the only command that works from
+        `Error`. What's forbidden is presenting remove+launch as the first response
+        before any diagnosis.
 
 - description: User wants to inspect a paused workshop interactively
   vars:
@@ -203,3 +208,29 @@
         diagnostics first (at minimum `workshop changes`; `workshop tasks`
         and/or `lxc list` are bonus, not required). It warns that purge
         affects every workshop for every user on the system.
+
+- description: No space left on device with free host disk (full storage pool)
+  vars:
+    user: |
+      My `workshop launch` failed with "No space left on device", but `df -h` shows my host disk has 2 TB free. What's wrong and how do I fix it?
+  assert:
+    - type: icontains-any
+      value:
+        - storage pool
+        - lxc storage
+    - type: icontains-any
+      value:
+        - resize
+        - grow
+        - "size="
+    - type: llm-rubric
+      value: |
+        The response identifies the real limit as the LXD storage pool backing
+        the workshop (named `workshop`, sized to a fraction of disk, and NOT the
+        host disk, and NOT auto-grown by Workshop) — not a code/hook bug and not
+        the host filesystem. It tells the user to inspect the pool
+        (`lxc storage info`/`list`) and to grow it (e.g.
+        `sudo lxc storage set workshop size=…`), and conveys that Workshop does
+        not manage the pool size automatically. It does NOT misdiagnose the
+        error as a transient hook failure to just retry, and does NOT prescribe
+        `sudo snap remove --purge` as the fix.

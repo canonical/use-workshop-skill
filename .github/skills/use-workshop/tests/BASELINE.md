@@ -11,25 +11,35 @@ regression.
 
 ## Routing eval
 
-59 cases across 12 scenario files — the prior 56-case suite plus 3 new
+60 cases across 12 scenario files — the prior 56-case suite plus 3 new
 `workshop init` cases in `bootstrap.yaml` (CLI scaffolding routing, the
 base+SDKs-only scope boundary, and the single-vs-multi definition-layout
-anti-pattern). Every case is single-turn against the bundled skill
-(`SKILL.md` + 9 references + 10 workflows concatenated). Run with: `make
-eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
+anti-pattern) and 1 new storage-pool-full case in `troubleshoot.yaml`
+(`No space left on device` → diagnose and resize the LXD pool). Every case
+is single-turn against the bundled skill (`SKILL.md` + 9 references + 10
+workflows concatenated). Run with: `make eval-routing` (Sonnet 4.6) or
+`make eval-routing-all-models`.
 
-| Model              | Pass rate        | Locked-in failures |
-|--------------------|------------------|--------------------|
-| `claude-sonnet-4-6` | **59/59 (100%)** | none |
-| `claude-haiku-4-5`  | **59/59 (100%)** | none |
-| `claude-opus-4-7`   | **59/59 (100%)** | none |
+| Model              | Pass rate                      | Notes |
+|--------------------|--------------------------------|-------|
+| `claude-sonnet-4-6` | **60/60 (100%)** | full run under the current bundle (2026-06-03) |
+| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
+| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 
-> Pinned from a full green run on 2026-06-03 (`make eval-routing`, which
-> evaluates all three providers — 59 cases × 3 = 177, all passing). The 3
-> new `workshop init` cases pass on every model. Seven model×case results
-> that had been penalizing correct, well-warned answers were fixed at the
-> assertion level in the same change (see "Assertion fixes" below) — no
-> skill content changed to reach green.
+> **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
+> skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`
+> storage case (`No space left on device` → resize the LXD pool). Adding the
+> storage content to the bundle surfaced one over-strict rubric —
+> `Refresh failed (paraphrase 2)` — that forbade even a correctly-scoped
+> `remove`+`launch` for a workshop genuinely stuck in `Error`, contradicting
+> `states-and-transitions.md`; the rubric was relaxed (diagnosis-first still
+> required). Haiku 4.5 and Opus 4.7 were last run in full on the 59-case suite
+> (all green, 177/177 across three models); the 3 `workshop init` cases passed on
+> all three there, and the new storage case is verified 3/3 via a filtered run. A
+> full 3-model re-run under the new bundle is optional to formally pin Haiku/Opus
+> at 60/60 — the only test change since their last full run is the rubric
+> relaxation above, which cannot newly fail a case. Seven earlier assertion fixes
+> (plus this one) are documented under "Assertion fixes" below.
 
 ### Assertion fixes (2026-06-03)
 
@@ -60,6 +70,13 @@ the fix):
    — required mentioning the shebang, but a *silently skipped* hook is
    specifically the missing-`+x` case (a missing shebang surfaces as an exec
    error, not a silent skip). Shebang is now optional credit.
+6. **`Refresh failed (paraphrase 2, repeated failure with Status Error)`**
+   (troubleshoot) — surfaced when the storage case was added. The rubric forbade
+   `remove`+`launch` outright, but for a workshop genuinely stuck in `Error`
+   status (not auto-reverted to Ready), `remove` is the *only* command that works
+   per `states-and-transitions.md`. The rubric now allows that conditional, scoped
+   fallback while still requiring the response to lead with diagnosis (not
+   prescribe remove+launch as the first move).
 
 ### Known variance watch-items (Haiku 4.5)
 

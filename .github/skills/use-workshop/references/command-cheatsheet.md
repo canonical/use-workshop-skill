@@ -144,6 +144,15 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 - `--arch <ARCH>` or `--arch all`: show channels for a different (or every) supported architecture.
 </sdk_cli>
 
+<storage_and_lxd>
+There is NO `workshop` subcommand for storage — don't invent one. A workshop's data lives in an LXD storage pool (named `workshop`; ZFS on Linux, Btrfs on WSL) that Workshop sizes once at creation (~20% of free disk, clamped 5–30 GiB) and never auto-grows. Inspecting and resizing it is an LXD-level operation:
+- `sudo lxc storage list` — find the pool (typically `workshop`).
+- `sudo lxc storage info <POOL>` — space used vs total.
+- `sudo lxc storage show <POOL>` — config, including the `source:` (loop file vs block device) and current `size:`.
+- `sudo lxc storage set <POOL> size=<N>GiB` — grow a loop-backed pool (grow only; ZFS can't shrink).
+A full pool surfaces inside a workshop as `No space left on device`. See `workflows/troubleshoot.md`.
+</storage_and_lxd>
+
 <source_docs>
 - `reference/cli/workshop.md` — combined reference for every `workshop` subcommand
 - `reference/cli/sdk.md` — combined reference for every `sdk` subcommand

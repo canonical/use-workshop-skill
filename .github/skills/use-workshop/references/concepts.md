@@ -64,6 +64,7 @@ A lifecycle script in an SDK: `setup-base` (runs once at install, becomes part o
 - Deleting a project directory without `workshop remove` first leaves orphaned LXD resources. See the `purge-and-recover` workflow.
 - `latest/stable` channel is not necessarily either "latest" or "stable" — the SDK publisher chooses what each track means. Don't assume.
 - SDKs are mounted read-only inside the workshop. Updates flow only through `workshop refresh` re-fetching the channel.
+- Workshop's data lives in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL), sized at ~20% of free disk when first created (clamped 5–30 GiB) and **never auto-grown**. A workshop can hit `No space left on device` while the host disk still has plenty free — the limit is the pool, not the host. Grow it with `sudo lxc storage set workshop size=…` (grow only; ZFS can't shrink). See `workflows/troubleshoot.md`.
 </gotchas>
 
 <source_docs>
@@ -73,4 +74,5 @@ A lifecycle script in an SDK: `setup-base` (runs once at install, becomes part o
 - `explanation/sdks/concepts.md`
 - `explanation/interfaces/concepts.md`
 - `reference/definition-files/workshop-definition.md`
+- `reference/workshops.md` (Storage pools and drivers — the LXD pool backing a workshop)
 </source_docs>

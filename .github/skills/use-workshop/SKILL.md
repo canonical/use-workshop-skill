@@ -57,7 +57,7 @@ Then read the matching workflow under `workflows/` and follow it.
 | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | "VS Code", "JetBrains", "remote IDE", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong" | `workflows/troubleshoot.md` |
+| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota" | `workflows/troubleshoot.md` |
 | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 </routing>
 
