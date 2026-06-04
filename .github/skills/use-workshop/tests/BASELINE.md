@@ -41,6 +41,67 @@ workflows concatenated). Run with: `make eval-routing` (Sonnet 4.6) or
 > relaxation above, which cannot newly fail a case. Seven earlier assertion fixes
 > (plus this one) are documented under "Assertion fixes" below.
 
+### OpenRouter (open-weight) routing — diagnostic only, not a CI gate
+
+The same 60 routing cases can be run against open-weight models through
+OpenRouter (`make eval-routing-openrouter[-all]`, requires
+`OPENROUTER_API_KEY`). These are **cross-model diagnostics, not a regression
+gate** — they are not pinned and a drop here does not fail CI. They answer a
+different question than the Anthropic baseline: *how portable is the skill's
+routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
+(small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
+
+**Active family: GLM (Zhipu).** Declared in `promptfooconfig.yaml`; the
+default `make eval-routing-openrouter` targets `glm-4.5`.
+
+Full run 2026-06-04 (all three tiers, 0 errors each):
+
+| Model (via OpenRouter)   | Pass rate          | Failures (`length` = truncated) |
+|--------------------------|--------------------|----------------------------------|
+| `z-ai/glm-4.5-air`       | 55/60 (91.67%)     | 5 quality + 0 truncation |
+| `z-ai/glm-4.5`           | **56/60 (93.33%)** | 2 quality + 2 truncation |
+| `z-ai/glm-4.6`           | 57/60 (95.00%)     | 3 quality + 0 truncation |
+
+**Monotonic** (air < 4.5 < 4.6) and ahead of Qwen3 at every tier. Only **one**
+case fails on all three GLM tiers — *"update an existing in-project SDK's
+setup"* — versus three systematic misses for Qwen3, so the skill ports to GLM
+markedly better. That one shared miss also tripped Qwen3, making it the
+strongest cross-family signal of a genuine skill-clarity gap (worth a look the
+next time the in-project SDK content is revised — not a test bug). Truncations
+(`finishReason: length`) appeared only on `glm-4.5` (2 cases: a build-compare
+and the vendor-neutral remote-IDE prompt); raising `max_tokens` on the
+OpenRouter providers would likely recover them, at the cost of budget asymmetry
+with the Anthropic rows and a fresh re-run.
+
+#### Prior comparison: Qwen3 (2026-06-04)
+
+The first open-weight trial used the Qwen3 family. Recorded here because it
+informed the switch to GLM — the result files remain under `results/` but the
+slugs are no longer declared in the config.
+
+| Model (via OpenRouter)   | Pass rate       | Failures (`length` = truncated) |
+|--------------------------|-----------------|----------------------------------|
+| `qwen/qwen3-14b`         | 51/60 (85%)     | 6 quality + 3 truncation |
+| `qwen/qwen3-32b`         | **54/60 (90%)** | 4 quality + 2 truncation |
+| `qwen/qwen3-235b-a22b`   | 51/60 (85%)     | 9 quality + 0 truncation |
+
+Non-monotonic — 32B scored highest. Three cases failed on **all three tiers**
+(systematic portability gaps, not model size): Store-publishing an SDK, driving
+a `workshop sketch-sdk` session, and a specific remote-IDE vendor question — all
+places the skill says *defer to docs / stay generic*, which Qwen3 held loosely
+(it improvised `sdkcraft` / interactive `workshop` commands). Truncations
+(`finishReason: length`) clustered in the smaller tiers; 235B had none. Qwen3 is
+a reasoning model (~25K reasoning tokens/run), so the 1024-token budget was
+tight for the verbose tiers.
+
+> Caveats when reading any OpenRouter summary: (1) `cost_usd` reports **0** —
+> OpenRouter slugs are not in promptfoo's built-in cost table; check the
+> OpenRouter dashboard for real spend. (2) Token columns are not comparable to
+> the Anthropic rows: a *fresh* OpenRouter run populates `prompt`/`completion`
+> with `cached: 0` (no Anthropic prompt-cache discount — the full ~30K-token
+> bundle is re-sent each case), whereas a summary regenerated from a cache-warm
+> re-run shows everything under `cached`.
+
 ### Assertion fixes (2026-06-03)
 
 The suite reached 100% **without changing any skill content**. Five
@@ -150,6 +211,7 @@ When a real run materially changes a cell:
 4. If a model upgrade improves a cell: update and note the model
    version in the notes section if relevant.
 
-Each routing run writes `results/<date>-routing-<model>.json` with the
-exact per-case pass/fail breakdown — that's the source of truth, this
-file is the human-readable summary.
+Each routing run writes `results/<date>-routing-<tag>.json` (where `<tag>` is
+the provider id flattened to a filename, e.g. `claude-sonnet-4-6` or
+`openrouter-z-ai-glm-4.5`) with the exact per-case pass/fail breakdown —
+that's the source of truth, this file is the human-readable summary.

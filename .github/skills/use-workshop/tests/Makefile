@@ -17,6 +17,7 @@ BUNDLE_SH    := scripts/regenerate-bundle.sh
 DOC_PATHS_SH := scripts/check-doc-paths.sh
 
 .PHONY: help check-doc-paths eval-bundle eval-routing eval-routing-all-models \
+        eval-routing-openrouter eval-routing-openrouter-all \
         eval-agentic eval-all eval-clean
 
 help:
@@ -25,6 +26,8 @@ help:
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
+	@echo "  eval-routing-openrouter         run routing eval against GLM-4.5 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-openrouter-all     run routing eval against GLM-4.5-Air + GLM-4.5 + GLM-4.6 via OpenRouter"
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
 	@echo "  eval-all                 routing-all-models + agentic"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
@@ -42,6 +45,16 @@ eval-routing-all-models:
 	bash $(ROUTING_SH) --model claude-sonnet-4-6
 	bash $(ROUTING_SH) --model claude-haiku-4-5
 	bash $(ROUTING_SH) --model claude-opus-4-7
+
+# OpenRouter (open-weight) routing eval. Requires OPENROUTER_API_KEY.
+# GLM tiers mirror the Haiku/Sonnet/Opus diagnostic roles.
+eval-routing-openrouter:
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5
+
+eval-routing-openrouter-all:
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5-air
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.6
 
 eval-agentic:
 	bash $(AGENTIC_SH)
