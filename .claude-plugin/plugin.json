@@ -1,7 +1,6 @@
 {
   "name": "use-workshop",
   "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees.",
-  "version": "0.1.0",
   "author": {
     "name": "Canonical Ltd."
   },
