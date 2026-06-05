@@ -25,6 +25,9 @@ the manual run summary diff.
 - `ANTHROPIC_API_KEY` exported (`scripts/run-routing.sh` and
   `scripts/run-agentic.sh` also accept the same value as
   `ANTHROPIC_API_TOKEN` and bridge it).
+- `OPENROUTER_API_KEY` exported — only for the OpenRouter routing runs
+  (`make eval-routing-openrouter[-all]`). promptfoo's OpenRouter provider
+  reads it natively; no bridging.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
   and `node` on PATH; the user must be in the `lxd` group.
 
@@ -35,6 +38,8 @@ make help                       # list all targets
 make check-doc-paths            # assert reference/cli/ paths map to the 4 combined pages (fast, no API)
 make eval-routing               # routing eval, Sonnet 4.6 only
 make eval-routing-all-models    # routing eval against Sonnet 4.6, Haiku 4.5, Opus 4.7
+make eval-routing-openrouter        # routing eval, GLM-4.5 via OpenRouter (needs OPENROUTER_API_KEY)
+make eval-routing-openrouter-all    # routing eval, GLM-4.5-Air + GLM-4.5 + GLM-4.6 via OpenRouter
 make eval-agentic               # agentic E2E suite, Sonnet 4.6 only (slow, real LXD)
 make eval-bundle                # regenerate skill-bundle.md from current sources
 make eval-clean                 # drop generated bundle and raw outputs
@@ -43,9 +48,10 @@ make eval-clean                 # drop generated bundle and raw outputs
 Or invoke the underlying scripts directly:
 
 ```sh
-bash scripts/run-routing.sh                   # full routing run
+bash scripts/run-routing.sh                   # full routing run (Sonnet 4.6)
 bash scripts/run-routing.sh --filter-pattern bootstrap   # one scenario
-bash scripts/run-routing.sh --model claude-haiku-4-5     # one model
+bash scripts/run-routing.sh --model claude-haiku-4-5     # one Anthropic tier
+bash scripts/run-routing.sh --provider openrouter:z-ai/glm-4.5   # any declared provider
 
 bash scripts/run-agentic.sh                   # full agentic suite
 bash scripts/run-agentic.sh --filter-pattern troubleshoot   # one task
@@ -56,6 +62,42 @@ Inspect results interactively:
 ```sh
 promptfoo view
 ```
+
+## Testing other models via OpenRouter
+
+The routing eval can run against non-Anthropic models through OpenRouter
+(the agentic suite cannot — it drives the `claude` CLI directly). A
+curated set of open-weight GLM tiers is declared in
+`promptfooconfig.yaml` and selected with `--provider`:
+
+```sh
+export OPENROUTER_API_KEY=...
+make eval-routing-openrouter            # GLM-4.5 (the default tier)
+make eval-routing-openrouter-all        # GLM-4.5-Air + GLM-4.5 + GLM-4.6
+bash scripts/run-routing.sh --provider openrouter:z-ai/glm-4.5
+```
+
+Rules of the road:
+
+- **Declared-only.** A `--provider` id must be declared in
+  `promptfooconfig.yaml`; an unknown id is a hard error (it would
+  otherwise silently match zero providers and overwrite a baseline with
+  an empty summary). To try a new model, add a 3-line provider block with
+  `config: {max_tokens: 1024, temperature: 0.0}` — exactly like adding an
+  Anthropic tier. Confirm the slug against <https://openrouter.ai/models>.
+- **Excluded from the default sweep.** OpenRouter providers never run in
+  `make eval-routing` (pinned to Sonnet 4.6) or `eval-routing-all-models`
+  (Anthropic tiers only). `--model` and `--provider` are mutually
+  exclusive.
+- **Determinism preserved.** Selection is by `--filter-providers`, which
+  keeps the provider's `temperature: 0` config block.
+- **Cost caveats.** OpenRouter does not get Anthropic prompt-cache
+  discounts, so each 60-case run resends the full ~30K-token bundle
+  uncached — pricier per run than the cached Anthropic baseline. And the
+  committed summary's `cost_usd` reads **0** (OpenRouter slugs aren't in
+  promptfoo's cost table) — check the OpenRouter dashboard for real spend.
+- **Not a CI gate.** These runs are cross-model diagnostics; see
+  `BASELINE.md` for why they are not pinned.
 
 ## What the suites test
 

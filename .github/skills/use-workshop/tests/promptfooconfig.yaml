@@ -34,6 +34,38 @@ providers:
       max_tokens: 1024
       temperature: 0.0
 
+  # --- OpenRouter (open-weight) providers ----------------------------------
+  # GLM (Zhipu) family split across tiers, mirroring the Haiku/Sonnet/Opus
+  # roles above. These are EXCLUDED from the default sweep and from
+  # `eval-routing-all-models`; they only run when selected explicitly via
+  # `scripts/run-routing.sh --provider openrouter:<slug>` (or the
+  # `make eval-routing-openrouter[-all]` targets). Requires OPENROUTER_API_KEY.
+  #
+  # Slugs must be confirmed against https://openrouter.ai/models (they drift).
+  # Caveat: OpenRouter slugs are not in promptfoo's built-in cost table, so the
+  # committed summary reports `cost_usd: 0` — check the OpenRouter dashboard for
+  # real spend. temperature/max_tokens are honored (the openrouter provider
+  # extends the OpenAI chat provider), so these runs stay deterministic.
+  #
+  # (The Qwen3 family was the initial trial — see BASELINE.md for that
+  # comparison; GLM was adopted afterward.)
+  #
+  # Clarity diagnostic (≈ Haiku role).
+  - id: openrouter:z-ai/glm-4.5-air
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Baseline / default target (≈ Sonnet role).
+  - id: openrouter:z-ai/glm-4.5
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Headroom check (≈ Opus role).
+  - id: openrouter:z-ai/glm-4.6
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
 defaultTest:
   vars:
     # Inject the skill bundle (SKILL.md + all 8 references concatenated)
