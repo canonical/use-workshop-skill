@@ -9,14 +9,57 @@ launching workshops, refreshing them, running commands inside, wiring
 interfaces, debugging failed changes, and orchestrating parallel
 environments via git worktrees.
 
-## Quickstart
+## Install
 
-Copy `.github/skills/use-workshop/` into the target repo:
+### Claude Code (plugin)
 
-- Claude Code: `.claude/skills/use-workshop/`
-- Copilot:     `.github/skills/use-workshop/`
+Add the marketplace, then install the plugin:
 
-And so on.
+```
+/plugin marketplace add canonical/use-workshop-skill
+/plugin install use-workshop@canonical
+```
+
+Then run `/reload-plugins` (or restart Claude Code) to activate.
+
+Claude Code discovers skills under a top-level `skills/` directory, so
+this repo ships a `skills` → `.github/skills` symlink alongside the
+`.claude-plugin/` manifests (`plugin.json` + `marketplace.json`). The
+skill files themselves stay at `.github/skills/use-workshop/` (single
+source of truth, shared with Copilot and any other consumer).
+
+To install from a local clone instead of the marketplace, point Claude
+Code at the checkout directly:
+
+```
+git clone https://github.com/canonical/use-workshop-skill
+claude --plugin-dir ./use-workshop-skill
+```
+
+#### Updating
+
+Updates from the marketplace are manual by default:
+
+```
+/plugin marketplace update canonical
+/plugin update use-workshop
+/reload-plugins
+```
+
+To have Claude Code pick up new commits automatically at startup,
+enable auto-update for the `canonical` marketplace via the
+**Marketplaces** tab in `/plugin`. Updates are tracked by commit SHA,
+so any new commit to this repo registers as an update — the
+`plugin.json` `version` field does not need to be bumped for skill
+content edits to flow through.
+
+### Copy into a single repo
+
+If you'd rather vendor the skill into one project (Claude Code or
+Copilot), copy the directory:
+
+- Claude Code: `.github/skills/use-workshop/` → `.claude/skills/use-workshop/`
+- Copilot:     `.github/skills/use-workshop/` → `.github/skills/use-workshop/`
 
 For the Workshop CLI itself, see the
 [Workshop docs](https://ubuntu.com/workshop/docs/).

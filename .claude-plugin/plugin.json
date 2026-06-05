@@ -1,0 +1,10 @@
+{
+  "name": "use-workshop",
+  "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees.",
+  "author": {
+    "name": "Canonical Ltd."
+  },
+  "homepage": "https://github.com/canonical/use-workshop-skill",
+  "repository": "https://github.com/canonical/use-workshop-skill",
+  "license": "GPL-3.0-only"
+}

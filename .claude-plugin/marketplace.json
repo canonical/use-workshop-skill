@@ -1,0 +1,14 @@
+{
+  "name": "canonical",
+  "owner": {
+    "name": "Canonical Ltd.",
+    "url": "https://canonical.com"
+  },
+  "plugins": [
+    {
+      "name": "use-workshop",
+      "source": "./",
+      "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees."
+    }
+  ]
+}
