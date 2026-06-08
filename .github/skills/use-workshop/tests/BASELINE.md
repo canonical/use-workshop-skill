@@ -51,8 +51,10 @@ different question than the Anthropic baseline: *how portable is the skill's
 routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
 
-**Active family: GLM (Zhipu).** Declared in `promptfooconfig.yaml`; the
-default `make eval-routing-openrouter` targets `glm-4.5`.
+**Active families: GLM (Zhipu) and MiniMax.** Both are declared in
+`promptfooconfig.yaml`; `make eval-routing-openrouter` targets `glm-4.5` and
+`make eval-routing-minimax` targets `minimax-m2`. GLM is detailed first;
+MiniMax follows.
 
 Full run 2026-06-04 (all three tiers, 0 errors each):
 
@@ -72,6 +74,52 @@ next time the in-project SDK content is revised — not a test bug). Truncations
 and the vendor-neutral remote-IDE prompt); raising `max_tokens` on the
 OpenRouter providers would likely recover them, at the cost of budget asymmetry
 with the Anthropic rows and a fresh re-run.
+
+#### Second active family: MiniMax (2026-06-08)
+
+A second open-weight family, declared in `promptfooconfig.yaml` with
+`make eval-routing-minimax[-all]` targets. Generational trio (m1 → m2 → m3) in
+the same Haiku/Sonnet/Opus diagnostic roles; the default `make eval-routing-minimax`
+targets `minimax-m2`.
+
+Full run 2026-06-08 (all three tiers, 0 errors each):
+
+| Model (via OpenRouter)   | Pass rate          | Failures (`length` = truncated) |
+|--------------------------|--------------------|----------------------------------|
+| `minimax/minimax-m1`     | 55/60 (91.67%)     | 5 quality + 0 truncation |
+| `minimax/minimax-m2`     | **53/60 (88.33%)** | 7 quality + 0 truncation |
+| `minimax/minimax-m3`     | 55/60 (91.67%)     | 5 quality + 0 truncation |
+
+(`minimax-m2` is bolded as the default target, not the top scorer.)
+
+**Non-monotonic** — m1 and m3 tie at 91.67% with m2 *lowest* at 88.33%, so the
+newest flagship (m3) does not beat the 1st-gen reasoning model (m1) on this suite
+(cf. Qwen3, where 32B beat 235B; unlike GLM's clean air < 4.5 < 4.6 ladder). The
+top tier (91.67%) lands between GLM (95% top) and Qwen3 (90% top) — the skill ports
+to MiniMax about as well as it does to GLM's mid tier.
+
+**No truncations on any tier.** m1 and m3 are reasoning models, but reasoning +
+completion stayed within the 1024-token budget (~45K and ~53K completion+reasoning
+across 60 cases, respectively), so the Qwen3-style `finishReason: length` losses did
+not recur and no budget bump was needed.
+
+**One case fails on all three tiers** — *"User wants ruff installed against the
+project via an in-project SDK"* (author-in-project-sdk) — the strongest cross-family
+skill-clarity signal, and squarely in the **same in-project-SDK territory** as GLM's
+and Qwen3's shared misses. author-in-project-sdk is MiniMax's weakest scenario
+overall (the ruff case on all three; *"update an in-project SDK's setup-project"* and
+*"project-specific tool install"* on m2; *"hook script not running"* on m1). The
+`setup-base` *"runs as root"* fact is a recurring near-miss too (m1 + m2; m3 got it).
+Net: the in-project-SDK / SDK-authoring content is the portability weak spot across
+**all three** open-weight families — worth a look next time it's revised, not a test
+bug.
+
+**m3 caveat.** 3 of its 5 misses are blunt literal-command assertions
+(`contains "workshop launch"`) where m3 described the right flow but didn't emit the
+exact command string (Go bootstrap, build-compare, two-workshops); high partial
+scores (0.67–0.75) make these softer than m1/m2's misses — part assertion
+brittleness, part a "names the concept, omits the literal command" tendency. m3 is
+also ~3× slower per case (~22–30 s vs ~5–10 s) and notably more verbose.
 
 #### Prior comparison: Qwen3 (2026-06-04)
 
