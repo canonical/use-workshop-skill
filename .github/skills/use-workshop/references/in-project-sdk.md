@@ -37,7 +37,7 @@ Five hook names are recognized. Each is an executable file under `.workshop/<NAM
 
 | Hook | When it runs | Runs as | Typical use |
 |------|--------------|---------|-------------|
-| `setup-base` | Once per (base, SDK) combination, on first install. Becomes part of the snapshot. | `root` against the base image (cwd `/`) | OS-level package installs (`apt-get install …`) that must persist into every workshop using this SDK on this base. |
+| `setup-base` | Once per (base, SDK) combination, on first install — **before the SDK is mounted into the workshop**. Becomes part of the snapshot, so `workshop refresh` never re-runs it. | `root` against the base image (cwd `/`) | OS-level package installs (`apt-get install …`) that must persist into every workshop using this SDK on this base. |
 | `setup-sdk` | Once per SDK install in a workshop, after `setup-base`. | `root` inside the workshop (cwd `/`) | SDK-private filesystem prep that's not project-aware (e.g., placing a system-wide config under `/etc/`). |
 | `setup-project` | At every launch and after `workshop refresh`, after interfaces are connected. | `workshop` user (cwd `/project/`) | Project-aware install (e.g., `uv tool install ruff`, `npm ci`). The most common hook for a tool-wrapper SDK. |
 | `check-health` | After setup hooks finish, and on demand via `workshop refresh`. | `workshop` (cwd `/project/`) | Wait for a daemon to become responsive; verify a database is reachable; etc. Must call `workshopctl set-health <Ready\|Pending\|Error> [--reason …]` before exiting. Workshop status reflects the hook's last call. |
