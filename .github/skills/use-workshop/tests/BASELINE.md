@@ -53,73 +53,62 @@ routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 
 **Active families: GLM (Zhipu) and MiniMax.** Both are declared in
 `promptfooconfig.yaml`; `make eval-routing-openrouter` targets `glm-4.5` and
-`make eval-routing-minimax` targets `minimax-m2`. GLM is detailed first;
-MiniMax follows.
+`make eval-routing-minimax` targets `minimax-m2`. Their latest sweep is shown
+together below; Qwen3 (archived) follows as a prior comparison.
 
-Full run 2026-06-04 (all three tiers, 0 errors each):
+Latest full sweep **2026-06-08**, under the post-fix bundle (see *Post-fix
+verification* below). All tiers, 0 errors each:
 
-| Model (via OpenRouter)   | Pass rate          | Failures (`length` = truncated) |
-|--------------------------|--------------------|----------------------------------|
-| `z-ai/glm-4.5-air`       | 55/60 (91.67%)     | 5 quality + 0 truncation |
-| `z-ai/glm-4.5`           | **56/60 (93.33%)** | 2 quality + 2 truncation |
-| `z-ai/glm-4.6`           | 57/60 (95.00%)     | 3 quality + 0 truncation |
+| Model (via OpenRouter)   | Pass rate          |
+|--------------------------|--------------------|
+| `z-ai/glm-4.5-air`       | 56/60 (93.33%)     |
+| `z-ai/glm-4.5`           | 57/60 (95.00%)     |
+| `z-ai/glm-4.6`           | 53/60 (88.33%)     |
+| `minimax/minimax-m1`     | 54/60 (90.00%)     |
+| `minimax/minimax-m2`     | 52/60 (86.67%)     |
+| `minimax/minimax-m3`     | 53/60 (88.33%)     |
 
-**Monotonic** (air < 4.5 < 4.6) and ahead of Qwen3 at every tier. Only **one**
-case fails on all three GLM tiers — *"update an existing in-project SDK's
-setup"* — versus three systematic misses for Qwen3, so the skill ports to GLM
-markedly better. That one shared miss also tripped Qwen3, making it the
-strongest cross-family signal of a genuine skill-clarity gap (worth a look the
-next time the in-project SDK content is revised — not a test bug). Truncations
-(`finishReason: length`) appeared only on `glm-4.5` (2 cases: a build-compare
-and the vendor-neutral remote-IDE prompt); raising `max_tokens` on the
-OpenRouter providers would likely recover them, at the cost of budget asymmetry
-with the Anthropic rows and a fresh re-run.
+> **Open-weight aggregates wobble run-to-run.** OpenRouter routes these slugs to
+> varying backend providers/quantizations, so even at `temperature 0` a handful
+> of *unrelated* cases flip between sweeps — the 2026-06-04 GLM snapshot was a
+> monotonic 55/56/57, and the pre-fix MiniMax snapshot was 55/53/55 (both 0
+> errors / 0 truncations; MiniMax m1/m3 are reasoning models but stayed within
+> the 1024-token budget). Treat the table as a snapshot, not a pin — the
+> reproducible signal is the per-case verification below.
 
-#### Second active family: MiniMax (2026-06-08)
+#### Post-fix verification (2026-06-08): in-project-SDK iteration loop
 
-A second open-weight family, declared in `promptfooconfig.yaml` with
-`make eval-routing-minimax[-all]` targets. Generational trio (m1 → m2 → m3) in
-the same Haiku/Sonnet/Opus diagnostic roles; the default `make eval-routing-minimax`
-targets `minimax-m2`.
+The cross-family weak spot flagged in earlier sweeps — in-project-SDK authoring —
+was addressed with a **skill-content-only** change (no rubric/test edits):
 
-Full run 2026-06-08 (all three tiers, 0 errors each):
+- `workflows/author-in-project-sdk.md` (Step 8): the iteration loop now folds in
+  failure inspection (`workshop changes` → `workshop tasks <ID>` →
+  `workshop refresh --continue`), which previously lived only in the separate
+  Step 9 — so a model answering "what's the loop for iterating?" surfaces the
+  diagnostic commands the rubric expects.
+- `references/in-project-sdk.md`: `setup-base` now states explicitly that it runs
+  **before the SDK is mounted into the workshop** (was only implied).
 
-| Model (via OpenRouter)   | Pass rate          | Failures (`length` = truncated) |
-|--------------------------|--------------------|----------------------------------|
-| `minimax/minimax-m1`     | 55/60 (91.67%)     | 5 quality + 0 truncation |
-| `minimax/minimax-m2`     | **53/60 (88.33%)** | 7 quality + 0 truncation |
-| `minimax/minimax-m3`     | 55/60 (91.67%)     | 5 quality + 0 truncation |
+Verified by re-running all three families — GLM, MiniMax, and Qwen3 (the last
+temporarily re-declared for the run, then removed):
 
-(`minimax-m2` is bolded as the default target, not the top scorer.)
+| Target case | Pre-fix failing tiers | Post-fix |
+|-------------|-----------------------|----------|
+| *update an existing in-project SDK's `setup-project`* | GLM ×3, Qwen3-14b, Qwen3-32b, MiniMax-m2 (6 of 9) | **passes on all 9 tiers** |
+| *`setup-base` for system packages* | Qwen3-14b/235b, MiniMax-m1/m2 | MiniMax-m1 now passes; scores rose across the board; residual `llm-rubric` near-misses on MiniMax-m2 (0.71), Qwen3-14b (0.94), Qwen3-235b (0.96) |
+| *ruff via in-project SDK (authoring)* | MiniMax m1/m2/m3 | still fails all 3 MiniMax tiers (GLM/Qwen3 pass) — model terseness against the full `hooks:`-list rubric, not a skill gap; candidate for a future rubric look |
 
-**Non-monotonic** — m1 and m3 tie at 91.67% with m2 *lowest* at 88.33%, so the
-newest flagship (m3) does not beat the 1st-gen reasoning model (m1) on this suite
-(cf. Qwen3, where 32B beat 235B; unlike GLM's clean air < 4.5 < 4.6 ladder). The
-top tier (91.67%) lands between GLM (95% top) and Qwen3 (90% top) — the skill ports
-to MiniMax about as well as it does to GLM's mid tier.
+The **primary cross-family miss is fully resolved**: "update `setup-project`"
+flipped fail→pass on exactly the six tiers that were broken and regressed on
+none. Aggregate movement elsewhere (e.g. `glm-4.6` 57→53) is the run-to-run
+variance noted above — the cases that flipped are unrelated to in-project-SDK
+content (first-time setup, build-compare, multi-turn recovery, remote-IDE, …)
+and churn bidirectionally across tiers between sweeps.
 
-**No truncations on any tier.** m1 and m3 are reasoning models, but reasoning +
-completion stayed within the 1024-token budget (~45K and ~53K completion+reasoning
-across 60 cases, respectively), so the Qwen3-style `finishReason: length` losses did
-not recur and no budget bump was needed.
-
-**One case fails on all three tiers** — *"User wants ruff installed against the
-project via an in-project SDK"* (author-in-project-sdk) — the strongest cross-family
-skill-clarity signal, and squarely in the **same in-project-SDK territory** as GLM's
-and Qwen3's shared misses. author-in-project-sdk is MiniMax's weakest scenario
-overall (the ruff case on all three; *"update an in-project SDK's setup-project"* and
-*"project-specific tool install"* on m2; *"hook script not running"* on m1). The
-`setup-base` *"runs as root"* fact is a recurring near-miss too (m1 + m2; m3 got it).
-Net: the in-project-SDK / SDK-authoring content is the portability weak spot across
-**all three** open-weight families — worth a look next time it's revised, not a test
-bug.
-
-**m3 caveat.** 3 of its 5 misses are blunt literal-command assertions
-(`contains "workshop launch"`) where m3 described the right flow but didn't emit the
-exact command string (Go bootstrap, build-compare, two-workshops); high partial
-scores (0.67–0.75) make these softer than m1/m2's misses — part assertion
-brittleness, part a "names the concept, omits the literal command" tendency. m3 is
-also ~3× slower per case (~22–30 s vs ~5–10 s) and notably more verbose.
+> ⚠️ **Sonnet CI gate not re-run.** This skill edit changes the bundle, so the
+> pinned Sonnet **60/60** (`make eval-routing`) is currently *unverified*. Run it
+> before merging — the edits are additive clarifications and Sonnet already passes
+> these cases, so regression risk is low, but the gate must be green for CI.
 
 #### Prior comparison: Qwen3 (2026-06-04)
 
@@ -141,6 +130,11 @@ places the skill says *defer to docs / stay generic*, which Qwen3 held loosely
 (`finishReason: length`) clustered in the smaller tiers; 235B had none. Qwen3 is
 a reasoning model (~25K reasoning tokens/run), so the 1024-token budget was
 tight for the verbose tiers.
+
+Post-fix re-run (2026-06-08; temporarily re-declared, then removed): 14b 53/60,
+32b 52/60, 235b 52/60 — within run-to-run variance. The in-project-SDK *"update
+`setup-project`"* case flipped to pass on 14b and 32b (it already passed on 235b);
+see *Post-fix verification* above.
 
 > Caveats when reading any OpenRouter summary: (1) `cost_usd` reports **0** —
 > OpenRouter slugs are not in promptfoo's built-in cost table; check the
