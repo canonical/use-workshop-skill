@@ -92,13 +92,13 @@ For an SDK with `check-health`, `workshop info` reflects whatever the hook's las
 
 **Step 8. Iterating on a hook (existing in-project SDK).**
 
-Edit the hook script, then:
+Edit the hook script in place, then re-run:
 
 ```
 workshop refresh --wait-on-error
 ```
 
-Refresh re-runs `setup-project` and `check-health`. To re-run `setup-base` or `setup-sdk`, the workshop must be recreated — `workshop remove && workshop launch`. State this when the user reports a `setup-base` change isn't taking effect.
+Refresh re-runs `setup-project` and `check-health`. Keep `--wait-on-error` while iterating: if the edited hook fails, the workshop pauses in `Waiting` instead of reverting, so you can inspect the hook's stdout/stderr with `workshop changes` (find the change ID) then `workshop tasks <ID>` (the failing task's log tail), fix the script, and `workshop refresh --continue`. To re-run `setup-base` or `setup-sdk`, the workshop must be recreated — `workshop remove && workshop launch`. State this when the user reports a `setup-base` change isn't taking effect.
 
 **Step 9. Diagnose a failed hook.**
 

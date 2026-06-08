@@ -18,6 +18,7 @@ DOC_PATHS_SH := scripts/check-doc-paths.sh
 
 .PHONY: help check-doc-paths eval-bundle eval-routing eval-routing-all-models \
         eval-routing-openrouter eval-routing-openrouter-all \
+        eval-routing-minimax eval-routing-minimax-all \
         eval-agentic eval-all eval-clean
 
 help:
@@ -28,6 +29,8 @@ help:
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
 	@echo "  eval-routing-openrouter         run routing eval against GLM-4.5 via OpenRouter (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-openrouter-all     run routing eval against GLM-4.5-Air + GLM-4.5 + GLM-4.6 via OpenRouter"
+	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M1 + MiniMax-M2 + MiniMax-M3 via OpenRouter"
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
 	@echo "  eval-all                 routing-all-models + agentic"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
@@ -41,10 +44,14 @@ eval-bundle:
 eval-routing:
 	bash $(ROUTING_SH)
 
+# Multi-tier sweep targets run EVERY tier even when one fails. run-routing.sh
+# exits non-zero on assertion failures (so single-tier runs surface regressions),
+# which would otherwise make `make` abort the sweep after the first tier. The loop
+# keeps going, then re-exits non-zero if any tier failed so the signal isn't lost.
 eval-routing-all-models:
-	bash $(ROUTING_SH) --model claude-sonnet-4-6
-	bash $(ROUTING_SH) --model claude-haiku-4-5
-	bash $(ROUTING_SH) --model claude-opus-4-7
+	@rc=0; for m in claude-sonnet-4-6 claude-haiku-4-5 claude-opus-4-7; do \
+		bash $(ROUTING_SH) --model $$m || rc=$$?; \
+	done; exit $$rc
 
 # OpenRouter (open-weight) routing eval. Requires OPENROUTER_API_KEY.
 # GLM tiers mirror the Haiku/Sonnet/Opus diagnostic roles.
@@ -52,9 +59,19 @@ eval-routing-openrouter:
 	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5
 
 eval-routing-openrouter-all:
-	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5-air
-	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5
-	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.6
+	@rc=0; for p in z-ai/glm-4.5-air z-ai/glm-4.5 z-ai/glm-4.6; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+# MiniMax (open-weight) routing eval. Requires OPENROUTER_API_KEY.
+# Generational trio mirrors the Haiku/Sonnet/Opus diagnostic roles.
+eval-routing-minimax:
+	bash $(ROUTING_SH) --provider openrouter:minimax/minimax-m2
+
+eval-routing-minimax-all:
+	@rc=0; for p in minimax/minimax-m1 minimax/minimax-m2 minimax/minimax-m3; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
 
 eval-agentic:
 	bash $(AGENTIC_SH)

@@ -66,6 +66,32 @@ providers:
       max_tokens: 1024
       temperature: 0.0
 
+  # --- MiniMax (open-weight) providers --------------------------------------
+  # A second open-weight family for the same portability question, split across
+  # tiers like the GLM block above. EXCLUDED from the default sweep and from
+  # `eval-routing-all-models`; they only run when selected explicitly via
+  # `scripts/run-routing.sh --provider openrouter:minimax/<slug>` (or the
+  # `make eval-routing-minimax[-all]` targets). Requires OPENROUTER_API_KEY.
+  # Slugs confirmed against https://openrouter.ai/models (they drift).
+  # m1 is a reasoning model — the 1024-token budget may truncate it (see the
+  # Qwen3 note in BASELINE.md); the budget is kept at 1024 for cross-row parity.
+  #
+  # Clarity diagnostic (≈ Haiku role) — 1st-gen reasoning model.
+  - id: openrouter:minimax/minimax-m1
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Baseline / default target (≈ Sonnet role) — compact agentic model.
+  - id: openrouter:minimax/minimax-m2
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  # Headroom check (≈ Opus role) — newest flagship.
+  - id: openrouter:minimax/minimax-m3
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
 defaultTest:
   vars:
     # Inject the skill bundle (SKILL.md + all 8 references concatenated)
