@@ -106,6 +106,14 @@ Do NOT skip this loop. The user reads CLI output less carefully than a CLI tool 
 Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. Notes: <...>."**
 </verification_loop>
 
+<success_criteria>
+A run of this skill is complete when:
+- [ ] The request was routed to exactly one workflow (or stopped at `<out_of_scope>` with a docs pointer).
+- [ ] That workflow's `<required_reading>` references were loaded before acting.
+- [ ] Every mutating action was followed by the verification triplet (`changes` → `tasks <ID>` → `info`).
+- [ ] The outcome was surfaced to the user in the report-back format above.
+</success_criteria>
+
 <out_of_scope>
 This skill DOES cover authoring in-project SDKs (under `.workshop/<name>/sdk.yaml` plus `hooks/` scripts). For that, use `workflows/author-in-project-sdk.md` together with `references/in-project-sdk.md`.
 
@@ -123,6 +131,23 @@ For these, point the user at the docs (resolve via `<base>` from `<docs>` above)
 
 Then stop. Do not improvise standalone `sdkcraft` / `workshopctl` invocations or step-by-step sketch sessions.
 </out_of_scope>
+
+<self_healing>
+After completing a run, check whether any issue you hit came from a gap in this skill's instructions, references, or workflows.
+
+What qualifies for a skill update:
+- Tooling drift (a `workshop`/`sdk` subcommand or flag changed, was added, or was removed)
+- Structural problems (a referenced file is missing, a routing row points at the wrong workflow, a dangling cross-reference)
+- A missing edge case or failure mode that caused a wrong or incomplete recovery
+- An incorrect assumption about the environment (snap layout, LXD behavior, docs URLs)
+
+Off-limits for self-edits: `<essential_principles>`, the semantics of the `<routing>` table, `<out_of_scope>` fencing, and anything under `tests/` — skill changes are eval-gated and belong in a reviewed PR.
+
+How to update:
+1. Report the gap: which file, what is wrong, and the proposed change quoted in full.
+2. If running from a writable checkout of the skill repo, apply the change with Edit/Write after the user confirms. Otherwise (normal case — the skill is installed read-only via the plugin marketplace and also consumed by GitHub Copilot), propose the change as a PR against `canonical/use-workshop-skill`.
+3. Preserve conventions: section order, XML tagging, the `<UPPERCASE-NAME>` placeholder style, and relative docs paths resolved via `<docs>`.
+</self_healing>
 
 <style>
 - Always check workshop status before acting on something the user didn't just create. Use `workshop list` or `workshop info`.
