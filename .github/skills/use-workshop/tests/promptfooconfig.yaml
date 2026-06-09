@@ -92,6 +92,146 @@ providers:
       max_tokens: 1024
       temperature: 0.0
 
+  # --- Qwen3 (open-weight) providers — DECLARED FOR PARITY, not run ---------
+  # The initial open-weight trial (see BASELINE.md "Prior comparison: Qwen3").
+  # Re-declared so the family stays selectable, but it is NOT part of any active
+  # sweep and has no Make target — GLM superseded it. Results in BASELINE are the
+  # 2026-06-04 / -08 runs.
+  - id: openrouter:qwen/qwen3-14b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:qwen/qwen3-32b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:qwen/qwen3-235b-a22b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # ====================================================================
+  # Expanded open-weight matrix (8 families, small/mid/large tiers).
+  # Each family has a `make eval-routing-<family>-all` sweep target.
+  # Slugs confirmed against https://openrouter.ai/<vendor> (they drift).
+  # NOTE on "open-weight": all eight families publish open weights by license
+  # (Kimi K2 Modified-MIT, DeepSeek MIT, MiMo MIT, gpt-oss/Gemma/Mistral
+  # Apache-2.0, Llama community license, Nemotron open). OpenRouter's per-model
+  # "open weights" badge is inconsistent for first-party-served models (it flags
+  # some Kimi/MiMo/DeepSeek endpoints "closed"); we track the license, not the
+  # badge. Mistral medium/large/magistral/devstral ARE proprietary and excluded.
+  # Reasoning tiers (all Nemotron, DeepSeek-r1, Kimi-k2-thinking) may hit the
+  # 1024-token ceiling — read `finishReason: length` as a budget artifact.
+  # ====================================================================
+
+  # Kimi (Moonshot) — k2 line.
+  - id: openrouter:moonshotai/kimi-k2.5
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:moonshotai/kimi-k2.6
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:moonshotai/kimi-k2-thinking
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # DeepSeek.
+  - id: openrouter:deepseek/deepseek-v4-flash
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:deepseek/deepseek-v3.2
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:deepseek/deepseek-r1
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # MiMo (Xiaomi).
+  - id: openrouter:xiaomi/mimo-v2-flash
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:xiaomi/mimo-v2.5
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:xiaomi/mimo-v2.5-pro
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # gpt-oss (OpenAI open-weight) — 2 tiers.
+  - id: openrouter:openai/gpt-oss-20b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:openai/gpt-oss-120b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # Nemotron (Nvidia) — all reasoning models (truncation risk at 1024).
+  - id: openrouter:nvidia/nemotron-nano-9b-v2
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:nvidia/llama-3.3-nemotron-super-49b-v1.5
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:nvidia/nemotron-3-super-120b-a12b
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # Gemma (Google) — Gemma 3 trio (non-reasoning).
+  - id: openrouter:google/gemma-3-4b-it
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:google/gemma-3-12b-it
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:google/gemma-3-27b-it
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # Llama (Meta).
+  - id: openrouter:meta-llama/llama-3.1-8b-instruct
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:meta-llama/llama-3.3-70b-instruct
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:meta-llama/llama-4-maverick
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
+  # Mistral — Apache-2.0 open models only (medium/large are proprietary).
+  - id: openrouter:mistralai/ministral-3b-2512
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:mistralai/ministral-8b-2512
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:mistralai/mistral-small-3.2-24b-instruct
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+
 defaultTest:
   vars:
     # Inject the skill bundle (SKILL.md + all 8 references concatenated)

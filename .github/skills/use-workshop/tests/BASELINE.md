@@ -110,6 +110,51 @@ and churn bidirectionally across tiers between sweeps.
 > before merging — the edits are additive clarifications and Sonnet already passes
 > these cases, so regression risk is low, but the gate must be green for CI.
 
+#### Expanded open-weight matrix (2026-06-08/09)
+
+Eight more open-weight families added — 3 tiers each (gpt-oss has only 2), 23 models,
+**0 run errors**. Qwen3 is re-declared in the config for parity but **not re-run**
+(its numbers stay the 2026-06-04 snapshot below). All eight publish open weights by
+license; OpenRouter's per-model "open weights" badge is inconsistent for some
+first-party-served endpoints (Kimi/MiMo/DeepSeek) — we track the license, not the badge.
+
+`Nt` = cases that hit the 1024-token output ceiling (completion ≥ 1020). The budget
+is kept at 1024 for cross-row parity, so heavy-`t` rows are **budget-limited, not
+purely routing-limited**.
+
+| Family | small | mid | large |
+|--------|-------|-----|-------|
+| Kimi (`moonshotai`) | k2.5 54/60 (90.0%, 22t) | k2.6 57/60 (95.0%, 25t) | k2-thinking 57/60 (95.0%, 32t) |
+| DeepSeek (`deepseek`) | v4-flash **58/60 (96.7%, 9t)** | v3.2 54/60 (90.0%, 3t) | r1 56/60 (93.3%, 42t) |
+| MiMo (`xiaomi`) | v2-flash 56/60 (93.3%, 4t) | v2.5 47/60 (78.3%, 3t) | v2.5-pro 53/60 (88.3%, 2t) |
+| gpt-oss (`openai`) | 20b 45/60 (75.0%, 39t) | — | 120b 54/60 (90.0%, 40t) |
+| Nemotron (`nvidia`) | nano-9b-v2 47/60 (78.3%, 24t) | super-49b-v1.5 51/60 (85.0%, 12t) | 3-super-120b 51/60 (85.0%, 18t) |
+| Gemma (`google`) | 3-4b 34/60 (56.7%, 22t) | 3-12b 48/60 (80.0%, 18t) | 3-27b 51/60 (85.0%, 2t) |
+| Llama (`meta-llama`) | 3.1-8b 37/60 (61.7%, 1t) | 3.3-70b 39/60 (65.0%, 0t) | 4-maverick 56/60 (93.3%, 0t) |
+| Mistral (`mistralai`) | ministral-3b 46/60 (76.7%, 2t) | ministral-8b 53/60 (88.3%, 5t) | small-3.2-24b 43/60 (71.7%, 0t) |
+
+**Reads.**
+- **Best porting:** DeepSeek `v4-flash` (96.7%) tops the *entire* open-weight matrix
+  (above GLM's 95%); Kimi (95%), Llama `4-maverick` (93.3%), and MiMo `v2-flash`
+  (93.3%) follow — the skill ports to the current frontier open-weight models about
+  as well as it does to Anthropic Haiku.
+- **Truncation confound:** gpt-oss (~40/60 at the ceiling), DeepSeek-`r1` (42), and
+  Kimi (22–32) are heavily budget-limited — yet Kimi and DeepSeek-`r1` still score
+  93–95% because they front-load the routing answer before exhausting the budget,
+  while gpt-oss is genuinely hurt (a larger `max_tokens` would likely lift it).
+- **Llama is the inverse:** ~0 truncation but the 3.x tiers score low (8b 61.7%,
+  70b 65.0%) — a *genuine* routing weakness, not a budget artifact; only the gen-4
+  `maverick` (93.3%) ports well.
+- **Within-family non-monotonicity is common** (DeepSeek v4-flash > r1 > v3.2; MiMo
+  flash best; Mistral 8b > 24b; Gemma cleanly monotonic 4b < 12b < 27b) — part
+  run-to-run variance, part the truncation differences above.
+- **The in-project-SDK fix holds** on most new tiers (the "update setup-project"
+  case passes across Kimi/DeepSeek/MiMo/gpt-oss/Nemotron and the larger Gemma/Mistral
+  tiers); it still misses on Llama (`3.3-70b`, `4-maverick`), `gemma-3-4b`, and
+  `ministral-3b` — a per-model routing quirk, not a regression.
+
+Per-case detail for every tier is in `results/<date>-routing-openrouter-<tag>.json`.
+
 #### Prior comparison: Qwen3 (2026-06-04)
 
 The first open-weight trial used the Qwen3 family. Recorded here because it
