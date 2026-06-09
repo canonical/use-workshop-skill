@@ -101,7 +101,7 @@ Rules of the road:
 
 ## What the suites test
 
-### Routing (59 cases across 12 scenario files)
+### Routing (64 cases across 12 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three
@@ -116,7 +116,7 @@ kinds of checks:
   (e.g., "the response defers SDK authoring to the docs and does not
   improvise `sdkcraft` commands").
 
-### Agentic E2E (7 tasks across 7 of 9 skill workflows)
+### Agentic E2E (8 tasks across 8 of 10 skill workflows)
 
 Each task spawns `claude -p` in a fresh tmp sandbox where the
 `use-workshop` skill is the only one installed, and asserts on the

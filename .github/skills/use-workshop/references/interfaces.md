@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-The six interface types and how to wire them. The most important distinction at the CLI level is **auto-connect vs manual-connect**: it determines whether the agent has to issue `workshop connect` after a `launch`/`refresh` for the user's stated goal to actually work.
+The seven interface types and how to wire them. The most important distinction at the CLI level is **auto-connect vs manual-connect**: it determines whether the agent has to issue `workshop connect` after a `launch`/`refresh` for the user's stated goal to actually work.
 </overview>
 
 <auto_vs_manual>
@@ -13,6 +13,7 @@ The six interface types and how to wire them. The most important distinction at 
 | **camera** | No | Always |
 | **desktop** | No | Always |
 | **ssh-agent** | No | Always |
+| **custom-device** | No | Always (security) |
 | **tunnel** | Conditionally (see below) | Otherwise |
 
 **Tunnel auto-connect** requires ALL of these:
@@ -23,7 +24,7 @@ The six interface types and how to wire them. The most important distinction at 
 
 If any condition fails, you must `workshop connect <plug-ref> <slot-ref>` manually.
 
-For the security-sensitive interfaces (camera, desktop, ssh-agent), Workshop refuses to connect them on its own. The user has to opt in explicitly.
+For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device), Workshop refuses to connect them on its own. The user has to opt in explicitly.
 </auto_vs_manual>
 
 <interface name="mount">
@@ -72,6 +73,27 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent), Workshop ref
 **Connect:** manual.
 </interface>
 
+<interface name="custom-device">
+**Use for:** arbitrary host devices that no dedicated interface covers, identified by their kernel **subsystem** — serial adapters (`tty`), input devices (`input`), USB peripherals (`usb`), accelerators, etc. Typical for hardware testing and embedded development.
+
+**Slot:** `system:custom-device` only (the slot is always named `custom-device`).
+**Plug:** declared on a regular SDK (never on system); name is freeform; required attribute `subsystem` — the only attribute the interface accepts.
+
+```yaml
+plugs:
+  <PLUG-NAME>:
+    interface: custom-device
+    subsystem: <SUBSYSTEM>     # e.g. tty, input, usb
+```
+
+To find a device's subsystem on the host: `udevadm info --query=property --property=SUBSYSTEM <DEVICE-PATH>`.
+
+**Connect:** manual, always (never auto-connects, for security):
+`workshop connect <WORKSHOP>/<SDK>:<PLUG-NAME> :custom-device`.
+
+**Live tracking:** while connected, ALL host devices of the plug's subsystem are visible inside the workshop; devices plugged in or removed on the host appear and disappear inside the workshop accordingly.
+</interface>
+
 <interface name="tunnel">
 **Use for:** sharing TCP/UDP ports or Unix domain sockets between workshop ↔ host or across workshops via the host.
 
@@ -116,13 +138,17 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent), Workshop ref
 **User mentions GPU:**
 - Make sure the SDK declares `plugs: gpu`. Auto-connect, no manual step.
 
+**User wants host devices no dedicated interface covers (serial/tty, input, usb, accelerators):**
+- Add `plugs: <name>: { interface: custom-device, subsystem: <SUBSYSTEM> }` to the SDK.
+- `workshop refresh` + `workshop connect <workshop>/<sdk>:<name> :custom-device` (never auto-connects).
+
 **User has a plug-conflict error at launch:**
 - Bind one plug to the other under the second SDK's `plugs:` map.
 </wiring_decision_tree>
 
 <source_docs>
 - `explanation/interfaces/concepts.md`
-- `explanation/interfaces/{camera,desktop,gpu,mount,ssh,tunnel}-interface.md`
+- `explanation/interfaces/{camera,custom-device,desktop,gpu,mount,ssh,tunnel}-interface.md`
 - `reference/definition-files/workshop-definition.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`

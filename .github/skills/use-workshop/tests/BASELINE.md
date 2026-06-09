@@ -11,20 +11,30 @@ regression.
 
 ## Routing eval
 
-60 cases across 12 scenario files — the prior 56-case suite plus 3 new
-`workshop init` cases in `bootstrap.yaml` (CLI scaffolding routing, the
-base+SDKs-only scope boundary, and the single-vs-multi definition-layout
-anti-pattern) and 1 new storage-pool-full case in `troubleshoot.yaml`
-(`No space left on device` → diagnose and resize the LXD pool). Every case
-is single-turn against the bundled skill (`SKILL.md` + 9 references + 10
-workflows concatenated). Run with: `make eval-routing` (Sonnet 4.6) or
-`make eval-routing-all-models`.
+64 cases across 12 scenario files — the prior 60-case suite plus 4 new cases
+(2026-06-09): 3 in `troubleshoot.yaml` covering daemon-stall recovery (a change
+stuck in `Doing` with every command failing on `other changes in progress` →
+`snap restart workshop` then recreate; post-uncontrolled-Off poison state →
+don't trust reported `Ready`, recreate; and a negative guard — an ordinary
+refresh failure must NOT get a daemon restart) and 1 in `interfaces.yaml` for
+the 0.9.1 `custom-device` interface (host serial adapters → `subsystem` plug +
+manual `workshop connect`). Every case is single-turn against the bundled skill
+(`SKILL.md` + 9 references + 10 workflows concatenated). Run with:
+`make eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
 
 | Model              | Pass rate                      | Notes |
 |--------------------|--------------------------------|-------|
-| `claude-sonnet-4-6` | **60/60 (100%)** | full run under the current bundle (2026-06-03) |
+| `claude-sonnet-4-6` | **60/60 (100%)** | full run under the 2026-06-03 bundle — predates the 2026-06-09 changes (see below) |
 | `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 | `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
+
+> ⚠️ **2026-06-09: Anthropic pins are stale by maintainer decision.** The
+> daemon-stall/custom-device round changed the bundle (skill content) and grew
+> the suite to 64 cases, but the Anthropic tiers were deliberately NOT re-run —
+> only the open-weight matrix was refreshed. The rates above are the last full
+> Anthropic runs under the *previous* bundles. Re-pin Sonnet (and optionally
+> Haiku/Opus) at 64/64 with `make eval-routing` / `make eval-routing-all-models`
+> when the next Anthropic sweep is scheduled.
 
 > **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
 > skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`
@@ -105,10 +115,11 @@ variance noted above — the cases that flipped are unrelated to in-project-SDK
 content (first-time setup, build-compare, multi-turn recovery, remote-IDE, …)
 and churn bidirectionally across tiers between sweeps.
 
-> ⚠️ **Sonnet CI gate not re-run.** This skill edit changes the bundle, so the
-> pinned Sonnet **60/60** (`make eval-routing`) is currently *unverified*. Run it
-> before merging — the edits are additive clarifications and Sonnet already passes
-> these cases, so regression risk is low, but the gate must be green for CI.
+> ⚠️ **Sonnet CI gate not re-run.** This skill edit changed the bundle, so the
+> pinned Sonnet **60/60** (`make eval-routing`) was left *unverified* — and the
+> 2026-06-09 round kept it that way by maintainer decision (see the staleness
+> note at the top of this section). The edits are additive clarifications and
+> Sonnet already passes these cases, so regression risk is low.
 
 #### Expanded open-weight matrix (2026-06-08/09)
 

@@ -234,3 +234,65 @@
         not manage the pool size automatically. It does NOT misdiagnose the
         error as a transient hook failure to just retry, and does NOT prescribe
         `sudo snap remove --purge` as the fix.
+
+- description: Change stuck in Doing, every command fails with other changes in progress
+  vars:
+    user: |
+      Every workshop command I run now fails with "other changes in progress". `workshop changes` shows change 31 has been Doing for two hours and `workshop tasks 31` shows a task that never finishes. The container looks dead — I think LXD killed it mid-refresh. How do I get unstuck?
+  assert:
+    - type: icontains
+      value: snap restart workshop
+    - type: not-contains
+      value: snap remove
+    - type: llm-rubric
+      value: |
+        The response identifies this as a daemon-level stall that workshopd
+        will never clear on its own (no change timeout; no CLI command can
+        abandon a change stuck in `Doing`), and prescribes restarting the
+        daemon with `snap restart workshop` as the unblocking step (mentioning
+        the systemctl equivalent is fine, but the snap restart must be the
+        lead recommendation). After the restart, it treats the workshop's
+        state as untrustworthy — because the workshop went Off outside
+        workshopd's control — and recommends recreating it (`workshop remove`
+        then `workshop launch`) rather than resuming work on it. It does NOT
+        prescribe `sudo snap remove --purge`.
+
+- description: Post-uncontrolled-Off, can the reported Ready state be trusted
+  vars:
+    user: |
+      Someone ran `lxc stop` on my workshop's container in the middle of a refresh. I restarted the workshop daemon and `workshop info` now says Ready, but exec behaves oddly. Can I trust the Ready status?
+  assert:
+    - type: contains
+      value: workshop remove
+    - type: contains
+      value: workshop launch
+    - type: llm-rubric
+      value: |
+        The response says NO: after a transition to Off that workshopd did not
+        itself initiate (an LXD-side stop/kill, as opposed to a controlled
+        `workshop stop`), the daemon's recorded state can diverge from reality,
+        so a reported `Ready` is not trustworthy. It recommends recreating the
+        workshop from scratch (`workshop remove` then `workshop launch`)
+        rather than continuing to work in it.
+
+- description: Negative guard — ordinary refresh failure must not get a daemon restart
+  vars:
+    user: |
+      My `workshop refresh` failed with a hook error and the change shows Error. Should I run `snap restart workshop` to clear it and try again?
+  assert:
+    - type: contains-all
+      value:
+        - workshop changes
+        - workshop tasks
+    - type: llm-rubric
+      value: |
+        The response declines the daemon restart: a change that reached
+        `Error` while other commands still work is an ordinary failed change,
+        already handled by the normal flow — diagnose with `workshop changes`
+        / `workshop tasks <ID>`, optionally retry with `--wait-on-error` to
+        investigate interactively. It conveys that restarting the daemon is
+        reserved for a different situation (a change stuck in `Doing` with
+        every command failing on "other changes in progress"), which this is
+        not. (The response may repeat the words `snap restart workshop` while
+        rejecting it — what's forbidden is endorsing the restart as the fix
+        here.)

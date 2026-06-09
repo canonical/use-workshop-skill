@@ -77,6 +77,13 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Right:** narrow to one workshop first: `workshop refresh --wait-on-error <name>`.
 </anti_pattern>
 
+<anti_pattern name="Restarting the daemon (or recreating the workshop) for an ordinary failed change">
+**Wrong:** `snap restart workshop` — or remove + launch — as the response to a failed `launch`/`refresh`, a hook error, or a workshop in `Error`.
+**Why it's bad:** an ordinary failure is already handled: the change reaches `Error` and either auto-reverts or pauses with `--wait-on-error`. A daemon restart teaches you nothing and skips the diagnosis.
+**Right:** `workshop changes` → `workshop tasks <ID>` → the `--wait-on-error` flow.
+**Exception:** a change stuck in `Doing` with EVERY command failing on `other changes in progress` is a daemon-level stall the CLI cannot clear — there, `snap restart workshop` followed by recreating the workshop IS the correct path. See `workflows/troubleshoot.md` Step 7 and `references/async-and-recovery.md`.
+</anti_pattern>
+
 <anti_pattern name="Assuming the channel is fresh">
 **Wrong:** assuming `latest/stable` means "current and reliable".
 **Why it's bad:** what `latest/stable` resolves to is the publisher's choice. It may be old or unsuitable.

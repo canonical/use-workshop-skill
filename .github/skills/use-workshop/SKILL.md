@@ -15,7 +15,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 
 3. **Refresh is non-destructive; prefer it to remove+launch.** If `workshop refresh` errors, rerun with `--wait-on-error` to pause in `Waiting`, investigate via `workshop shell`, then `--continue` (after fixing) or `--abort` (to revert). Constraint: `--wait-on-error` is single-workshop only.
 
-4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch/refresh. If the user wants those, schedule the `connect` step.
+4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch/refresh. If the user wants those, schedule the `connect` step.
 
 5. **The project directory is mounted at `/project/`.** Any path that needs to be visible to the workshop must be reachable under `/project/`. Working directories passed via `workshop exec --cwd` or `workshop run --cwd` use workshop paths.
 </essential_principles>
@@ -53,11 +53,11 @@ Then read the matching workflow under `workflows/` and follow it.
 | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
 | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
 | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-sdk", "setup-base", "check-health", "save-state", "restore-state", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
-| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount" | `workflows/manage-interfaces.md` |
+| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
 | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | "VS Code", "JetBrains", "remote IDE", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota" | `workflows/troubleshoot.md` |
+| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon" | `workflows/troubleshoot.md` |
 | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 </routing>
 
@@ -70,7 +70,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `concepts.md` | Vocabulary: workshop, project, SDK, plug/slot, change/task, action, hook |
 | `states-and-transitions.md` | Status diagram (Off, Ready, Stopped, Pending, Waiting, Error) and which commands work in each |
 | `definition-file.md` | Workshop YAML anatomy: keys, SDK entries, plug/slot definitions, action format |
-| `interfaces.md` | Six interface types, auto-connect vs manual table, wiring decision tree |
+| `interfaces.md` | Seven interface types, auto-connect vs manual table, wiring decision tree |
 | `sdk-types.md` | System / Store / in-project / sketch / try SDKs and when to reach for each |
 | `in-project-sdk.md` | `sdk.yaml` schema, hook taxonomy, filesystem layout, execution context for in-project SDKs |
 | `async-and-recovery.md` | Change/task model, `--wait-on-error`/`--continue`/`--abort` recovery, `--no-wait` |

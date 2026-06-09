@@ -79,3 +79,24 @@
         - "never auto"
         - "doesn't auto"
         - "does not auto"
+
+- description: Expose host serial adapters via the custom-device interface
+  vars:
+    user: |
+      I'm flashing an embedded board and need the workshop to see the host's serial adapters under /dev/ttyUSB*. Which interface covers that and how do I wire it?
+  assert:
+    - type: contains
+      value: custom-device
+    - type: contains
+      value: subsystem
+    - type: contains
+      value: workshop connect
+    - type: llm-rubric
+      value: |
+        The response picks the custom-device interface: a plug on the SDK with
+        `interface: custom-device` and a `subsystem` attribute (tty or a
+        similarly plausible subsystem for serial adapters), refreshed in, then
+        connected manually with `workshop connect` — noting the interface
+        never auto-connects (security). It does NOT misroute the request to
+        the mount, tunnel, or GPU interface as the mechanism for device
+        access.

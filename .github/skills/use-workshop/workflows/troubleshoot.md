@@ -45,6 +45,7 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |
+| Every command fails with `other changes in progress`; a change is stuck in `Doing` | Daemon-level stall, not a task failure — see Step 7 |
 
 **Step 4. Use `--wait-on-error` for live debugging.**
 ```
@@ -91,7 +92,22 @@ sudo lxc storage set workshop size=64GiB   # grow it; ZFS resizes in place
 
 Then retry whatever originally failed (`workshop refresh` or `workshop launch`) and run the verification loop.
 
-**Step 7. Escalate only if the above doesn't help.**
+**Step 7. A change stuck in `Doing` — `other changes in progress` on every command.**
+
+Reach this step ONLY on this exact signature: a change sits in `Doing` indefinitely, its task never completes, and every other mutating command is rejected with `other changes in progress`. This means workshopd lost the operation mid-flight (usually the container died outside workshopd's control — an LXD-side kill, a host crash). The daemon has no change timeout and will never free it, and no CLI command can abandon a `Doing` change.
+
+1. Confirm the signature: `workshop changes` (change `Doing`, old Spawn time, no Ready time), `workshop tasks <ID>` (a task that never finishes).
+2. Restart the daemon:
+   ```
+   snap restart workshop
+   ```
+   (no sudo needed; preferred over the equivalent `sudo systemctl restart snap.workshop.workshopd.service`).
+3. Recreate, don't trust: if the workshop went Off uncontrolled, the post-restart state is unreliable even if `workshop info` reports `Ready`. Run `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring.
+4. Run the verification loop as usual.
+
+Do NOT use this step for an ordinary failed refresh (change reached `Error`, other commands still work) — that's Steps 1–4.
+
+**Step 8. Escalate only if the above doesn't help.**
 
 Verify the platform itself is healthy:
 ```
@@ -122,6 +138,7 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 <anti_patterns>
 - Reaching for `workshop remove && workshop launch` as a default response. You lose state and learn nothing about what failed.
 - Using `--wait-on-error` with multiple workshop names. Single workshop only.
+- Restarting the workshop daemon (`snap restart workshop`) for an ordinary failed change. Daemon restart is exclusively for the stuck-`Doing` / `other changes in progress` signature in Step 7.
 - Editing the workshop YAML while a `--wait-on-error` change is paused. Abort first, then edit.
 - Suggesting `sudo snap remove workshop --purge` before exhausting `workshop changes`/`workshop tasks` and `lxc list/delete`. Purge is the last resort.
 - Treating `No space left on device` as a transient hook failure to retry (or reaching for `snap remove --purge`). It's a full LXD storage pool — diagnose with `lxc storage info` and grow it with `lxc storage set <pool> size=…`.
