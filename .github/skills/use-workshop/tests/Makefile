@@ -19,6 +19,9 @@ DOC_PATHS_SH := scripts/check-doc-paths.sh
 .PHONY: help check-doc-paths eval-bundle eval-routing eval-routing-all-models \
         eval-routing-openrouter eval-routing-openrouter-all \
         eval-routing-minimax eval-routing-minimax-all \
+        eval-routing-kimi-all eval-routing-deepseek-all eval-routing-mimo-all \
+        eval-routing-gptoss-all eval-routing-nemotron-all eval-routing-gemma-all \
+        eval-routing-llama-all eval-routing-mistral-all \
         eval-agentic eval-all eval-clean
 
 help:
@@ -31,6 +34,8 @@ help:
 	@echo "  eval-routing-openrouter-all     run routing eval against GLM-4.5-Air + GLM-4.5 + GLM-4.6 via OpenRouter"
 	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2 via OpenRouter (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M1 + MiniMax-M2 + MiniMax-M3 via OpenRouter"
+	@echo "  eval-routing-<family>-all       run routing eval across an open-weight family's tiers via OpenRouter;"
+	@echo "                                  <family> in {kimi,deepseek,mimo,gptoss,nemotron,gemma,llama,mistral}"
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
 	@echo "  eval-all                 routing-all-models + agentic"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
@@ -70,6 +75,48 @@ eval-routing-minimax:
 
 eval-routing-minimax-all:
 	@rc=0; for p in minimax/minimax-m1 minimax/minimax-m2 minimax/minimax-m3; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+# Expanded open-weight matrix (one sweep target per family). Requires
+# OPENROUTER_API_KEY. Each sweeps small/mid/large tiers via the loop pattern.
+eval-routing-kimi-all:
+	@rc=0; for p in moonshotai/kimi-k2.5 moonshotai/kimi-k2.6 moonshotai/kimi-k2-thinking; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-deepseek-all:
+	@rc=0; for p in deepseek/deepseek-v4-flash deepseek/deepseek-v3.2 deepseek/deepseek-r1; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-mimo-all:
+	@rc=0; for p in xiaomi/mimo-v2-flash xiaomi/mimo-v2.5 xiaomi/mimo-v2.5-pro; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-gptoss-all:
+	@rc=0; for p in openai/gpt-oss-20b openai/gpt-oss-120b; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-nemotron-all:
+	@rc=0; for p in nvidia/nemotron-nano-9b-v2 nvidia/llama-3.3-nemotron-super-49b-v1.5 nvidia/nemotron-3-super-120b-a12b; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-gemma-all:
+	@rc=0; for p in google/gemma-3-4b-it google/gemma-3-12b-it google/gemma-3-27b-it; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-llama-all:
+	@rc=0; for p in meta-llama/llama-3.1-8b-instruct meta-llama/llama-3.3-70b-instruct meta-llama/llama-4-maverick; do \
+		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
+	done; exit $$rc
+
+eval-routing-mistral-all:
+	@rc=0; for p in mistralai/ministral-3b-2512 mistralai/ministral-8b-2512 mistralai/mistral-small-3.2-24b-instruct; do \
 		bash $(ROUTING_SH) --provider openrouter:$$p || rc=$$?; \
 	done; exit $$rc
 
