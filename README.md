@@ -116,10 +116,14 @@ structure, action format) are easy to get plausibly-but-wrongly right.
 
 **Changes are eval-gated.** The bundled `tests/` directory is a
 [promptfoo](https://promptfoo.dev) regression suite (routing +
-agentic E2E) with per-model baselines pinned in `BASELINE.md`. A
-skill change that drops a baseline fails CI. The eval surface is
-what keeps the rest of these principles from drifting back into
-informality.
+agentic E2E) with per-model baselines pinned in `BASELINE.md`.
+CI runs the free static checks (`make check`: doc-path guard, bundle
+regeneration, scenario/template YAML parse, shellcheck, REUSE lint) on
+every push and PR; the paid routing eval runs locally before merge
+(`make eval-routing`) or on demand via the `workflow_dispatch` trigger
+of the CI workflow. A skill change that drops a pinned baseline must
+not merge. The eval surface is what keeps the rest of these principles
+from drifting back into informality.
 
 ## Testing
 

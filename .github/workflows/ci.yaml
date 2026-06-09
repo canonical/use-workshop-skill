@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Free checks — run on every push/PR. Same entry point as `make check`.
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+      - name: Static checks (doc paths, bundle regen, YAML parse, shellcheck)
+        run: make -C .github/skills/use-workshop/tests check
+      - name: REUSE lint
+        uses: fsfe/reuse-action@v5
+
+  # Routing eval — paid (~$7-8/run), so manual-only via workflow_dispatch.
+  # Requires the ANTHROPIC_API_KEY repository secret. Compare the result
+  # against tests/BASELINE.md before merging skill-content changes.
+  eval-routing:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install promptfoo
+        run: npm install -g promptfoo@0.121.9
+      - name: Routing eval (Sonnet 4.6 baseline)
+        run: make -C .github/skills/use-workshop/tests eval-routing
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Upload result summaries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: routing-eval-results
+          path: .github/skills/use-workshop/tests/results/

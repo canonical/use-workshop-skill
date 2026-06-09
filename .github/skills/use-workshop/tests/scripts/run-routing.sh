@@ -28,6 +28,15 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tests_dir="$(cd "${script_dir}/.." && pwd)"
 
+# Preflight: fail with a clear message instead of a mid-run command-not-found.
+for cmd in promptfoo python3; do
+  if ! command -v "${cmd}" >/dev/null 2>&1; then
+    echo "error: '${cmd}' not found on PATH" >&2
+    [[ "${cmd}" == promptfoo ]] && echo "install it with: npm install -g promptfoo" >&2
+    exit 1
+  fi
+done
+
 # Bridge token names. promptfoo's anthropic provider reads ANTHROPIC_API_KEY.
 # (The OpenRouter provider reads OPENROUTER_API_KEY natively — no bridge needed.)
 # The actual key REQUIREMENT is enforced after flag parsing, once we know which

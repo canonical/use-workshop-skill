@@ -16,7 +16,7 @@ AGENTIC_SH   := scripts/run-agentic.sh
 BUNDLE_SH    := scripts/regenerate-bundle.sh
 DOC_PATHS_SH := scripts/check-doc-paths.sh
 
-.PHONY: help check-doc-paths eval-bundle eval-routing eval-routing-all-models \
+.PHONY: help check check-yaml check-shell check-doc-paths eval-bundle eval-routing eval-routing-all-models \
         eval-routing-openrouter eval-routing-openrouter-all \
         eval-routing-minimax eval-routing-minimax-all \
         eval-routing-kimi-all eval-routing-deepseek-all eval-routing-mimo-all \
@@ -26,6 +26,7 @@ DOC_PATHS_SH := scripts/check-doc-paths.sh
 
 help:
 	@echo "use-workshop eval targets:"
+	@echo "  check                    all free static checks: doc paths + bundle regen + YAML parse + shellcheck (CI entry point)"
 	@echo "  check-doc-paths          assert all reference/cli/ doc paths map to the 4 combined pages (fast, no API)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
@@ -39,6 +40,20 @@ help:
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
 	@echo "  eval-all                 routing-all-models + agentic"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
+
+# All free static checks in one entry point, shared by CI and local runs.
+check: check-doc-paths eval-bundle check-yaml check-shell
+	@test -s skill-bundle.md || { echo "error: skill-bundle.md is empty" >&2; exit 1; }
+	@echo "ok: all static checks passed"
+
+check-yaml:
+	@python3 -c "import glob, yaml; \
+files = sorted(glob.glob('scenarios/*.yaml') + glob.glob('../templates/*.yaml') + glob.glob('agentic/tasks/*.yaml')); \
+[yaml.safe_load(open(f)) for f in files]; \
+print('ok: %d YAML file(s) parsed' % len(files))"
+
+check-shell:
+	shellcheck scripts/*.sh
 
 check-doc-paths:
 	bash $(DOC_PATHS_SH)
