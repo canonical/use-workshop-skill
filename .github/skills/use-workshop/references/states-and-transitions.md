@@ -65,6 +65,10 @@ On a failed change without `--wait-on-error`, the change is auto-reverted via Un
 To pause instead of reverting next time, re-run with `--wait-on-error` (single workshop only).
 </command_failure_default>
 
+<uncontrolled_transitions>
+The status table above assumes workshopd drove every transition. If the container goes Off behind workshopd's back (an LXD-side stop/delete, a host crash mid-change), the recorded status can be stale and an in-flight change can be left in `Doing` forever — every subsequent command fails with `other changes in progress`. Treat such a workshop as poisoned: restart the daemon (`snap restart workshop`), then recreate it (`workshop remove` + `workshop launch`) rather than trusting the reported state. Full procedure: `workflows/troubleshoot.md` Step 7.
+</uncontrolled_transitions>
+
 <source_docs>
 - `reference/workshop-status.md`
 - `explanation/workshops/concepts.md` (Workshop status section)

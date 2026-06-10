@@ -15,7 +15,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 
 3. **Refresh is non-destructive; prefer it to remove+launch.** If `workshop refresh` errors, rerun with `--wait-on-error` to pause in `Waiting`, investigate via `workshop shell`, then `--continue` (after fixing) or `--abort` (to revert). Constraint: `--wait-on-error` is single-workshop only.
 
-4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch/refresh. If the user wants those, schedule the `connect` step.
+4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch/refresh. If the user wants those, schedule the `connect` step.
 
 5. **The project directory is mounted at `/project/`.** Any path that needs to be visible to the workshop must be reachable under `/project/`. Working directories passed via `workshop exec --cwd` or `workshop run --cwd` use workshop paths.
 </essential_principles>
@@ -53,11 +53,11 @@ Then read the matching workflow under `workflows/` and follow it.
 | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
 | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
 | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-sdk", "setup-base", "check-health", "save-state", "restore-state", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
-| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount" | `workflows/manage-interfaces.md` |
+| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
 | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | "VS Code", "JetBrains", "remote IDE", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota" | `workflows/troubleshoot.md` |
+| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon" | `workflows/troubleshoot.md` |
 | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 </routing>
 
@@ -70,7 +70,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `concepts.md` | Vocabulary: workshop, project, SDK, plug/slot, change/task, action, hook |
 | `states-and-transitions.md` | Status diagram (Off, Ready, Stopped, Pending, Waiting, Error) and which commands work in each |
 | `definition-file.md` | Workshop YAML anatomy: keys, SDK entries, plug/slot definitions, action format |
-| `interfaces.md` | Six interface types, auto-connect vs manual table, wiring decision tree |
+| `interfaces.md` | Seven interface types, auto-connect vs manual table, wiring decision tree |
 | `sdk-types.md` | System / Store / in-project / sketch / try SDKs and when to reach for each |
 | `in-project-sdk.md` | `sdk.yaml` schema, hook taxonomy, filesystem layout, execution context for in-project SDKs |
 | `async-and-recovery.md` | Change/task model, `--wait-on-error`/`--continue`/`--abort` recovery, `--no-wait` |
@@ -106,6 +106,14 @@ Do NOT skip this loop. The user reads CLI output less carefully than a CLI tool 
 Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. Notes: <...>."**
 </verification_loop>
 
+<success_criteria>
+A run of this skill is complete when:
+- [ ] The request was routed to exactly one workflow (or stopped at `<out_of_scope>` with a docs pointer).
+- [ ] That workflow's `<required_reading>` references were loaded before acting.
+- [ ] Every mutating action was followed by the verification triplet (`changes` → `tasks <ID>` → `info`).
+- [ ] The outcome was surfaced to the user in the report-back format above.
+</success_criteria>
+
 <out_of_scope>
 This skill DOES cover authoring in-project SDKs (under `.workshop/<name>/sdk.yaml` plus `hooks/` scripts). For that, use `workflows/author-in-project-sdk.md` together with `references/in-project-sdk.md`.
 
@@ -123,6 +131,23 @@ For these, point the user at the docs (resolve via `<base>` from `<docs>` above)
 
 Then stop. Do not improvise standalone `sdkcraft` / `workshopctl` invocations or step-by-step sketch sessions.
 </out_of_scope>
+
+<self_healing>
+After completing a run, check whether any issue you hit came from a gap in this skill's instructions, references, or workflows.
+
+What qualifies for a skill update:
+- Tooling drift (a `workshop`/`sdk` subcommand or flag changed, was added, or was removed)
+- Structural problems (a referenced file is missing, a routing row points at the wrong workflow, a dangling cross-reference)
+- A missing edge case or failure mode that caused a wrong or incomplete recovery
+- An incorrect assumption about the environment (snap layout, LXD behavior, docs URLs)
+
+Off-limits for self-edits: `<essential_principles>`, the semantics of the `<routing>` table, `<out_of_scope>` fencing, and anything under `tests/` — skill changes are eval-gated and belong in a reviewed PR.
+
+How to update:
+1. Report the gap: which file, what is wrong, and the proposed change quoted in full.
+2. If running from a writable checkout of the skill repo, apply the change with Edit/Write after the user confirms. Otherwise (normal case — the skill is installed read-only via the plugin marketplace and also consumed by GitHub Copilot), propose the change as a PR against `canonical/use-workshop-skill`.
+3. Preserve conventions: section order, XML tagging, the `<UPPERCASE-NAME>` placeholder style, and relative docs paths resolved via `<docs>`.
+</self_healing>
 
 <style>
 - Always check workshop status before acting on something the user didn't just create. Use `workshop list` or `workshop info`.

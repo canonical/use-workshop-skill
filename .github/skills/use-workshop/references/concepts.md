@@ -34,10 +34,10 @@ A bundled, layered unit of code/data/configuration installed on top of the base.
 
 <term name="interface, plug, slot, connection">
 The mechanism for controlled communication and resource sharing.
-- **Interface**: a predefined resource type (camera, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types.
+- **Interface**: a predefined resource type (camera, custom-device, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types (`custom-device` is itself predefined — it exposes host devices by kernel subsystem, not a way to define new interfaces).
 - **Plug**: the consumer side, declared in the SDK that wants to use the resource.
 - **Slot**: the provider side; for host resources, declared on the system SDK; for workshop-internal resources, on a regular SDK.
-- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount, GPU, and tunnel under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, and most tunnel cases.
+- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount, GPU, and tunnel under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, and most tunnel cases.
 </term>
 
 <term name="plug binding">

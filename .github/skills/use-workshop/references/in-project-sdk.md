@@ -45,6 +45,8 @@ Five hook names are recognized. Each is an executable file under `.workshop/<NAM
 
 **Executable script requirement.** Each hook file MUST be executable (`chmod +x`) and start with a shebang. Workshop does NOT shell-source hooks — it execs them. A hook without `+x` is silently ignored.
 
+**Hook environment.** Hooks run with only `SDK=<the SDK's install dir>` added to the environment — `$SDK/bin` is NOT on `PATH` (hooks don't get `/etc/profile.d/*` sourced). Invoke SDK-shipped binaries by full path: `"$SDK/bin/<BINARY>"`. A bare invocation fails silently. (`errexit` and `pipefail` are pre-set, like actions.)
+
 **Failure semantics.** A non-zero exit from any hook fails the change. The workshop transitions to `Error` (or `Waiting`, if launched/refreshed with `--wait-on-error`).
 
 **Refresh re-run rules.** `workshop refresh` re-runs `setup-project` and `check-health`. It does NOT re-run `setup-base` or `setup-sdk` — those run only on workshop creation. To pick up a `setup-base` change, the workshop must be recreated (`workshop remove` + `workshop launch`).

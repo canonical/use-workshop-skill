@@ -24,6 +24,7 @@
 - "Two SDKs in my workshop both declare a plug for ~/.cache/foo and the launch fails with a conflict. How do I fix that?"
 - "How do I point an existing mount plug at a different host directory after the workshop is already launched?"
 - "I want my workshop to use the SSH keys from my host's ssh-agent so I can clone private repos. How?"
+- "I'm flashing an embedded board and need the workshop to see the host's serial adapters under /dev/ttyUSB*. Which interface covers that and how do I wire it?"
 
 [parallel-envs]
 - "I want to run two parallel test runs over the same code, isolated from each other. How do I set that up with workshops?"
@@ -37,6 +38,10 @@
 - "I shelled in, manually fixed what was broken, and the workshop is still Waiting. How do I tell it to keep going?"
 - "workshop info says my workshop is Ready but workshop warnings shows something. How worried should I be?"
 - "Things are weird. Should I just do sudo snap remove workshop --purge and start over?"
+- "My workshop launch failed with \"No space left on device\", but df -h shows my host disk has 2 TB free. What's wrong and how do I fix it?"
+- "Every workshop command I run now fails with \"other changes in progress\". workshop changes shows change 31 has been Doing for two hours and workshop tasks 31 shows a task that never finishes. The container looks dead — I think LXD killed it mid-refresh. How do I get unstuck?"
+- "Someone ran lxc stop on my workshop's container in the middle of a refresh. I restarted the workshop daemon and workshop info now says Ready, but exec behaves oddly. Can I trust the Ready status?"
+- "My workshop refresh failed with a hook error and the change shows Error. Should I run snap restart workshop to clear it and try again?"
 
 [purge]
 - "I'm done with my workshop. How do I remove it?"

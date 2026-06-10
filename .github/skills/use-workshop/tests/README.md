@@ -28,6 +28,12 @@ the manual run summary diff.
 - `OPENROUTER_API_KEY` exported — only for the OpenRouter routing runs
   (`make eval-routing-openrouter[-all]`). promptfoo's OpenRouter provider
   reads it natively; no bridging.
+- `OPENAI_API_KEY` exported — for the `llm-rubric` grading model, which is
+  pinned in `promptfooconfig.yaml` (`defaultTest.options.provider`) so
+  rubric verdicts are reproducible across machines. Every routing run needs
+  it, regardless of which candidate provider is being evaluated. Note the
+  judge takes one call per rubric assertion per case — on large sweeps it
+  is the first thing to hit rate limits.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
   and `node` on PATH; the user must be in the `lxd` group.
 
@@ -101,7 +107,7 @@ Rules of the road:
 
 ## What the suites test
 
-### Routing (59 cases across 12 scenario files)
+### Routing (64 cases across 12 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three
@@ -116,7 +122,7 @@ kinds of checks:
   (e.g., "the response defers SDK authoring to the docs and does not
   improvise `sdkcraft` commands").
 
-### Agentic E2E (7 tasks across 7 of 9 skill workflows)
+### Agentic E2E (8 tasks across 8 of 10 skill workflows)
 
 Each task spawns `claude -p` in a fresh tmp sandbox where the
 `use-workshop` skill is the only one installed, and asserts on the

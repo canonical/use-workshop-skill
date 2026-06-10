@@ -233,6 +233,14 @@ providers:
       temperature: 0.0
 
 defaultTest:
+  # Pin the llm-rubric grading model explicitly. Without this, promptfoo
+  # falls back to its built-in default grader selected by whichever API key
+  # happens to be set in the environment — verdicts on borderline rubric
+  # cases would then differ across machines. This pin freezes the de-facto
+  # judge used for the recorded baselines (promptfoo 0.121.x's OpenAI
+  # default at the time of the 2026-06 sweeps). Requires OPENAI_API_KEY.
+  options:
+    provider: openai:gpt-5.5-2026-04-23
   vars:
     # Inject the skill bundle (SKILL.md + all 8 references concatenated)
     # as the system message. This simulates the mid-conversation state where

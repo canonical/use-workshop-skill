@@ -18,6 +18,14 @@ out="${skill_root}/tests/skill-bundle.md"
 
 cd "${skill_root}"
 
+# A missing source dir would otherwise surface as a raw `cat` glob error.
+for d in references workflows; do
+  if [[ ! -d "${d}" ]]; then
+    echo "error: expected directory '${d}/' missing under ${skill_root}" >&2
+    exit 1
+  fi
+done
+
 {
   echo "# Skill bundle: SKILL.md + references + workflows concatenated for eval"
   echo

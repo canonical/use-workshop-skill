@@ -112,6 +112,11 @@ actions:
 **Camera, desktop, GPU, ssh-agent plugs:** must be named exactly `camera`, `desktop`, `gpu`, `ssh-agent` and cannot belong to the system SDK. They have no attributes.
 
 **Slots for those interfaces only exist on the system SDK** — `system:camera`, `system:desktop`, `system:gpu`, `system:ssh-agent`. No regular SDK can declare them.
+
+**Custom-device plugs** (regular SDKs only; never the system SDK):
+- Name is freeform.
+- `subsystem` (required): the kernel device subsystem to expose (e.g., `tty`, `input`, `usb`). The only attribute the interface accepts.
+- Never auto-connects — wire it after launch/refresh with `workshop connect <WORKSHOP>/<SDK>:<PLUG> :custom-device`. The slot exists only as `system:custom-device`.
 </interface_specifics>
 
 <minimal_examples>

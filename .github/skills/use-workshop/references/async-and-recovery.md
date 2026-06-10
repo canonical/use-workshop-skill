@@ -43,6 +43,22 @@ When the change errors with `--wait-on-error`, the workshop enters `Waiting`. Th
 Editing the workshop definition while paused is NOT supported: changes mid-flight require an `--abort` and a fresh start.
 </wait_on_error_recovery>
 
+<stuck_change_recovery>
+A change can be stuck in `Doing` permanently. This happens when workshopd loses the operation mid-flight — typically because the workshop went `Off` OUTSIDE workshopd's control (an LXD-side `lxc stop`/kill, a host crash) while a change was executing. Symptom signature (all three together):
+
+1. `workshop changes` shows a change in `Doing` that never progresses (old Spawn time, no Ready time).
+2. EVERY subsequent mutating command fails with `other changes in progress`.
+3. `workshop tasks <ID>` shows a task that never finishes.
+
+The daemon will NOT recover this on its own: there is no change timeout, and auto-discard only applies to changes paused in `Wait` status by `--wait-on-error`. The CLI offers no command to abandon a `Doing` change.
+
+Recovery (in order):
+1. Restart the daemon: `snap restart workshop` (no sudo needed; preferred over the equivalent `sudo systemctl restart snap.workshop.workshopd.service`). This restarts workshopd and abandons the stuck change.
+2. Treat the workshop as poisoned. workshopd reconciles state correctly only for transitions IT initiated (`workshop stop`). After an uncontrolled Off, the recorded state may not match reality even if `workshop info` reports `Ready`. Do not resume work on it — recreate it: `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring.
+
+SCOPE GUARD: this path is ONLY for the symptom signature above. An ordinary failed `launch`/`refresh` (change reaches `Error`, other commands still accepted) is NOT this case — use the `changes`/`tasks` diagnosis and the `--wait-on-error` flow instead. Never restart the daemon as a response to a hook or SDK failure.
+</stuck_change_recovery>
+
 <no_wait_pattern>
 For long operations (large SDK pulls, multi-workshop launches), `--no-wait` returns the change ID immediately:
 
