@@ -66,8 +66,55 @@ routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 `make eval-routing-minimax` targets `minimax-m2`. Their latest sweep is shown
 together below; Qwen3 (archived) follows as a prior comparison.
 
-Latest full sweep **2026-06-08**, under the post-fix bundle (see *Post-fix
-verification* below). All tiers, 0 errors each:
+#### Full-matrix sweep (2026-06-10): all 10 families on the 64-case suite
+
+The first complete matrix under the daemon-stall/custom-device bundle —
+29 tiers, every result canonical. Result files are dated 2026-06-09 (GLM,
+MiniMax m1/m2, Kimi k2.5/k2.6, DeepSeek) and 2026-06-10 (the rest). `Nt` =
+cases at the 1024-token output ceiling; `–` = not measurable (tier re-run
+cache-warm, token usage recorded as cached).
+
+| Family | small | mid | large |
+|--------|-------|-----|-------|
+| GLM (`z-ai`) | 4.5-air 58/64 (90.6%, 3t) | 4.5 **61/64 (95.3%, 25t)** | 4.6 59/64 (92.2%, 19t) |
+| MiniMax | m1 53/64 (82.8%, 0t) | m2 55/64 (85.9%, 1t) | m3 57/64 (89.1%, –) |
+| Kimi (`moonshotai`) | k2.5 59/64 (92.2%, 30t) | k2.6 59/64 (92.2%, 36t) | k2-thinking 58/64 (90.6%, –) |
+| DeepSeek | v4-flash 58/64 (90.6%, 16t) | v3.2 **61/64 (95.3%, 1t)** | r1 59/64 (92.2%, 36t) |
+| MiMo (`xiaomi`) | v2-flash 57/64 (89.1%, 3t) | v2.5 50/64 (78.1%, 0t) | v2.5-pro 56/64 (87.5%, 2t) |
+| gpt-oss (`openai`) | 20b 54/64 (84.4%, 39t) | — | 120b 55/64 (85.9%, 38t) |
+| Nemotron (`nvidia`) | nano-9b-v2 42/64 (65.6%, 31t) | super-49b 58/64 (90.6%, –) | 3-super-120b 51/64 (79.7%, –) |
+| Gemma (`google`) | 3-4b 37/64 (57.8%, 20t) | 3-12b 53/64 (82.8%, 17t) | 3-27b 57/64 (89.1%, 4t) |
+| Llama (`meta-llama`) | 3.1-8b 37/64 (57.8%, 1t) | 3.3-70b 45/64 (70.3%, 0t) | 4-maverick 57/64 (89.1%, 0t) |
+| Mistral (`mistralai`) | ministral-3b 50/64 (78.1%, 4t) | ministral-8b 52/64 (81.2%, 0t) | small-3.2-24b 49/64 (76.6%, 0t) |
+
+**Reads.**
+- **The four new cases port well.** Across all 29 tiers: custom-device 28/29,
+  post-uncontrolled-Off poison state 28/29, negative guard (no daemon restart
+  for an ordinary `Error` change) 28/29, stuck-`Doing` escalation 25/29.
+  Misses are confined to the smallest/weakest tiers (gemma-3-4b: stuck-Doing +
+  custom-device; nemotron-nano: stuck-Doing + negative-guard; ministral-3b and
+  nemotron-3-super-120b: stuck-Doing; gpt-oss-20b: poison-Off) — model-side
+  capacity, not a skill gap.
+- **Aggregates are consistent with the 60-case sweep** within the usual
+  run-to-run variance; the suite growth did not shift any family's standing.
+  The frontier open-weight tiers (GLM-4.5, DeepSeek-v3.2 at 95.3%) still port
+  about as well as Anthropic Haiku.
+- **Judge-outage incident.** The first attempt at this sweep was silently
+  degraded by the `llm-rubric` judge running out of OpenAI credits (reported
+  as generic 429s): the nemotron super-49b/120b runs were quarantined with
+  16/35 errored cases and the sweep was stopped mid-Gemma. The judge is now
+  pinned in `promptfooconfig.yaml`, preflighted per run, and sweeps abort on
+  run-level errors (see the tooling commit in PR #5). The affected tiers were
+  re-run clean; cached candidate responses meant the redo was mostly
+  re-grading.
+- Assertion fix 7 (below) landed between the two attempts; minimax-m3 and
+  kimi-k2-thinking were re-graded under it (+1 case each — their canonical
+  files are the 2026-06-10 re-runs).
+
+#### Prior sweep (2026-06-08, 60-case suite): GLM + MiniMax
+
+Superseded by the 2026-06-10 full-matrix table above. Kept for the post-fix
+verification narrative below. All tiers, 0 errors each:
 
 | Model (via OpenRouter)   | Pass rate          |
 |--------------------------|--------------------|
@@ -121,7 +168,10 @@ and churn bidirectionally across tiers between sweeps.
 > note at the top of this section). The edits are additive clarifications and
 > Sonnet already passes these cases, so regression risk is low.
 
-#### Expanded open-weight matrix (2026-06-08/09)
+#### Expanded open-weight matrix (2026-06-08/09, 60-case suite)
+
+Superseded by the 2026-06-10 full-matrix sweep above; kept as the first
+sweep of the expanded families and for the per-family reads below.
 
 Eight more open-weight families added — 3 tiers each (gpt-oss has only 2), 23 models,
 **0 run errors**. Qwen3 is re-declared in the config for parity but **not re-run**
