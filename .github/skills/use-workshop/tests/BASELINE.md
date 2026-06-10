@@ -236,6 +236,15 @@ the fix):
    per `states-and-transitions.md`. The rubric now allows that conditional, scoped
    fallback while still requiring the response to lead with diagnosis (not
    prescribe remove+launch as the first move).
+7. **`Change stuck in Doing`** (troubleshoot, 2026-06-10) — surfaced on the
+   first open-weight sweep of the new daemon-stall cases. A blunt
+   `not-contains "snap remove"` fired on the models' own warnings ("don't
+   reach for `snap remove --purge` here") — verified against the raw outputs
+   for minimax-m3 and kimi-k2-thinking, both of which prescribed the correct
+   `snap restart workshop` + recreate path and failed only on this assertion.
+   Removed; the case's `llm-rubric` already forbids *prescribing* purge, which
+   is the correct mention-vs-prescription distinction (same class as fixes 2
+   and 3).
 
 ### Known variance watch-items (Haiku 4.5)
 

@@ -22,6 +22,12 @@
 #
 # --model and --provider are mutually exclusive. A --provider id must be
 # declared in promptfooconfig.yaml (undeclared -> hard error).
+#
+# Exit contract:
+#   0 = all assertions passed
+#   1 = assertion failures (a normal eval outcome; the result is recorded)
+#   2 = run-level errors (judge/API/auth/credits — the run says nothing about
+#       the skill; sweeps abort on this, see scripts/run-sweep.sh)
 
 set -euo pipefail
 
@@ -150,6 +156,35 @@ else
   fi
 fi
 
+# Preflight the llm-rubric judge. The grading model is pinned in
+# promptfooconfig.yaml (defaultTest.options.provider); a dead judge (bad key,
+# exhausted credits) otherwise surfaces only as per-case errors mid-run,
+# wasting the candidate-model spend and quarantining the whole run. OpenAI
+# reports credit exhaustion as a generic 429, so probe with a real call and
+# fail fast with the actual API error.
+judge="$(awk '/^[[:space:]]*provider:[[:space:]]*openai:/ {
+    sub(/^[[:space:]]*provider:[[:space:]]*/, ""); print; exit
+  }' "${tests_dir}/promptfooconfig.yaml")"
+if [[ -n "${judge}" ]]; then
+  if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+    echo "error: OPENAI_API_KEY is not set — required for the llm-rubric judge (${judge})" >&2
+    exit 2
+  fi
+  probe="$(curl -sS -m 30 https://api.openai.com/v1/chat/completions \
+    -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"${judge#openai:}\",\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}],\"max_completion_tokens\":16}" 2>&1)" || true
+  if ! python3 -c 'import json,sys
+d = json.loads(sys.argv[1])
+sys.exit(1 if d.get("error") else 0)' "${probe}" 2>/dev/null; then
+    echo "error: llm-rubric judge preflight failed for ${judge}:" >&2
+    printf '       %s\n' "$(printf '%s' "${probe}" | head -c 400)" >&2
+    echo "       Check OPENAI_API_KEY validity and account credits (OpenAI reports" >&2
+    echo "       credit exhaustion as '429 Too Many Requests')." >&2
+    exit 2
+  fi
+fi
+
 # When any filter / partial-run flag is present, treat the run as a partial:
 # raw + summary go under results/raw/ (gitignored) so the canonical baseline
 # at results/<date>-routing-<tag>.json is never silently overwritten by a
@@ -207,13 +242,14 @@ print(e)' "${raw_json}" 2>/dev/null || echo -1)"
 else
   error_count=-1
 fi
+errored_run=0
 if (( ! partial )) && (( error_count != 0 )); then
   echo >&2
   echo "warning: ${error_count} case(s) errored (API/auth/network, not assertion" >&2
   echo "         failures). Refusing to overwrite the canonical baseline; writing" >&2
   echo "         the summary under results/raw/ instead. Fix the cause and re-run." >&2
   summary_json="${tests_dir}/results/raw/${date_tag}-${time_tag}-routing-${tag}.errored.json"
-  if (( eval_rc == 0 )); then eval_rc=1; fi
+  errored_run=1
 fi
 
 # Build a slim summary that's safe to commit. Strips full model responses /
@@ -227,4 +263,11 @@ python3 "${script_dir}/_summarize.py" \
 echo
 echo "Raw:     ${raw_json}"
 echo "Summary: ${summary_json}"
-exit "${eval_rc}"
+
+# Normalize to the documented exit contract (see header).
+if (( errored_run )); then
+  exit 2
+elif (( eval_rc != 0 )); then
+  exit 1
+fi
+exit 0

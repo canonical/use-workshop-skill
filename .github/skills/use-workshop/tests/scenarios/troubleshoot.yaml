@@ -242,8 +242,6 @@
   assert:
     - type: icontains
       value: snap restart workshop
-    - type: not-contains
-      value: snap remove
     - type: llm-rubric
       value: |
         The response identifies this as a daemon-level stall that workshopd

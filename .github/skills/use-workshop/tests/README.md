@@ -28,6 +28,12 @@ the manual run summary diff.
 - `OPENROUTER_API_KEY` exported — only for the OpenRouter routing runs
   (`make eval-routing-openrouter[-all]`). promptfoo's OpenRouter provider
   reads it natively; no bridging.
+- `OPENAI_API_KEY` exported — for the `llm-rubric` grading model, which is
+  pinned in `promptfooconfig.yaml` (`defaultTest.options.provider`) so
+  rubric verdicts are reproducible across machines. Every routing run needs
+  it, regardless of which candidate provider is being evaluated. Note the
+  judge takes one call per rubric assertion per case — on large sweeps it
+  is the first thing to hit rate limits.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
   and `node` on PATH; the user must be in the `lxd` group.
 
