@@ -23,6 +23,10 @@ A YAML file describing how a workshop should be assembled: `name`, `base` image,
 The underlying OS image of the workshop, declared as `base: ubuntu@<release>` (currently `20.04`, `22.04`, `24.04`, or `26.04`).
 </term>
 
+<term name="workshop hostname (DNS)">
+Each workshop has a friendly DNS name of the form `<WORKSHOP>.<PROJECT>.wp` (0.9.2+), shown in `workshop info` (the `hostname:` line) and in the in-workshop shell prompt (`workshop@<workshop>:/project$`). Workshops in the **same project** can reach each other by name — a short name (`backend`) where the base supports the DNS search domain, otherwise the full `backend.<project>.wp`. This removes the host-tunnel hop for same-project workshop-to-workshop traffic; cross-project and host↔workshop traffic still go through a tunnel. Existing workshops need one `workshop refresh` to activate it.
+</term>
+
 <term name="SDK">
 A bundled, layered unit of code/data/configuration installed on top of the base. Several origins:
 - **Regular SDK**: from the SDK Store, versioned with `channel:`. Default channel is `latest/stable`.
@@ -37,7 +41,7 @@ The mechanism for controlled communication and resource sharing.
 - **Interface**: a predefined resource type (camera, custom-device, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types (`custom-device` is itself predefined — it exposes host devices by kernel subsystem, not a way to define new interfaces).
 - **Plug**: the consumer side, declared in the SDK that wants to use the resource.
 - **Slot**: the provider side; for host resources, declared on the system SDK; for workshop-internal resources, on a regular SDK.
-- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount, GPU, and tunnel under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, and most tunnel cases.
+- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount auto-connects to **system-SDK slots only** — a regular-SDK mount slot needs an explicit `connections:` entry; GPU auto-connects; tunnel auto-connects only host→workshop under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, and the remaining tunnel cases.
 </term>
 
 <term name="plug binding">
@@ -53,7 +57,7 @@ Every mutating workshop operation produces a **change** with a numeric ID, compo
 </term>
 
 <term name="hook">
-A lifecycle script in an SDK: `setup-base` (runs once at install, becomes part of the snapshot), `setup-project` (runs per project after interfaces are connected), `save-state`/`restore-state` (bracket a refresh), `check-health` (post-launch/refresh, reports SDK health to the daemon and drives the workshop status into `Ready`/`Pending`/`Error`). Hooks are SDK-internal — operating an existing workshop, you usually only encounter them via task names in error logs.
+A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/revision-change before the project mounts, becomes part of the base snapshot), `setup-project` (workshop user, per project after auto-connect), `save-state`/`restore-state` (root, bracket an *applied* refresh — not stop/start), `check-health` (root, post-launch/refresh; reports SDK health via `workshopctl set-health okay|waiting|error` and drives the workshop toward `Ready` or `Error`). There is no `setup-sdk` hook. Hooks are SDK-internal — operating an existing workshop, you usually only encounter them via task names in error logs. Full contract: `references/in-project-sdk.md`.
 </term>
 
 </core_terms>
@@ -72,7 +76,9 @@ A lifecycle script in an SDK: `setup-base` (runs once at install, becomes part o
 - `explanation/workshops/projects.md`
 - `explanation/workshops/changes-tasks.md`
 - `explanation/sdks/concepts.md`
+- `explanation/sdks/lifecycle.md` (SDK lifecycle: sketch → in-project → build → publish → consume)
 - `explanation/interfaces/concepts.md`
+- `explanation/interfaces/plugs-and-slots.md` (the plug/slot/connection model and auto-connection policy)
 - `reference/definition-files/workshop-definition.md`
 - `reference/workshops.md` (Storage pools and drivers — the LXD pool backing a workshop)
 </source_docs>

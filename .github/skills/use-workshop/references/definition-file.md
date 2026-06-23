@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. The schema is enforced; small errors will surface only at `workshop launch` or `workshop refresh` time.
+Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. The schema is enforced strictly (0.9.2+): an unknown or misspelled key is **rejected up front with a line and column** — Workshop validates `workshop.yaml`, `sdk.yaml`, and sketch SDKs the same way — rather than being silently ignored. When you see an `unknown field` / `field not found` error, fix the offending key; don't retry the same file. Other small errors (e.g. a bad value) may still surface only at `workshop launch` or `workshop refresh` time.
 </overview>
 
 <file_layout>
@@ -94,10 +94,11 @@ actions:
 </actions_entry>
 
 <interface_specifics>
-**Mount plug attributes** (consumer side, on regular SDKs):
+**Mount plug attributes** (consumer side, on regular SDKs). The ownership/permission attributes apply **only when Workshop creates** `workshop-target` (an existing path keeps its ownership):
 - `workshop-target` (required): absolute path inside the workshop; can use `/project/` or `$SDK/...`.
-- `mode`, `uid`, `gid`: ownership and permissions; sensible defaults.
-- `read-only`: boolean.
+- `uid` / `gid`: default `1000` when `workshop-target` is under `/home/workshop`, `/project`, or `/run/user/1000`, else `0`. `gid` follows the same path rule even when `uid` is set explicitly — set both when you need a non-default group.
+- `mode`: octal (e.g. `0o755`). Defaults to `0o775` when the owner is uid 1000, else `0o755`.
+- `read-only`: boolean; default `false`.
 
 **Mount slot attributes** (provider side):
 - On regular SDKs: `workshop-source` (required) — path inside the workshop.
@@ -189,6 +190,10 @@ After `workshop refresh`, run: `workshop connect <workshop>/<consumer-sdk>:svc <
 - `reference/definition-files/workshop-definition.md` (authoritative; includes JSON Schema)
 - `reference/definition-files/schema.json`
 - `explanation/workshops/concepts.md`
+- `explanation/interfaces/plugs-and-slots.md` (`bind:` vs top-level `connections:`)
+- `how-to/develop-sdks/declare-plugs-slots.md`
+- `how-to/develop-sdks/configure-mount.md` (mount ownership defaults)
 - `how-to/customize-workshops/add-actions.md`
+- `how-to/customize-workshops/add-mounts.md`
 - `how-to/customize-workshops/forward-ports.md`
 </source_docs>

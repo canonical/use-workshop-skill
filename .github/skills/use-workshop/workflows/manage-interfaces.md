@@ -25,8 +25,8 @@ workshop info                          # mount sources, tunnels, etc.
 
 | Goal | Interface | Default behavior |
 |------|-----------|------------------|
-| Share a host directory into the workshop | mount (host-source on `system:mount`) | Auto-connect if plug name matches |
-| Share workshop-internal directory between SDKs | mount (workshop-source on regular SDK slot) | Auto-connect by interface match |
+| Share a host directory into the workshop | mount (host-source on `system:mount`) | Auto-connects to the system mount slot |
+| Share workshop-internal directory between SDKs | mount (workshop-source on regular SDK slot) | **Not** auto-connected — pair the plug with the slot via a top-level `connections:` entry |
 | Expose workshop service on the host | tunnel (slot on regular SDK, plug on `system`) | Auto-connect (system plug + matching name + non-privileged port) |
 | Reach host service from inside the workshop | tunnel (slot on `system`, plug on regular SDK) | Manual: `workshop connect ...` |
 | Use host GPU | gpu (plug `gpu` on regular SDK) | Auto-connect |
@@ -72,6 +72,17 @@ Then:
 workshop refresh
 workshop connect <workshop>/<consumer-sdk>:svc <workshop>/system:svc
 ```
+
+**Wire a mount plug to a specific (regular-SDK) slot — top-level `connections:`:**
+```yaml
+sdks:
+  - name: <provider-sdk>     # exposes a mount slot
+  - name: <consumer-sdk>     # has the mount plug
+connections:
+  - plug: <consumer-sdk>:<plug>
+    slot: <provider-sdk>:<slot>
+```
+A regular-SDK mount slot does not auto-connect (auto-connect targets the system mount slot), so name the pairing explicitly. `bind:` and a top-level `connections:` entry are mutually exclusive for a given plug.
 
 **Resolve a plug conflict via binding:**
 ```yaml
@@ -131,6 +142,8 @@ For tunnels, also surface a curl or netcat one-liner the user can run on the hos
 </success_criteria>
 
 <source_docs>
+- `explanation/interfaces/plugs-and-slots.md` (auto-connection policy; `bind:` vs `connections:`)
+- `how-to/develop-sdks/declare-plugs-slots.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`
 - `explanation/interfaces/concepts.md` and the per-interface pages

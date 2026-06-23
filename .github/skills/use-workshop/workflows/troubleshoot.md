@@ -42,6 +42,10 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Multi-SDK conflict | Comment out SDKs one at a time, refresh, find the offending one |
 | Plug conflict (mount target already in use) | Bind one plug to the other (`bind: <SDK>:<PLUG>`) — see `manage-interfaces.md` |
 | Port already taken (tunnel) | Free the port on the host or change `endpoint:` to another port |
+| YAML error: `unknown field` / `field not found` (with a line/column) | A typo'd or misplaced key in `workshop.yaml` / `sdk.yaml` (strict validation, 0.9.2+). Fix the named key; don't retry the same file unchanged |
+| `cannot continue: no refresh in progress` (or `abort` / `launch`) | Nothing is paused — there is no `Waiting` change to resume. Re-check `workshop info` / `workshop changes`; you likely didn't run `--wait-on-error`, or it already resolved |
+| `… : <kind> change is in progress` (e.g. `launch change is in progress`) | Ordinary change-conflict — another change is still running. Wait for it or inspect `workshop changes`. NOT the stuck-`Doing` signature in Step 7; do **not** restart the daemon for this |
+| GPU device missing/inaccessible (e.g. `/dev/kfd`) on a workshop created before 0.9.2 | `workshop refresh` to apply the 0.9.2 device-group fix (adds the `workshop` user to groups like `render`) |
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |

@@ -52,12 +52,12 @@ Then read the matching workflow under `workflows/` and follow it.
 | "set up", "first time", "bootstrap", "init", "scaffold a definition", "create a workshop definition", "workshop init", "I just cloned", "what do I do" | `workflows/bootstrap-project.md` |
 | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
 | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
-| "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-sdk", "setup-base", "check-health", "save-state", "restore-state", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
-| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
+| "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-base", "check-health", "save-state", "restore-state", "set-health", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
+| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
 | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | "VS Code", "JetBrains", "remote IDE", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
-| "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon" | `workflows/troubleshoot.md` |
+| "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
+| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown field", "field not found", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon" | `workflows/troubleshoot.md` |
 | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 </routing>
 
@@ -119,7 +119,7 @@ This skill DOES cover authoring in-project SDKs (under `.workshop/<name>/sdk.yam
 
 It does NOT cover:
 - `sdkcraft *` (build-time packaging/publishing of Store SDKs).
-- `workshopctl` as a standalone CLI — driving it from outside a hook is out of scope. Emitting `workshopctl set-health <Ready|Pending|Error> [--reason …]` *inside* a `check-health` hook script you are authoring IS in scope and is covered by `references/in-project-sdk.md` and `workflows/author-in-project-sdk.md`.
+- `workshopctl` as a standalone CLI — driving it from outside a hook is out of scope. Emitting `workshopctl set-health <okay|waiting|error> [<message>]` *inside* a `check-health` hook script you are authoring IS in scope and is covered by `references/in-project-sdk.md` and `workflows/author-in-project-sdk.md`.
 - Interactive `workshop sketch-sdk` / `workshop sketches` flows. They require an `$EDITOR` session and cannot be driven by an agent. If a user asks for a sketch walkthrough, do NOT enumerate `workshop sketch-sdk` invocations or describe the editor-save-refresh loop step by step. Acknowledge the command as vocabulary, name the constraint (interactive `$EDITOR`), and route them to `workflows/author-in-project-sdk.md` (write `.workshop/<name>/` directly — that's the agent-drivable path to ship a custom SDK).
 
 For these, point the user at the docs (resolve via `<base>` from `<docs>` above):
