@@ -294,3 +294,71 @@
         not. (The response may repeat the words `snap restart workshop` while
         rejecting it — what's forbidden is endorsing the restart as the fix
         here.)
+
+- description: Definition rejected by strict validation (unknown field)
+  vars:
+    user: |
+      `workshop refresh` rejects my workshop.yaml with an error like `field workshp-target not found` pointing at line 7. The file looks fine to me. What's going on?
+  assert:
+    - type: contains-any
+      value:
+        - "unknown field"
+        - "field"
+        - typo
+        - misspelled
+        - misspelling
+    - type: not-contains
+      value: snap restart
+    - type: llm-rubric
+      value: |
+        The response explains that user-facing YAML is validated strictly — an
+        unknown or misspelled key (here `workshp-target`, a typo for
+        `workshop-target`) is rejected up front with a line/column. The fix is to
+        correct the offending key (consult the definition reference / schema);
+        retrying the same file unchanged won't help. It does NOT treat this as a
+        daemon stall or prescribe a daemon restart or remove+launch.
+
+- description: Refresh rejected because another change is already running
+  vars:
+    user: |
+      Every `workshop refresh myapp` returns `myapp: launch change is in progress`. Should I run `snap restart workshop` to clear it?
+  assert:
+    - type: contains-any
+      value:
+        - "in progress"
+        - wait
+        - "another change"
+        - "still running"
+        - workshop changes
+    - type: llm-rubric
+      value: |
+        The response does NOT immediately prescribe a daemon restart. It reads
+        "launch change is in progress" as an ordinary change-conflict — a launch
+        change is still running for that workshop — and first checks whether that
+        launch is genuinely progressing (`workshop changes` / `workshop tasks
+        <ID>`), advising the user to wait for it to finish. It reserves `snap
+        restart workshop` for the distinct case of a change genuinely stuck in
+        `Doing` (never progressing, "other changes in progress" on every
+        command), not as the default response to this message.
+
+- description: GPU device inaccessible on a pre-0.9.2 workshop (device-group fix)
+  vars:
+    user: |
+      My workshop on ubuntu@26.04 can't open /dev/kfd for ROCm — permission denied — even though the gpu plug is connected. A workshop I launched today on another machine works fine. How do I fix the older one?
+  assert:
+    - type: contains
+      value: workshop refresh
+    - type: contains-any
+      value:
+        - render
+        - "device group"
+        - "device-group"
+        - "0.9.2"
+        - group
+    - type: llm-rubric
+      value: |
+        The response attributes this to the 0.9.2 device-group fix (Workshop adds
+        the `workshop` user to device groups such as `render`) and tells the user
+        to run `workshop refresh` to apply it to the pre-0.9.2 workshop. It does
+        NOT misdiagnose it as a missing `gpu` plug, a broken driver install, or a
+        storage/daemon problem.

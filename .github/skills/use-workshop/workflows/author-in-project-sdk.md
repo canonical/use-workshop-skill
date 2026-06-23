@@ -27,10 +27,11 @@ Walk down the hook taxonomy from `references/in-project-sdk.md`. For a tool-wrap
 | Need | Hook |
 |------|------|
 | Install a CLI/tool against `/project/` (most common) | `setup-project` |
-| Persist OS package installs into every workshop on a given base | `setup-base` |
-| Wait for a service to become reachable before declaring `Ready` | `check-health` |
-| Survive `workshop stop`/`start` with mutable state | `save-state` + `restore-state` |
-| Per-SDK system-wide config that's not project-aware | `setup-sdk` |
+| OS package installs / system-wide config that persists into every workshop on a given base | `setup-base` |
+| Report whether the SDK can operate (gate `Ready`) via `workshopctl set-health okay\|waiting\|error` | `check-health` |
+| Carry mutable state across a refresh that rebuilds the SDK | `save-state` + `restore-state` |
+
+There are exactly five hooks (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`) — there is no `setup-sdk`. `save-state`/`restore-state` fire during an *applied* `workshop refresh`, not on stop/start; `check-health`/`save-state`/`restore-state` run as `root`. See `references/in-project-sdk.md` for the full contract.
 
 **Step 3. Write `sdk.yaml`.**
 
@@ -98,7 +99,7 @@ Edit the hook script in place, then re-run:
 workshop refresh --wait-on-error
 ```
 
-Refresh re-runs `setup-project` and `check-health`. Keep `--wait-on-error` while iterating: if the edited hook fails, the workshop pauses in `Waiting` instead of reverting, so you can inspect the hook's stdout/stderr with `workshop changes` (find the change ID) then `workshop tasks <ID>` (the failing task's log tail), fix the script, and `workshop refresh --continue`. To re-run `setup-base` or `setup-sdk`, the workshop must be recreated — `workshop remove && workshop launch`. State this when the user reports a `setup-base` change isn't taking effect.
+Refresh re-runs `setup-project` and `check-health`. Keep `--wait-on-error` while iterating: if the edited hook fails, the workshop pauses in `Waiting` instead of reverting, so you can inspect the hook's stdout/stderr with `workshop changes` (find the change ID) then `workshop tasks <ID>` (the failing task's log tail), fix the script, and `workshop refresh --continue`. To force an edited `setup-base` to take effect, the workshop must be recreated — `workshop remove && workshop launch`. State this when the user reports a `setup-base` change isn't taking effect.
 
 **Step 9. Diagnose a failed hook.**
 
@@ -146,9 +147,11 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 </success_criteria>
 
 <source_docs>
+- `explanation/sdks/runtime-hooks.md` (the five hooks, their privileges/working dirs, ordering, `set-health` contract)
+- `how-to/develop-sdks/write-runtime-hooks.md` (one worked example per hook)
 - `tutorial/part-3-sketch-sdks.md` (eject layout + minimal working hook)
-- `explanation/sdks/concepts.md` (hook taxonomy, lifecycle, set-health)
+- `explanation/sdks/concepts.md` (SDK concepts)
 - `reference/definition-files/sdk-definition.md`
 - `reference/cli/workshop.md` (refresh, tasks, info sections)
-- `reference/cli/workshopctl.md` (in-hook only)
+- `reference/cli/workshopctl.md` (`set-health`, in-hook only)
 </source_docs>

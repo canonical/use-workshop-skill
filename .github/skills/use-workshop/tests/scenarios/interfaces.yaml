@@ -100,3 +100,40 @@
         never auto-connects (security). It does NOT misroute the request to
         the mount, tunnel, or GPU interface as the mechanism for device
         access.
+
+- description: Set ownership and permissions on a mount target
+  vars:
+    user: |
+      My SDK declares a mount plug whose target is /var/lib/mycache, and Workshop creates it owned by root. I need it owned by the workshop user and group-writable so my tools can write there. How do I set that on the mount plug?
+  assert:
+    - type: contains-any
+      value:
+        - uid
+        - gid
+        - mode
+    - type: llm-rubric
+      value: |
+        The response sets ownership/permissions via the mount plug's `uid`/`gid`
+        (1000 for the workshop user) and/or `mode` attributes. It conveys that
+        these apply only when Workshop CREATES the target (an existing path
+        keeps its ownership) — and because the target is under /var/lib (not
+        /home/workshop, /project, or /run/user/1000), uid/gid would otherwise
+        default to 0 (root), so they must be set explicitly. It does NOT claim
+        a `chown` inside a hook is the only/primary way, and does NOT invent a
+        non-existent attribute.
+
+- description: Read a mount from another regular SDK's slot, not the system default
+  vars:
+    user: |
+      I have a provider SDK that exposes a mount slot, and a consumer SDK with a mount plug. The plug keeps landing on the system mount instead of the provider's slot. How do I make the consumer read from the provider?
+  assert:
+    - type: contains
+      value: connections
+    - type: llm-rubric
+      value: |
+        The response explains that a regular-SDK mount slot is NOT auto-connected
+        (mount auto-connect targets the system SDK's slot only), so the user must
+        name the pairing explicitly with a top-level `connections:` entry pairing
+        `consumer:<plug>` with `provider:<slot>`. It does NOT claim auto-connect
+        will pick the regular-SDK slot, and does NOT misuse `bind:` (plug-to-plug)
+        as the mechanism for pairing a plug to a slot.

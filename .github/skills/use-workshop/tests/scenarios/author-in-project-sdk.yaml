@@ -132,3 +132,65 @@
         might fail, and points the user at `workshop changes` /
         `workshop tasks <ID>` for inspecting hook stdout/stderr after
         a failure.
+
+- description: Reporting SDK health from a check-health hook (correct statuses)
+  vars:
+    user: |
+      In my in-project SDK's `check-health` hook, how do I tell Workshop the SDK is healthy, and how do I signal it's still starting up and should be retried?
+  assert:
+    - type: contains
+      value: set-health
+    - type: contains-any
+      value:
+        - okay
+        - waiting
+    - type: not-contains
+      value: "--reason"
+    - type: llm-rubric
+      value: |
+        The response uses `workshopctl set-health` with the real statuses:
+        `okay` (healthy → Ready), `waiting` (still starting — Workshop retries),
+        and/or `error`. For `waiting`/`error` it includes a short positional
+        message; `okay` takes none. It does NOT use `Ready`, `Pending`, or
+        `Error` as the STATUS argument, and does NOT use a `--reason` flag (an
+        optional `--code=<code>` on error is acceptable).
+
+- description: Persisting SDK state across a refresh (save-state / restore-state)
+  vars:
+    user: |
+      My in-project SDK keeps a small cache directory that gets wiped whenever I refresh the workshop to a new SDK revision. Which hooks preserve it, and when do they actually run?
+  assert:
+    - type: contains-any
+      value:
+        - save-state
+        - restore-state
+    - type: contains
+      value: SDK_STATE_DIR
+    - type: llm-rubric
+      value: |
+        The response uses `save-state` (copies into `$SDK_STATE_DIR` from the
+        OLD revision) and `restore-state` (reads it back on the NEW revision),
+        and makes clear they run DURING an applied `workshop refresh` — NOT on
+        workshop stop/start. It does NOT claim they fire on stop/start, and does
+        NOT invent a `setup-sdk` hook.
+
+- description: User asks for the full list of SDK hooks and their privilege
+  vars:
+    user: |
+      What lifecycle hooks can an in-project SDK define, and which one runs as the workshop user versus root?
+  assert:
+    - type: contains
+      value: setup-project
+    - type: contains
+      value: setup-base
+    # No blunt `not-contains: setup-sdk` here: the skill emphatically states
+    # "there is no setup-sdk hook", so a correct answer often names it precisely
+    # to exclude it (mention-vs-prescription, cf. BASELINE assertion fixes 2/3/7).
+    # The llm-rubric below carries the real guard.
+    - type: llm-rubric
+      value: |
+        The response lists exactly the five real hooks — `setup-base`,
+        `setup-project`, `check-health`, `save-state`, `restore-state` — and
+        does NOT present a `setup-sdk` hook as real (naming it only to exclude
+        it is fine). It correctly notes `setup-project` runs as the `workshop`
+        user while the others run as `root`.

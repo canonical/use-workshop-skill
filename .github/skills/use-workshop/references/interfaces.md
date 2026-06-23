@@ -5,10 +5,17 @@
 The seven interface types and how to wire them. The most important distinction at the CLI level is **auto-connect vs manual-connect**: it determines whether the agent has to issue `workshop connect` after a `launch`/`refresh` for the user's stated goal to actually work.
 </overview>
 
+<model>
+A workshop is a graph of capabilities wired through two named endpoints that both reference an **interface** type:
+- **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints.
+- **plug** = the consumer end (declared on the SDK that wants the capability).
+- **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default). Full model: `explanation/interfaces/plugs-and-slots.md`.
+</model>
+
 <auto_vs_manual>
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|
-| **mount** | Yes — system→regular SDK auto, and regular→regular auto by interface match | Disconnected with `--forget`; multiple slots match the same interface |
+| **mount** | Yes, but **to system-SDK slots only** | A regular-SDK mount slot is the target — it is NOT auto-connected; pair it explicitly with a top-level `connections:` entry |
 | **GPU** | Yes (system → regular SDK plug) | — |
 | **camera** | No | Always |
 | **desktop** | No | Always |
@@ -34,7 +41,9 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 - `system:mount` is the only mount slot that can expose **host** filesystem locations. Its `host-source` attribute is dynamic and is set with `workshop remount`.
 - Regular SDKs may declare additional mount slots but only with `workshop-source` — paths inside the workshop.
 
-**Plug side:** declared on a regular SDK (never on system). Required attribute `workshop-target` — absolute path in the workshop. Optional `mode`, `uid`, `gid`, `read-only`.
+**Plug side:** declared on a regular SDK (never on system). Required attribute `workshop-target` — absolute path in the workshop. Optional ownership/permission attributes, applied **only when Workshop creates** `workshop-target` (an existing path keeps its ownership): `uid`/`gid` (default `1000` when `workshop-target` is under `/home/workshop`, `/project`, or `/run/user/1000`, else `0`; `gid` follows the same path rule even when `uid` is set explicitly), `mode` (octal; defaults `0o775` when the owner is uid 1000, else `0o755`), `read-only` (default `false`). See `how-to/develop-sdks/configure-mount.md`.
+
+**Auto-connect target:** a mount plug auto-connects to the **system SDK's** mount slot. To read from a *regular* SDK's mount slot instead, name the pair in the workshop definition's top-level `connections:` (it won't auto-connect).
 
 **Conflict resolution:** if two SDKs both declare a plug for the same target, bind one to the other with `bind: <SDK>:<PLUG>` so they share a single connection (note: `bind.N` in `workshop connections`).
 
@@ -47,6 +56,7 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 **Slot:** `system:gpu` only.
 **Plug:** must be named `gpu`, cannot belong to the system SDK, no attributes.
 **Connect:** automatic at launch/refresh; nothing for the agent to do.
+**Device-group fix (0.9.2):** Workshop now adds the `workshop` user to the relevant device groups (e.g. `render`), restoring access to devices like `/dev/kfd` on `ubuntu@26.04`. If GPU device access fails on a workshop created before 0.9.2, `workshop refresh` applies the fix.
 </interface>
 
 <interface name="camera">
@@ -142,14 +152,24 @@ To find a device's subsystem on the host: `udevadm info --query=property --prope
 - Add `plugs: <name>: { interface: custom-device, subsystem: <SUBSYSTEM> }` to the SDK.
 - `workshop refresh` + `workshop connect <workshop>/<sdk>:<name> :custom-device` (never auto-connects).
 
+**User wants an SDK to read a mount from another (regular) SDK, not the host/system default:**
+- Add a top-level `connections:` entry pairing `consumer-sdk:<plug>` with `provider-sdk:<slot>` — a regular-SDK mount slot does not auto-connect.
+
+**User wants to set ownership/permissions on a mounted directory:**
+- Add `uid`/`gid`/`mode`/`read-only` to the mount plug (see the mount section); they apply only when Workshop creates the target.
+
 **User has a plug-conflict error at launch:**
 - Bind one plug to the other under the second SDK's `plugs:` map.
 </wiring_decision_tree>
 
 <source_docs>
 - `explanation/interfaces/concepts.md`
+- `explanation/interfaces/plugs-and-slots.md` (plug/slot/connection model, auto-connection policy, `bind:` vs `connections:`)
 - `explanation/interfaces/{camera,custom-device,desktop,gpu,mount,ssh,tunnel}-interface.md`
 - `reference/definition-files/workshop-definition.md`
+- `how-to/develop-sdks/declare-plugs-slots.md`
+- `how-to/develop-sdks/configure-mount.md` (mount ownership: `uid`/`gid`/`mode`/`read-only`)
+- `how-to/customize-workshops/add-mounts.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`
 </source_docs>

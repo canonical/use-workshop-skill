@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-Five kinds of SDKs are referenced in workshop definitions and on the CLI. They differ in origin, lifetime, and how they're named in YAML. Pick the right kind for the user's intent.
+Five kinds of SDKs are referenced in workshop definitions and on the CLI. They differ in origin, lifetime, and how they're named in YAML. Pick the right kind for the user's intent. The broader SDK *lifecycle* — sketch → in-project → built/published Store SDK → consumed — is laid out in `explanation/sdks/lifecycle.md`; this skill operates SDKs and authors in-project ones, leaving build/publish (`sdkcraft`) out of scope.
 </overview>
 
 <sdk_types>
@@ -69,6 +69,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 
 <source_docs>
 - `explanation/sdks/concepts.md`
+- `explanation/sdks/lifecycle.md` (sketch → in-project → build → publish → consume)
 - `explanation/workshops/concepts.md` (Origins and locations table)
 - `reference/definition-files/workshop-definition.md` (System SDK, Try, In-project subsections)
 - `reference/cli/workshop.md` (sketch-sdk, sketches sections)

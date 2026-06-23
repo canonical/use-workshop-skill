@@ -69,30 +69,55 @@
         is fine: "required", "must specify", "needs to know which one",
         "needs the name", and similar all satisfy the requirement.
 
-- description: Cross-workshop networking
+- description: Cross-workshop networking within the same project (DNS by name)
   vars:
     user: |
-      My "api" workshop runs a service on port 8080 inside it. My "web" workshop needs to call that service. How do I wire them up?
+      My "api" workshop runs a service on port 8080 inside it. My "web" workshop, in the same project, needs to call that service. How do I wire them up?
+  assert:
+    - type: contains-any
+      value:
+        - ".wp"
+        - "api."
+        - "by name"
+        - hostname
+    - type: contains-any
+      value:
+        - workshop info
+        - workshop refresh
+    - type: llm-rubric
+      value: |
+        The response tells the user that workshops in the same project reach
+        each other by DNS name over the workshop network: `api`'s service is
+        reachable from `web` at `http://api.<project>.wp:8080` (or the short
+        name `http://api:8080` where the base supports the search domain), with
+        NO host tunnel needed. It MAY note reading the exact name from
+        `workshop info` (the `hostname:` line) and that an existing workshop
+        needs one `workshop refresh` to activate it. It does NOT prescribe a
+        host-bridged tunnel as the primary mechanism for this same-project
+        case, and does NOT suggest a direct cross-workshop `workshop connect`
+        (interface connections don't span workshops).
+
+- description: A workshop needs a host-only service — still a tunnel
+  vars:
+    user: |
+      One of my workshops needs to reach a Postgres server running directly on my host machine (not inside any workshop). DNS-by-name won't help here — how do I wire it?
   assert:
     - type: contains
       value: tunnel
-    - type: contains-any
-      value:
-        - "host"
-        - "bridge"
-        - "through the host"
     - type: contains
       value: workshop connect
+    - type: contains-any
+      value:
+        - "system"
+        - "system:"
     - type: llm-rubric
       value: |
-        The response describes bridging through the host: the provider
-        workshop ("api") exposes its service via a system-SDK tunnel to a
-        host port (auto-connect), and the consumer workshop ("web") reaches
-        that host port through its own system-SDK tunnel slot, requiring a
-        manual `workshop connect`. The response does NOT suggest a direct
-        cross-workshop `workshop connect <a>/sdk:plug <b>/sdk:slot` as the
-        wiring mechanism (it MAY mention that form only to warn it is
-        rejected).
+        The response bridges to the host service with a tunnel — a plug on the
+        consumer SDK and a slot on the `system` SDK pointing at the host port —
+        applied with `workshop refresh` and wired with a manual `workshop
+        connect`. It correctly distinguishes this host-service case (a plain
+        host process has no workshop `.wp` name) from same-project
+        workshop-to-workshop traffic, which uses DNS by name.
 
 - description: User attempts a direct cross-workshop connect
   vars:
@@ -123,3 +148,7 @@
         - "bridge"
         - "through the host"
         - tunnel
+        - ".wp"
+        - "by name"
+        - hostname
+        - DNS

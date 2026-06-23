@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <objective>
-Define and operate multiple workshops in a single project, with optional cross-workshop networking through the host. Useful when one project has independent toolchains (e.g., separate runtimes for separate components).
+Define and operate multiple workshops in a single project, with cross-workshop networking by DNS name (same project) or a host bridge (for host-only services). Useful when one project has independent toolchains (e.g., separate runtimes for separate components).
 </objective>
 
 <required_reading>
@@ -48,8 +48,16 @@ workshop remove <name-a> <name-b>  # final cleanup
 **Step 4. Share custom tooling across workshops.**
 Define an in-project SDK at `.workshop/<sdk-name>/sdk.yaml`. Reference from each workshop's `sdks:` list as `project-<sdk-name>`. After editing, refresh both workshops to apply.
 
-**Step 5. Cross-workshop networking via tunnel-through-host.**
-Direct cross-workshop plug-to-slot connections are rejected. Bridge through the host instead:
+**Step 5. Cross-workshop networking.**
+
+**Same project — reach another workshop by name (0.9.2+).** Each workshop has a DNS name `<workshop>.<project>.wp`, and workshops in the same project resolve each other by name over the shared workshop network — no host tunnel needed. A service that `backend` listens on is reachable from `frontend` at `http://backend.<project>.wp:<port>` (or the short name `http://backend:<port>` where the base supports the DNS search domain). Read the exact name from the `hostname:` line of `workshop info`. Existing workshops need one `workshop refresh` to activate it.
+```
+workshop info backend                                   # read hostname:, e.g. backend.myproj.wp
+workshop exec frontend -- curl -sf http://backend.myproj.wp:8080/health
+```
+This is plain DNS over the workshop network, not an interface connection — the rule that direct cross-workshop plug↔slot connections are rejected still holds.
+
+**When you still need a tunnel** — to bridge a workshop to a *host* service (a plain host process has no workshop `.wp` name, so DNS-by-name doesn't apply) — bridge through the host instead:
 
 In the **provider** workshop (e.g., backend), expose the service to the host:
 ```yaml
@@ -107,7 +115,8 @@ workshop list --global                       # workshops gone everywhere
 <anti_patterns>
 - Mixing a root `workshop.yaml` with `.workshop/*.yaml` — Workshop refuses.
 - Naming the file differently from `name:` in a multi-workshop project — Workshop refuses.
-- Trying `workshop connect <a>/sdk:plug <b>/sdk:slot` across workshops — rejected. Bridge through the host.
+- Trying `workshop connect <a>/sdk:plug <b>/sdk:slot` across workshops — rejected (interface connections don't span workshops). For plain network traffic within the same project, use the workshop's `.wp` DNS name; bridge through the host only for host services or cross-project traffic.
+- Reaching for a host tunnel to let two workshops in the *same* project talk — unnecessary in 0.9.2+; they resolve each other by name.
 - Re-using the same host port for multiple cross-workshop tunnels — first one wins, others fail.
 - Omitting the workshop name in CLI commands when the project has multiple workshops — rejected.
 </anti_patterns>
@@ -122,5 +131,6 @@ workshop list --global                       # workshops gone everywhere
 - `how-to/customize-workshops/use-multiple-workshops.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `explanation/workshops/projects.md`
-- `reference/cli/workshop.md` (launch, list, run, connect sections)
+- `explanation/workshops/multi-workshop-patterns.md`
+- `reference/cli/workshop.md` (launch, list, run, connect, info sections)
 </source_docs>

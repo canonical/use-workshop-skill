@@ -74,7 +74,7 @@ sdks:
         from: 127.0.0.1:<host-port>/tcp
         to:   localhost:<workshop-port>/tcp
 ```
-Tell the user to point their tool at the `from:` address (host side).
+Tell the user to point their tool at the `from:` address (host side). `workshop info` also prints a `hostname:` line (`<workshop>.<project>.wp`, 0.9.2+): that name is for resolution *between workshops in the same project*, not the host — host-side IDEs/browsers still use the tunnel's `from:` address.
 
 **Step 5. For SSH-based remote IDEs:**
 - The workshop SDK (or sketch SDK) must run `sshd` inside.
@@ -112,6 +112,6 @@ For SSH-based access, recommend `ssh -p <host-port> workshop@localhost` as the s
 
 <source_docs>
 - `how-to/customize-workshops/forward-ports.md`
-- `how-to/develop-with-workshops/` — worked examples for specific IDEs and tools live here; surface the matching `.md` to the user when they ask about a particular vendor.
+- `how-to/develop-with-workshops/connect-vscode.md`, `how-to/develop-with-workshops/run-jetbrains-gateway.md`, `how-to/develop-with-workshops/run-jupyterlab-in-browser.md` — worked examples for specific IDEs/tools; surface the matching page when the user names a vendor.
 - `explanation/interfaces/tunnel-interface.md`, `explanation/interfaces/ssh-interface.md`
 </source_docs>

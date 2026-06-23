@@ -41,6 +41,10 @@ When the change errors with `--wait-on-error`, the workshop enters `Waiting`. Th
    - Give up: `workshop launch --abort` or `workshop refresh --abort`. Workshop reverts to its previous state.
 
 Editing the workshop definition while paused is NOT supported: changes mid-flight require an `--abort` and a fresh start.
+
+**Recognizing the typed errors (0.9.2+).** `--continue`/`--abort` and change conflicts now fail with clear, consistent messages instead of a silent no-op:
+- `--continue`/`--abort` when nothing is paused → `cannot continue: no refresh in progress` (or `cannot abort: …`; `launch` has the same pair). There is no `Waiting` change to resume — re-check `workshop info` / `workshop changes` instead of retrying the flag.
+- A `refresh`/`launch` issued while a *different* change is still running → `cannot refresh "<workshop>": <kind> change is in progress` (e.g. `… : launch change is in progress`). Wait for that change to finish (or inspect it with `workshop changes`). This is the ordinary change-conflict — do NOT restart the daemon for it; that path is only for the stuck-`Doing` signature in `<stuck_change_recovery>`.
 </wait_on_error_recovery>
 
 <stuck_change_recovery>
@@ -85,6 +89,8 @@ Warnings don't pause anything; they're just observability. Surface them when the
 | `workshop launch`/`refresh` | succeeded | `workshop info` to confirm `Ready` |
 | `workshop launch`/`refresh` | failed (no `--wait-on-error`) | `workshop changes`, `workshop tasks <ID>`, then fix-and-retry |
 | `workshop launch`/`refresh --wait-on-error` | failed | inspect tasks, `workshop shell`, fix, then `--continue` or `--abort` |
+| `--continue`/`--abort` | printed `cannot … : no refresh/launch in progress` | nothing is paused — re-check `workshop info`/`changes`; there's no `Waiting` change to resume |
+| any mutating command | printed `… : <kind> change is in progress` | another change is still running — wait or inspect `workshop changes`; NOT a daemon stall |
 | Anything `--no-wait` | returned immediately | `workshop tasks <ID>` to track progress |
 | Sees "warnings" | — | `workshop warnings` to read; `workshop okay` to ack |
 

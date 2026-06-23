@@ -51,6 +51,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - Example: `workshop list --global`
 
 **`workshop info [<WORKSHOP>] [flags]`** — Print workshop's settings, status, SDK details, and connected mount plugs as YAML.
+- Output includes a `hostname:` line (0.9.2+) with the workshop's DNS name `<WORKSHOP>.<PROJECT>.wp`; workshops in the same project can reach each other by that name (a short name where the base supports the DNS search domain). Existing workshops need one `workshop refresh` to populate it.
 - Example: `workshop info`
 
 **`workshop changes [flags]`** — List recent changes for all workshops in the project (ID, Status, Spawn, Ready, Summary).

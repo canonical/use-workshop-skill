@@ -170,10 +170,14 @@ if [[ -n "${judge}" ]]; then
     echo "error: OPENAI_API_KEY is not set — required for the llm-rubric judge (${judge})" >&2
     exit 2
   fi
+  # max_completion_tokens must leave room for reasoning models (e.g. gpt-5.x):
+  # a tiny cap is consumed entirely by reasoning, and the API then returns an
+  # `error` ("max_tokens ... reached") rather than an empty completion, which
+  # would fail this preflight even though the key/credits are fine.
   probe="$(curl -sS -m 30 https://api.openai.com/v1/chat/completions \
     -H "Authorization: Bearer ${OPENAI_API_KEY}" \
     -H "Content-Type: application/json" \
-    -d "{\"model\":\"${judge#openai:}\",\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}],\"max_completion_tokens\":16}" 2>&1)" || true
+    -d "{\"model\":\"${judge#openai:}\",\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}],\"max_completion_tokens\":2000}" 2>&1)" || true
   if ! python3 -c 'import json,sys
 d = json.loads(sys.argv[1])
 sys.exit(1 if d.get("error") else 0)' "${probe}" 2>/dev/null; then
