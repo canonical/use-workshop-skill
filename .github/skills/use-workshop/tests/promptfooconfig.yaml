@@ -50,18 +50,22 @@ providers:
   # (The Qwen3 family was the initial trial — see BASELINE.md for that
   # comparison; GLM was adopted afterward.)
   #
-  # Clarity diagnostic (≈ Haiku role).
-  - id: openrouter:z-ai/glm-4.5-air
+  # Three tiers (refreshed 2026-06-23) mirroring the Haiku/Sonnet/Opus
+  # diagnostic roles. The prior 4.5-air/4.5/4.6 generation is superseded; its
+  # results stay in BASELINE.md as a historical record.
+  #
+  # Clarity diagnostic (≈ Haiku role) — small/fast flash tier.
+  - id: openrouter:z-ai/glm-4.7-flash
     config:
       max_tokens: 1024
       temperature: 0.0
   # Baseline / default target (≈ Sonnet role).
-  - id: openrouter:z-ai/glm-4.5
+  - id: openrouter:z-ai/glm-5
     config:
       max_tokens: 1024
       temperature: 0.0
-  # Headroom check (≈ Opus role).
-  - id: openrouter:z-ai/glm-4.6
+  # Headroom check (≈ Opus role) — newest flagship (1M context).
+  - id: openrouter:z-ai/glm-5.2
     config:
       max_tokens: 1024
       temperature: 0.0

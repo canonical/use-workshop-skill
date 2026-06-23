@@ -11,14 +11,19 @@ regression.
 
 ## Routing eval
 
-64 cases across 12 scenario files — the prior 60-case suite plus 4 new cases
-(2026-06-09): 3 in `troubleshoot.yaml` covering daemon-stall recovery (a change
-stuck in `Doing` with every command failing on `other changes in progress` →
-`snap restart workshop` then recreate; post-uncontrolled-Off poison state →
-don't trust reported `Ready`, recreate; and a negative guard — an ordinary
-refresh failure must NOT get a daemon restart) and 1 in `interfaces.yaml` for
-the 0.9.1 `custom-device` interface (host serial adapters → `subsystem` plug +
-manual `workshop connect`). Every case is single-turn against the bundled skill
+73 cases across 12 scenario files — the prior 64-case suite plus 9 new cases
+(2026-06-23) covering the Workshop **0.9.2** surface: in
+`author-in-project-sdk.yaml` (`set-health okay|waiting|error` values;
+`save-state`/`restore-state` as refresh hooks; the five-hook list with no
+`setup-sdk`), `interfaces.yaml` (mount ownership `uid`/`gid`/`mode`; reading a
+regular-SDK mount slot via top-level `connections:`), `troubleshoot.yaml`
+(reject-unknown-fields validation; change-conflict vs daemon-stall; the GPU
+device-group refresh fix), and `multi-workshop-projects.yaml` (same-project
+workshops reach each other by `.wp` DNS name; a host-only service still needs a
+tunnel). The same 0.9.2 round corrected four hook bugs the source exposed (no
+`setup-sdk`; `set-health okay|waiting|error` not `Ready|Pending|Error`;
+`check-health`/`save-state`/`restore-state` run as root; the state hooks bracket
+a refresh, not stop/start). Every case is single-turn against the bundled skill
 (`SKILL.md` + 9 references + 10 workflows concatenated). Run with:
 `make eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
 
@@ -28,13 +33,15 @@ manual `workshop connect`). Every case is single-turn against the bundled skill
 | `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 | `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 
-> ⚠️ **2026-06-09: Anthropic pins are stale by maintainer decision.** The
-> daemon-stall/custom-device round changed the bundle (skill content) and grew
-> the suite to 64 cases, but the Anthropic tiers were deliberately NOT re-run —
-> only the open-weight matrix was refreshed. The rates above are the last full
-> Anthropic runs under the *previous* bundles. Re-pin Sonnet (and optionally
-> Haiku/Opus) at 64/64 with `make eval-routing` / `make eval-routing-all-models`
-> when the next Anthropic sweep is scheduled.
+> ⚠️ **2026-06-23 (0.9.2): Anthropic pins remain stale by maintainer decision.**
+> The 0.9.2 round substantially changed the bundle (correctness fixes + new
+> feature coverage) and grew the suite to 73 cases, but — as in the 2026-06-09
+> round — the Anthropic tiers were deliberately NOT re-run; only the GLM
+> open-weight family was refreshed this cycle (OpenRouter, see below). The rates
+> above are the last full Anthropic runs under *earlier* bundles and do not
+> reflect 0.9.2. Re-pin Sonnet (and optionally Haiku/Opus) at 73/73 with
+> `make eval-routing` / `make eval-routing-all-models` when the next Anthropic
+> sweep is scheduled.
 
 > **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
 > skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`
@@ -62,9 +69,47 @@ routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
 
 **Active families: GLM (Zhipu) and MiniMax.** Both are declared in
-`promptfooconfig.yaml`; `make eval-routing-openrouter` targets `glm-4.5` and
-`make eval-routing-minimax` targets `minimax-m2`. Their latest sweep is shown
-together below; Qwen3 (archived) follows as a prior comparison.
+`promptfooconfig.yaml`. The GLM family was refreshed to current tiers on
+2026-06-23 — `make eval-routing-openrouter` now targets `glm-5`, and
+`make eval-routing-openrouter-all` sweeps `glm-4.7-flash` / `glm-5` / `glm-5.2`
+(the 4.5-air/4.5/4.6 generation is superseded; its results stay below as a
+record). `make eval-routing-minimax` targets `minimax-m2`. The newest GLM sweep
+is shown first, then the 2026-06-10 full matrix; Qwen3 (archived) follows.
+
+#### GLM family refresh (2026-06-23, 73-case suite)
+
+The GLM family was re-pinned to three current tiers mirroring the
+Haiku/Sonnet/Opus diagnostic roles and run against the 0.9.2 bundle + 73-case
+suite. **GLM-only this round** (no other open-weight families, no Anthropic), at
+the user's request. 0 run errors.
+
+| Model (via OpenRouter) | Role | Pass rate |
+|------------------------|------|-----------|
+| `z-ai/glm-4.7-flash`   | clarity ≈ Haiku  | 59/73 (80.8%) |
+| `z-ai/glm-5`           | baseline ≈ Sonnet | **71/73 (97.3%)** |
+| `z-ai/glm-5.2`         | headroom ≈ Opus  | **71/73 (97.3%)** |
+
+**Reads.**
+- **The 0.9.2 content ports cleanly.** The two capable tiers (`glm-5`,
+  `glm-5.2`) land at 97.3% — at or above the prior GLM generation's ~95%. The
+  nine new 0.9.2 cases pass across the board except three single-tier misses:
+  mount-ownership and the same-project-DNS case miss only on the weak
+  `glm-4.7-flash` tier, and the host-only-tunnel case misses only on `glm-5.2`
+  (its rubric wants an explicit DNS contrast the model left implicit). These are
+  rubric strictness / weak-tier capacity, not skill gaps.
+- **`glm-4.7-flash` is the clarity tier and wobbles run-to-run** (a first pass of
+  this same sweep scored 61/73). Its misses are the usual flickery cases
+  (first-time setup, vendor-agnostic remote-IDE, name-omission — see the variance
+  watch-items below) plus the two weak-tier new-case misses above. The grading
+  model `gpt-5.5` is non-deterministic, so a handful of `llm-rubric` verdicts
+  flip between sweeps even with cached candidate responses — treat the flash row
+  as a snapshot, not a pin.
+- **Tooling note:** the `gpt-5.5` judge preflight in `scripts/run-routing.sh` was
+  fixed this round (`max_completion_tokens` 16 → 2000): 16 tokens are consumed
+  entirely by a reasoning grader's hidden reasoning, so the probe returned an
+  `error` and aborted every sweep until raised.
+- Result files:
+  `results/2026-06-23-routing-openrouter-z-ai-glm-{4.7-flash,5,5.2}.json`.
 
 #### Full-matrix sweep (2026-06-10): all 10 families on the 64-case suite
 
@@ -295,6 +340,13 @@ the fix):
    Removed; the case's `llm-rubric` already forbids *prescribing* purge, which
    is the correct mention-vs-prescription distinction (same class as fixes 2
    and 3).
+8. **`User asks for the full list of SDK hooks and their privilege`**
+   (author-in-project-sdk, 2026-06-23) — a blunt `not-contains "setup-sdk"`
+   fired on correct answers across all three GLM tiers: because the 0.9.2 skill
+   emphatically states "there is no `setup-sdk` hook", a good answer lists the
+   five real hooks and names `setup-sdk` precisely to exclude it. Removed; the
+   case's `llm-rubric` already forbids presenting `setup-sdk` as a real hook
+   (same mention-vs-prescription class as fixes 2, 3, and 7).
 
 ### Known variance watch-items (Haiku 4.5)
 

@@ -32,8 +32,8 @@ help:
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
-	@echo "  eval-routing-openrouter         run routing eval against GLM-4.5 via OpenRouter (needs OPENROUTER_API_KEY)"
-	@echo "  eval-routing-openrouter-all     run routing eval against GLM-4.5-Air + GLM-4.5 + GLM-4.6 via OpenRouter"
+	@echo "  eval-routing-openrouter         run routing eval against GLM-5 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-openrouter-all     run routing eval against the GLM family (4.7-flash + 5 + 5.2) via OpenRouter"
 	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2 via OpenRouter (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M1 + MiniMax-M2 + MiniMax-M3 via OpenRouter"
 	@echo "  eval-routing-<family>-all       run routing eval across an open-weight family's tiers via OpenRouter;"
@@ -75,10 +75,10 @@ eval-routing-all-models:
 # OpenRouter (open-weight) routing eval. Requires OPENROUTER_API_KEY.
 # GLM tiers mirror the Haiku/Sonnet/Opus diagnostic roles.
 eval-routing-openrouter:
-	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-4.5
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-5
 
 eval-routing-openrouter-all:
-	bash $(SWEEP_SH) --provider openrouter:z-ai/glm-4.5-air openrouter:z-ai/glm-4.5 openrouter:z-ai/glm-4.6
+	bash $(SWEEP_SH) --provider openrouter:z-ai/glm-4.7-flash openrouter:z-ai/glm-5 openrouter:z-ai/glm-5.2
 
 # MiniMax (open-weight) routing eval. Requires OPENROUTER_API_KEY.
 # Generational trio mirrors the Haiku/Sonnet/Opus diagnostic roles.
