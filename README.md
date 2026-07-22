@@ -114,16 +114,31 @@ instructs the agent to copy from a template rather than synthesize
 from memory, because schema details (`base:` syntax, plug/slot
 structure, action format) are easy to get plausibly-but-wrongly right.
 
+**YAML is schema-traceable.** Every YAML shape and every upstream doc
+path the skill shows must be traceable to an upstream schema or doc —
+not invented from memory. Two failures this rule exists to prevent
+have both happened: an in-project `sdk.yaml` was shown with a `hooks:`
+key that strict validation actually rejects, and CLI-explanation pages
+were cited after upstream merged them away. Both are now caught
+mechanically by free, offline CI checks: `check-yaml-keys` lints every
+fenced YAML snippet and every `templates/*.yaml` against key allowlists
+generated from the upstream JSON schemas, and `check-source-docs`
+validates every cited doc path against `tests/docs-manifest.txt`. Both
+allowlist and manifest are regenerated from a Workshop checkout with
+`make update-docs-manifest` (`WORKSHOP_REPO=<path>`), so a version bump
+refreshes the ground truth in one step.
+
 **Changes are eval-gated.** The bundled `tests/` directory is a
 [promptfoo](https://promptfoo.dev) regression suite (routing +
 agentic E2E) with per-model baselines pinned in `BASELINE.md`.
-CI runs the free static checks (`make check`: doc-path guard, bundle
-regeneration, scenario/template YAML parse, shellcheck, REUSE lint) on
-every push and PR; the paid routing eval runs locally before merge
-(`make eval-routing`) or on demand via the `workflow_dispatch` trigger
-of the CI workflow. A skill change that drops a pinned baseline must
-not merge. The eval surface is what keeps the rest of these principles
-from drifting back into informality.
+CI runs the free static checks (`make check`: CLI doc-path guard,
+source-docs manifest guard, bundle regeneration, scenario/template YAML
+parse, YAML key lint, shellcheck, REUSE lint) on every push and PR; the
+paid routing eval runs locally before merge (`make eval-routing`) or on
+demand via the `workflow_dispatch` trigger of the CI workflow. A skill
+change that drops a pinned baseline must not merge. The eval surface is
+what keeps the rest of these principles from drifting back into
+informality.
 
 ## Testing
 
