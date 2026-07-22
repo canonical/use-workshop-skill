@@ -11,21 +11,29 @@ regression.
 
 ## Routing eval
 
-73 cases across 12 scenario files — the prior 64-case suite plus 9 new cases
-(2026-06-23) covering the Workshop **0.9.2** surface: in
-`author-in-project-sdk.yaml` (`set-health okay|waiting|error` values;
-`save-state`/`restore-state` as refresh hooks; the five-hook list with no
-`setup-sdk`), `interfaces.yaml` (mount ownership `uid`/`gid`/`mode`; reading a
-regular-SDK mount slot via top-level `connections:`), `troubleshoot.yaml`
-(reject-unknown-fields validation; change-conflict vs daemon-stall; the GPU
-device-group refresh fix), and `multi-workshop-projects.yaml` (same-project
-workshops reach each other by `.wp` DNS name; a host-only service still needs a
-tunnel). The same 0.9.2 round corrected four hook bugs the source exposed (no
-`setup-sdk`; `set-health okay|waiting|error` not `Ready|Pending|Error`;
-`check-health`/`save-state`/`restore-state` run as root; the state hooks bracket
-a refresh, not stop/start). Every case is single-turn against the bundled skill
-(`SKILL.md` + 9 references + 10 workflows concatenated). Run with:
-`make eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
+76 cases across 12 scenario files — the prior 73-case suite plus 3 new cases
+(2026-07-22) covering the Workshop **0.9.3/0.9.4** surface and two correctness
+fixes: `purge.yaml` (orphaned workshop the user wants to KEEP — restore content
+at the same absolute path), `author-in-project-sdk.yaml` (the minimal in-project
+`sdk.yaml`: `name:` is the only required key, no `hooks:` field), and
+`interfaces.yaml` (narrow a custom-device plug by `vendorid`/`productid`, 0.9.3+).
+The same 2026-07-22 round **rewrote two existing cases and reworded one prompt**
+to match ground truth verified against the upstream code and docs:
+- `purge.yaml` orphan case now requires the recreate-directory recovery
+  (`mkdir -p <same path>` + `workshop remove --project`) as the primary path,
+  with manual `lxc delete` demoted to a mentioned fallback — previously it
+  asserted `lxc list`/`lxc delete` as the answer.
+- `author-in-project-sdk.yaml` ruff and inline-hooks cases now require the
+  correct `sdk.yaml` shape (NO `hooks:` key; hooks are executable files
+  discovered by filename) — previously they asserted a `hooks:` list.
+- the "hook isn't running" prompt dropped its invalid premise (it claimed the
+  script was "pointed at" via `sdk.yaml`'s `hooks:`, which strict validation
+  rejects).
+Because those rewrites can flip a previously-passing answer, every recorded rate
+below predates this round. The earlier 9 cases (2026-06-23) covered the 0.9.2
+surface. Every case is single-turn against the bundled skill (`SKILL.md` +
+9 references + 10 workflows concatenated). Run with: `make eval-routing`
+(Sonnet 4.6) or `make eval-routing-all-models`.
 
 | Model              | Pass rate                      | Notes |
 |--------------------|--------------------------------|-------|
@@ -33,15 +41,24 @@ a refresh, not stop/start). Every case is single-turn against the bundled skill
 | `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 | `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
 
-> ⚠️ **2026-06-23 (0.9.2): Anthropic pins remain stale by maintainer decision.**
+> ⚠️ **2026-07-22 (0.9.3/0.9.4): Anthropic pins remain stale by maintainer decision.**
+> This round changed the bundle again (the sdk.yaml-shape and orphan-recovery
+> correctness fixes, plus 0.9.3/0.9.4 feature coverage) and grew the suite to
+> 76 cases, and — consistent with the 2026-06-23 and 2026-06-09 rounds — the
+> Anthropic tiers were NOT re-run as part of the content change. The rates below
+> are the last full Anthropic runs under *earlier* bundles and do not reflect
+> 0.9.3/0.9.4. The planned re-pin is a **Sonnet-only** `make eval-routing` run
+> (≈$7–8), executed as a separate, explicitly-approved step after merge review;
+> re-pin Sonnet at 76/76 or document any investigated deltas here. Haiku/Opus and
+> the open-weight sweeps stay optional per the standing decision.
+>
+> ⚠️ **2026-06-23 (0.9.2): Anthropic pins were already stale before this round.**
 > The 0.9.2 round substantially changed the bundle (correctness fixes + new
 > feature coverage) and grew the suite to 73 cases, but — as in the 2026-06-09
 > round — the Anthropic tiers were deliberately NOT re-run; only the GLM
-> open-weight family was refreshed this cycle (OpenRouter, see below). The rates
+> open-weight family was refreshed that cycle (OpenRouter, see below). The rates
 > above are the last full Anthropic runs under *earlier* bundles and do not
-> reflect 0.9.2. Re-pin Sonnet (and optionally Haiku/Opus) at 73/73 with
-> `make eval-routing` / `make eval-routing-all-models` when the next Anthropic
-> sweep is scheduled.
+> reflect 0.9.2 or later.
 
 > **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
 > skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`

@@ -22,14 +22,29 @@
   assert:
     - type: contains-any
       value:
-        - lxc list
-        - lxc delete
+        - mkdir
+        - recreate
+    - type: contains
+      value: workshop remove
     - type: contains-any
       value:
-        - "workshop."
-        - workshop.user
+        - "--project"
+        - missing-project
     - type: not-contains
       value: snap remove --purge
+    # No blunt `not-contains: lxc`: a good answer may mention manual LXD
+    # cleanup as the fallback (mention-vs-prescription, cf. BASELINE
+    # assertion fixes 2/3/7). The rubric enforces the ordering.
+    - type: llm-rubric
+      value: |
+        The PRIMARY recovery path is: recreate the project directory at the
+        SAME absolute path (`mkdir -p`; it may stay empty), then run
+        `workshop remove --project <path> <workshop>`, verify with
+        `workshop list --global`, and delete the recreated directory. The
+        daemon still tracks the original path, so this works without
+        touching LXD. Manual `lxc list` / `lxc delete` may be MENTIONED
+        only as a fallback for when the recreate-directory recovery fails —
+        it must not be presented as the first or primary step.
 
 - description: User asks about workshop restore vs remove
   vars:
@@ -65,3 +80,36 @@
       value:
         - profile list
         - lxc profile
+    - type: contains-any
+      value:
+        - /var/snap/workshop
+        - .local/share/workshop
+        - leftover
+
+- description: Orphaned workshop the user wants to keep
+  vars:
+    user: |
+      I accidentally deleted my project folder. workshop list --global shows the workshop as Error with a missing-project note. The container has state I care about — can I get the workshop back instead of deleting it?
+  assert:
+    - type: contains-any
+      value:
+        - same absolute path
+        - same path
+        - original path
+        - recreate
+    - type: contains-any
+      value:
+        - git clone
+        - restore the project
+        - restore its content
+        - mkdir
+    - type: llm-rubric
+      value: |
+        The response tells the user to restore the project directory at the
+        SAME absolute path — recreating the directory and restoring its
+        content (e.g. from a git remote or backup) — after which workshop
+        commands re-associate the directory with the original project (the
+        `.workshop.lock` file is recreated) and the workshop is usable
+        again. It does NOT prescribe `lxc delete` or `workshop remove` as
+        the way to recover a workshop the user wants to KEEP (mentioning
+        removal as the alternative for when they don't want it is fine).
