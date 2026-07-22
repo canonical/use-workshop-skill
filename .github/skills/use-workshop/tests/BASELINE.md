@@ -367,6 +367,17 @@ the fix):
    five real hooks and names `setup-sdk` precisely to exclude it. Removed; the
    case's `llm-rubric` already forbids presenting `setup-sdk` as a real hook
    (same mention-vs-prescription class as fixes 2, 3, and 7).
+9. **`User wants to attach a remote IDE over SSH (vendor-agnostic)`**
+   (ide-integration, 2026-07-23) — surfaced on the refreshed-tier open-weight
+   sweep: all three flagships (glm-5.2, minimax-m3, kimi-k3) gave the correct
+   workshop-side answer (`sshd` + tunnel + non-privileged host port) and did
+   NOT improvise product-specific config, yet the rubric failed them (~0.87–0.89)
+   solely for naming VS Code / JetBrains as *category examples* — the very names
+   the skill's own routing table uses as the keys for this scenario. Relaxed to
+   forbid improvising vendor-specific *config* the user didn't ask for while
+   allowing example product names (same mention-vs-prescription class as fixes
+   2, 3, 7, and 8). Verified against the raw outputs: all three would pass under
+   the relaxed rubric.
 
 ### Known variance watch-items (Haiku 4.5)
 

@@ -16,13 +16,16 @@
       value: |
         The response describes the workshop-side pattern: run `sshd` inside
         the workshop, tunnel its port to a non-privileged host port, point
-        the IDE at the host address. The response does NOT name a specific
-        commercial IDE / editor product (e.g., VS Code, JetBrains products,
-        Cursor) and improvise its product-specific config — the user did
-        not name one and the response should stay vendor-neutral on that
-        side. Mentioning generic OSS tools and packages such as `sshd`,
-        `openssh-server`, or `apt-get install openssh-server` is fine —
-        those are workshop-side setup, not IDE-side product config.
+        the IDE at the host address. It stays vendor-neutral on the IDE
+        side: it does NOT improvise product-specific setup or configuration
+        steps for a specific commercial IDE the user did not name (the user
+        named none). Naming products as examples of the category (e.g.
+        "works with VS Code Remote-SSH, JetBrains Gateway, etc.") is fine —
+        the skill's own routing keys use those names; what this rubric
+        guards against is diving into vendor-specific config the user did
+        not ask for. Mentioning generic OSS tools and packages such as
+        `sshd`, `openssh-server`, or `apt-get install openssh-server` is
+        fine — those are workshop-side setup, not IDE-side product config.
 
 - description: User asks about a specific remote-IDE vendor
   vars:
