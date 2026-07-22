@@ -65,7 +65,7 @@ A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/
 <gotchas>
 - Two projects with the same workshop `name:` are independent workshops, not a shared one. `workshop list --global` shows the project path.
 - `cp -r` of a project directory does not duplicate the workshop. The copy is silent until you launch in the new directory; then you have two independent workshops with the same name.
-- Deleting a project directory without `workshop remove` first leaves orphaned LXD resources. See the `purge-and-recover` workflow.
+- Deleting a project directory without `workshop remove` first orphans the workshop — `workshop list --global` shows `Error` with a `missing-project` note. Recreate the directory at the same absolute path to remove it cleanly (or restore its content to keep it); see the `purge-and-recover` workflow.
 - `latest/stable` channel is not necessarily either "latest" or "stable" — the SDK publisher chooses what each track means. Don't assume.
 - SDKs are mounted read-only inside the workshop. Updates flow only through `workshop refresh` re-fetching the channel.
 - Workshop's data lives in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL), sized at ~20% of free disk when first created (clamped 5–30 GiB) and **never auto-grown**. A workshop can hit `No space left on device` while the host disk still has plenty free — the limit is the pool, not the host. Grow it with `sudo lxc storage set workshop size=…` (grow only; ZFS can't shrink). See `workflows/troubleshoot.md`.

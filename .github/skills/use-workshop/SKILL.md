@@ -89,7 +89,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `ide-integration.md` | Remote IDE access patterns + browser-accessible services via tunnels |
 | `multi-workshop-projects.md` | `.workshop/` layout, in-project SDKs, cross-workshop tunnels |
 | `troubleshoot.md` | Diagnose with `changes`/`tasks`; recover via `--wait-on-error` |
-| `purge-and-recover.md` | `remove`/`restore`; manual LXD cleanup for orphans |
+| `purge-and-recover.md` | `remove`/`restore`; recreate-dir recovery for orphans; LXD cleanup as fallback |
 </workflows_index>
 
 <verification_loop>
