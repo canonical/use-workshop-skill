@@ -87,21 +87,23 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 **Use for:** arbitrary host devices that no dedicated interface covers, identified by their kernel **subsystem** — serial adapters (`tty`), input devices (`input`), USB peripherals (`usb`), accelerators, etc. Typical for hardware testing and embedded development.
 
 **Slot:** `system:custom-device` only (the slot is always named `custom-device`).
-**Plug:** declared on a regular SDK (never on system); name is freeform; required attribute `subsystem` — the only attribute the interface accepts.
+**Plug:** declared on a regular SDK (never on system); name is freeform. Attributes: `subsystem`, `vendorid` (0.9.3+), `productid` (0.9.3+) — each optional, but at least one must be set; `productid` also requires `vendorid` (a product ID is only meaningful within a vendor's namespace). Quote IDs so they parse as strings.
 
 ```yaml
 plugs:
   <PLUG-NAME>:
     interface: custom-device
     subsystem: <SUBSYSTEM>     # e.g. tty, input, usb
+    # vendorid: "0403"         # optional (0.9.3+); narrow to one vendor
+    # productid: "6001"        # optional (0.9.3+); requires vendorid
 ```
 
-To find a device's subsystem on the host: `udevadm info --query=property --property=SUBSYSTEM <DEVICE-PATH>`.
+To find a device's attributes on the host: `udevadm info --query=property --property=SUBSYSTEM --property=ID_VENDOR_ID --property=ID_MODEL_ID <DEVICE-PATH>` — `vendorid` matches `ID_VENDOR_ID`, `productid` matches `ID_MODEL_ID`. A bare `subsystem: tty` exposes every serial device on the host; narrow with `vendorid`/`productid` when the workshop needs just one adapter.
 
 **Connect:** manual, always (never auto-connects, for security):
 `workshop connect <WORKSHOP>/<SDK>:<PLUG-NAME> :custom-device`.
 
-**Live tracking:** while connected, ALL host devices of the plug's subsystem are visible inside the workshop; devices plugged in or removed on the host appear and disappear inside the workshop accordingly.
+**Live tracking:** while connected, ALL host devices matching the plug's attributes are visible inside the workshop; devices plugged in or removed on the host appear and disappear inside the workshop accordingly.
 </interface>
 
 <interface name="tunnel">
@@ -149,7 +151,7 @@ To find a device's subsystem on the host: `udevadm info --query=property --prope
 - Make sure the SDK declares `plugs: gpu`. Auto-connect, no manual step.
 
 **User wants host devices no dedicated interface covers (serial/tty, input, usb, accelerators):**
-- Add `plugs: <name>: { interface: custom-device, subsystem: <SUBSYSTEM> }` to the SDK.
+- Add `plugs: <name>: { interface: custom-device, subsystem: <SUBSYSTEM> }` to the SDK — at least one of `subsystem`/`vendorid`/`productid` (0.9.3+); `productid` requires `vendorid`.
 - `workshop refresh` + `workshop connect <workshop>/<sdk>:<name> :custom-device` (never auto-connects).
 
 **User wants an SDK to read a mount from another (regular) SDK, not the host/system default:**
@@ -169,7 +171,9 @@ To find a device's subsystem on the host: `udevadm info --query=property --prope
 - `reference/definition-files/workshop-definition.md`
 - `how-to/develop-sdks/declare-plugs-slots.md`
 - `how-to/develop-sdks/configure-mount.md` (mount ownership: `uid`/`gid`/`mode`/`read-only`)
+- `how-to/develop-sdks/share-content-between-sdks.md` (mount slot/plug between two SDKs)
 - `how-to/customize-workshops/add-mounts.md`
+- `how-to/customize-workshops/use-host-devices.md` (custom-device end to end: discover attributes, declare, connect)
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`
 </source_docs>

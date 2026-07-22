@@ -50,7 +50,7 @@ Define an in-project SDK at `.workshop/<sdk-name>/sdk.yaml`. Reference from each
 
 **Step 5. Cross-workshop networking.**
 
-**Same project — reach another workshop by name (0.9.2+).** Each workshop has a DNS name `<workshop>.<project>.wp`, and workshops in the same project resolve each other by name over the shared workshop network — no host tunnel needed. A service that `backend` listens on is reachable from `frontend` at `http://backend.<project>.wp:<port>` (or the short name `http://backend:<port>` where the base supports the DNS search domain). Read the exact name from the `hostname:` line of `workshop info`. Existing workshops need one `workshop refresh` to activate it.
+**Same project — reach another workshop by name (0.9.2+).** Each workshop has a DNS name `<workshop>.<project>.wp`, and workshops in the same project resolve each other by name over the shared workshop network — no host tunnel needed. A service that `backend` listens on is reachable from `frontend` at `http://backend.<project>.wp:<port>` (or the short name `http://backend:<port>` where the base supports the DNS search domain). Read the exact name from the `hostname:` line of `workshop info`. Existing workshops need one `workshop refresh` to activate it. If `workshop info` shows a `hostname-fallback` note (0.9.3+), the preferred name couldn't be assigned (e.g. the project directory name isn't a valid DNS label) — use the ID-based name from the `hostname:` line instead.
 ```
 workshop info backend                                   # read hostname:, e.g. backend.myproj.wp
 workshop exec frontend -- curl -sf http://backend.myproj.wp:8080/health

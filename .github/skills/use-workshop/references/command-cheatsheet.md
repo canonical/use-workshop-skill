@@ -52,6 +52,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 
 **`workshop info [<WORKSHOP>] [flags]`** — Print workshop's settings, status, SDK details, and connected mount plugs as YAML.
 - Output includes a `hostname:` line (0.9.2+) with the workshop's DNS name `<WORKSHOP>.<PROJECT>.wp`; workshops in the same project can reach each other by that name (a short name where the base supports the DNS search domain). Existing workshops need one `workshop refresh` to populate it.
+- A `hostname-fallback` note (0.9.3+) means the preferred name couldn't be assigned (e.g. the project directory name isn't a valid DNS label); the `hostname:` line then carries a stable ID-based name — the `workshopd` log has the reason.
 - Example: `workshop info`
 
 **`workshop changes [flags]`** — List recent changes for all workshops in the project (ID, Status, Spawn, Ready, Summary).
@@ -157,5 +158,6 @@ A full pool surfaces inside a workshop as `No space left on device`. See `workfl
 <source_docs>
 - `reference/cli/workshop.md` — combined reference for every `workshop` subcommand
 - `reference/cli/sdk.md` — combined reference for every `sdk` subcommand
+- `explanation/cli.md` — how the four CLIs (`workshop`, `sdk`, `sdkcraft`, `workshopctl`) divide the work
 - `reference/workshop-status.md` — state transition diagrams
 </source_docs>

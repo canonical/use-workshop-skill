@@ -49,6 +49,7 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |
+| `workshop` reports LXD missing, outdated, or unreachable | Follow the actionable error (0.9.3+): install/refresh/restart LXD. `workshopd` sits in a degraded state and recovers on its own once LXD is available — no daemon restart needed |
 | Every command fails with `other changes in progress`; a change is stuck in `Doing` | Daemon-level stall, not a task failure — see Step 7 |
 
 **Step 4. Use `--wait-on-error` for live debugging.**
@@ -74,7 +75,7 @@ workshop okay              # acknowledge what was just listed
 
 **Step 6. `No space left on device` — the LXD storage pool is full.**
 
-This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL) that LXD sizes at ~20% of free disk when it is first created, clamped to 5–30 GiB, and **never grows on its own**. So the pool can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation.
+This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL) that LXD sizes at ~20% of free disk when it is first created, clamped to 5–30 GiB, and **never grows on its own**. So the pool can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation. Since 0.9.3 the daemon monitors the pool and proactively enters a degraded state with an actionable message *before* writes start failing — treat that message the same way: grow the pool.
 
 Diagnose (confirm it's the pool, not the host):
 ```

@@ -144,6 +144,7 @@ For tunnels, also surface a curl or netcat one-liner the user can run on the hos
 <source_docs>
 - `explanation/interfaces/plugs-and-slots.md` (auto-connection policy; `bind:` vs `connections:`)
 - `how-to/develop-sdks/declare-plugs-slots.md`
+- `how-to/customize-workshops/use-host-devices.md` (custom-device wiring end to end)
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/fix-workshops/resolve-plug-conflicts.md`
 - `explanation/interfaces/concepts.md` and the per-interface pages
