@@ -85,13 +85,16 @@ different question than the Anthropic baseline: *how portable is the skill's
 routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
 
-**Active families: GLM (Zhipu) and MiniMax.** Both are declared in
-`promptfooconfig.yaml`. The GLM family was refreshed to current tiers on
-2026-06-23 — `make eval-routing-openrouter` now targets `glm-5`, and
-`make eval-routing-openrouter-all` sweeps `glm-4.7-flash` / `glm-5` / `glm-5.2`
-(the 4.5-air/4.5/4.6 generation is superseded; its results stay below as a
-record). `make eval-routing-minimax` targets `minimax-m2`. The newest GLM sweep
-is shown first, then the 2026-06-10 full matrix; Qwen3 (archived) follows.
+**Active families: GLM (Zhipu), MiniMax, and Kimi.** All declared in
+`promptfooconfig.yaml`. Tiers were refreshed to the current OpenRouter catalog
+on 2026-07-23: `make eval-routing-openrouter` targets `glm-5.1` and
+`-openrouter-all` sweeps `glm-4.7-flash` / `glm-5.1` / `glm-5.2`;
+`make eval-routing-minimax` targets `minimax-m2.7` and `-minimax-all` sweeps
+`minimax-m2.5` / `m2.7` / `m3`; `make eval-routing-kimi-all` sweeps
+`kimi-k2.6` / `kimi-k2.7-code` / `kimi-k3`. Superseded slugs (GLM 4.5-air/4.5/4.6
+and glm-5, MiniMax m1/m2, Kimi k2.5/k2-thinking) are retired from the targets;
+their recorded results stay below as a historical record. The 2026-06-23 GLM
+sweep is shown first, then the 2026-06-10 full matrix; Qwen3 (archived) follows.
 
 #### GLM family refresh (2026-06-23, 73-case suite)
 

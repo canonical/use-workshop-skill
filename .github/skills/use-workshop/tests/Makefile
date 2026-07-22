@@ -39,10 +39,10 @@ help:
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
-	@echo "  eval-routing-openrouter         run routing eval against GLM-5 via OpenRouter (needs OPENROUTER_API_KEY)"
-	@echo "  eval-routing-openrouter-all     run routing eval against the GLM family (4.7-flash + 5 + 5.2) via OpenRouter"
-	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2 via OpenRouter (needs OPENROUTER_API_KEY)"
-	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M1 + MiniMax-M2 + MiniMax-M3 via OpenRouter"
+	@echo "  eval-routing-openrouter         run routing eval against GLM-5.1 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-openrouter-all     run routing eval against the GLM family (4.7-flash + 5.1 + 5.2) via OpenRouter"
+	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2.7 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M2.5 + M2.7 + M3 via OpenRouter"
 	@echo "  eval-routing-<family>-all       run routing eval across an open-weight family's tiers via OpenRouter;"
 	@echo "                                  <family> in {kimi,deepseek,mimo,gptoss,nemotron,gemma,llama,mistral}"
 	@echo "  eval-agentic             run agentic E2E suite against Sonnet 4.6 (slow, real LXD)"
@@ -93,23 +93,23 @@ eval-routing-all-models:
 # OpenRouter (open-weight) routing eval. Requires OPENROUTER_API_KEY.
 # GLM tiers mirror the Haiku/Sonnet/Opus diagnostic roles.
 eval-routing-openrouter:
-	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-5
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-5.1
 
 eval-routing-openrouter-all:
-	bash $(SWEEP_SH) --provider openrouter:z-ai/glm-4.7-flash openrouter:z-ai/glm-5 openrouter:z-ai/glm-5.2
+	bash $(SWEEP_SH) --provider openrouter:z-ai/glm-4.7-flash openrouter:z-ai/glm-5.1 openrouter:z-ai/glm-5.2
 
 # MiniMax (open-weight) routing eval. Requires OPENROUTER_API_KEY.
 # Generational trio mirrors the Haiku/Sonnet/Opus diagnostic roles.
 eval-routing-minimax:
-	bash $(ROUTING_SH) --provider openrouter:minimax/minimax-m2
+	bash $(ROUTING_SH) --provider openrouter:minimax/minimax-m2.7
 
 eval-routing-minimax-all:
-	bash $(SWEEP_SH) --provider openrouter:minimax/minimax-m1 openrouter:minimax/minimax-m2 openrouter:minimax/minimax-m3
+	bash $(SWEEP_SH) --provider openrouter:minimax/minimax-m2.5 openrouter:minimax/minimax-m2.7 openrouter:minimax/minimax-m3
 
 # Expanded open-weight matrix (one sweep target per family). Requires
 # OPENROUTER_API_KEY. Each sweeps small/mid/large tiers.
 eval-routing-kimi-all:
-	bash $(SWEEP_SH) --provider openrouter:moonshotai/kimi-k2.5 openrouter:moonshotai/kimi-k2.6 openrouter:moonshotai/kimi-k2-thinking
+	bash $(SWEEP_SH) --provider openrouter:moonshotai/kimi-k2.6 openrouter:moonshotai/kimi-k2.7-code openrouter:moonshotai/kimi-k3
 
 eval-routing-deepseek-all:
 	bash $(SWEEP_SH) --provider openrouter:deepseek/deepseek-v4-flash openrouter:deepseek/deepseek-v3.2 openrouter:deepseek/deepseek-r1

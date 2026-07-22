@@ -48,8 +48,8 @@ make check-yaml-keys            # lint skill YAML snippets/templates against the
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
 make eval-routing               # routing eval, Sonnet 4.6 only
 make eval-routing-all-models    # routing eval against Sonnet 4.6, Haiku 4.5, Opus 4.7
-make eval-routing-openrouter        # routing eval, GLM-5 via OpenRouter (needs OPENROUTER_API_KEY)
-make eval-routing-openrouter-all    # routing eval, GLM-4.7-flash + GLM-5 + GLM-5.2 via OpenRouter
+make eval-routing-openrouter        # routing eval, GLM-5.1 via OpenRouter (needs OPENROUTER_API_KEY)
+make eval-routing-openrouter-all    # routing eval, GLM-4.7-flash + GLM-5.1 + GLM-5.2 via OpenRouter
 make eval-agentic               # agentic E2E suite, Sonnet 4.6 only (slow, real LXD)
 make eval-bundle                # regenerate skill-bundle.md from current sources
 make eval-clean                 # drop generated bundle and raw outputs
@@ -82,9 +82,9 @@ curated set of open-weight GLM tiers is declared in
 
 ```sh
 export OPENROUTER_API_KEY=...
-make eval-routing-openrouter            # GLM-5 (the default tier)
-make eval-routing-openrouter-all        # GLM-4.7-flash + GLM-5 + GLM-5.2
-bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5
+make eval-routing-openrouter            # GLM-5.1 (the default tier)
+make eval-routing-openrouter-all        # GLM-4.7-flash + GLM-5.1 + GLM-5.2
+bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1
 ```
 
 Rules of the road:
