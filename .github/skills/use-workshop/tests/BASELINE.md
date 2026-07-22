@@ -93,8 +93,46 @@ on 2026-07-23: `make eval-routing-openrouter` targets `glm-5.1` and
 `minimax-m2.5` / `m2.7` / `m3`; `make eval-routing-kimi-all` sweeps
 `kimi-k2.6` / `kimi-k2.7-code` / `kimi-k3`. Superseded slugs (GLM 4.5-air/4.5/4.6
 and glm-5, MiniMax m1/m2, Kimi k2.5/k2-thinking) are retired from the targets;
-their recorded results stay below as a historical record. The 2026-06-23 GLM
-sweep is shown first, then the 2026-06-10 full matrix; Qwen3 (archived) follows.
+their recorded results stay below as a historical record. The 2026-07-23
+refreshed-tier flagships are shown first, then the 2026-06-23 GLM sweep, then the
+2026-06-10 full matrix; Qwen3 (archived) follows.
+
+#### Refreshed-tier flagships (2026-07-23, 76-case suite)
+
+The current flagship of each basic family, run against the 0.9.4 bundle + 76-case
+suite after the tier refresh (GLM `glm-5.2`, MiniMax `minimax-m3`, Kimi
+`kimi-k3`). Diagnostic only — 0 run errors. Run at `2026-07-22T23:50Z` (late
+2026-07-23 local); result files carry the local date.
+
+| Model (via OpenRouter) | Role | Pass rate |
+|------------------------|------|-----------|
+| `z-ai/glm-5.2`            | GLM flagship     | **75/76 (98.7%)** |
+| `moonshotai/kimi-k3`      | Kimi flagship    | **71/76 (93.4%)** |
+| `minimax/minimax-m3`      | MiniMax flagship | 66/76 (86.8%) |
+
+**Reads.**
+- **The two 0.9.4 correctness fixes hold across the flagships.** The in-project
+  `sdk.yaml` cases (ruff / minimal / inline-hooks) and the orphan-recovery case
+  pass on `glm-5.2` and `kimi-k3`. On `minimax-m3` they are only *partial* misses
+  (ruff `llm-rubric` 0.97, hook-not-running 0.92) over peripheral tokens like
+  `chmod +x` — not the old `hooks:`-key shape. No failure on any tier traces to
+  the bugs this round fixed.
+- **`glm-5.2` is the strongest open-weight router** at 98.7%, essentially matching
+  the capable Anthropic tiers. Its lone miss was the vendor-agnostic remote-IDE
+  rubric — an over-strict assertion, since relaxed (fix #9 below).
+- **`minimax-m3`'s one notable miss:** it prescribed `snap remove --purge` for a
+  simple orphan (tripping the `not-contains` guard) instead of the recreate-dir
+  path — a model routing weakness, not a skill gap. Its other misses are
+  borderline (0.75–0.97) token/rubric near-misses.
+- **`--reason` hallucination** on `minimax-m3` and `kimi-k3`: both invented a
+  `set-health --reason` flag the skill explicitly says doesn't exist — the skill
+  is right; the models slip.
+- **One shared miss across all three tiers** was the vendor-agnostic remote-IDE
+  case (~0.87–0.89): a rubric-strictness artifact (all three gave the correct
+  workshop-side answer), relaxed as assertion fix #9. These rates predate that
+  fix; a re-run would show +1 on each.
+- Result files:
+  `results/2026-07-23-routing-openrouter-{z-ai-glm-5.2,minimax-minimax-m3,moonshotai-kimi-k3}.json`.
 
 #### GLM family refresh (2026-06-23, 73-case suite)
 
