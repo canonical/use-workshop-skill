@@ -37,13 +37,12 @@ There are exactly five hooks (`setup-base`, `setup-project`, `check-health`, `sa
 
 ```yaml
 # .workshop/<NAME>/sdk.yaml
-name: <NAME>
-hooks:
-  - <HOOK-1>
-  - <HOOK-2>          # optional
-# plugs: {}           # optional; only if the SDK provides plugs
-# slots: {}           # optional; only if the SDK provides slots
+name: <NAME>           # matches the directory; the ONLY required key
+# plugs: {}            # optional; interface plugs the SDK requests
+# slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
+
+Only `name` is required. Do NOT add a `hooks:` key — hooks are the executable files you write in Step 4, discovered automatically by filename; strict validation rejects unknown keys with an `unknown field` error. (Inline `hooks:` maps exist only in sketch SDKs.)
 
 **Step 4. Write each hook script under `.workshop/<NAME>/hooks/<HOOK>`.**
 
@@ -133,7 +132,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 - Forgetting `chmod +x` on a hook script — the hook is silently ignored; the workshop reports `Ready` without the hook's effect.
 - Naming the SDK directory and the `name:` field differently — the SDK fails to load.
 - Omitting the `project-` prefix in `workshop.yaml`'s `sdks:` entry — Workshop won't find the SDK.
-- Writing hook logic in `sdk.yaml` itself — there is no inline-script field; logic lives in `hooks/<HOOK-NAME>` scripts.
+- Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation with `unknown field`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
 - Calling `workshopctl set-health` from anywhere other than a `check-health` hook — it is intended for in-hook execution context.
 - Reaching for the build-time `schema-sdk.json` to validate `sdk.yaml` — that schema describes the post-`sdkcraft` form; in-project hooks aren't a YAML field there.
 - Editing `setup-base` and expecting `workshop refresh` to re-run it — `setup-base` only runs on workshop creation. `remove` + `launch` is required.

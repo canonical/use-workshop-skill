@@ -38,6 +38,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 **Constraint:** at most one sketch SDK per workshop at a time.
 **Lifetime:** transient; auto-applied by the workshop on save. Can be `--stash`ed and `--restore`d.
 **Eject path:** `workshop sketch-sdk --eject --name <NAME>` promotes it to an in-project SDK at `.workshop/<NAME>/`. After ejection it's a regular in-project SDK and can be committed.
+**Hooks in YAML:** a sketch's `sdk.yaml` is the ONLY SDK definition where hooks live in YAML (a map of hook name → inline script); ejecting materializes them into `hooks/` files and drops the `hooks:` key.
 **When to use:** rapid prototyping. The user wants to add custom packages, run-once setup, env vars, etc., without committing anything yet. List sketches with `workshop sketches`.
 **Authoring scope:** this skill does not drive the interactive sketch flow (it requires an `$EDITOR` session). See `<out_of_scope>` in SKILL.md. To ship a custom SDK, write an in-project SDK directly per `workflows/author-in-project-sdk.md`.
 </type>
