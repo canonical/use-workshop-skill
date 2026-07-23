@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Store-SDKs-only proposal uses workshop init
+  vars:
+    user: |
+      The approved proposal is just base ubuntu@24.04 with the go SDK on 1.26/stable, plus a couple of actions. How do you generate it?
+  assert:
+    - type: contains
+      value: workshop init
+    - type: llm-rubric
+      value: |
+        The response scaffolds with workshop init (base + SDKs), then EDITS
+        the generated .workshop/<name>.yaml to add the actions: block —
+        correctly stating init does not scaffold actions/connections/grafts.
+        It does not hand-write the whole file from memory when init covers
+        the skeleton.
+
+- description: Grafts and in-project SDKs go the template path
+  vars:
+    user: |
+      The proposal includes a tunnel pair for the dev server and an in-project SDK. Does workshop init handle that?
+  assert:
+    - type: contains-any
+      value:
+        - template
+        - templates/
+    - type: llm-rubric
+      value: |
+        The response says init only scaffolds base+SDKs; plug/slot grafts,
+        connections, and in-project SDKs come from copying a template and
+        replacing placeholders (or editing the init output using template
+        shapes) — not from synthesizing YAML from memory.
+
+- description: Default layout is .workshop/<name>.yaml named dev
+  vars:
+    user: |
+      Where does the generated definition file live and what's it called by default?
+  assert:
+    - type: contains
+      value: .workshop/
+    - type: contains-any
+      value:
+        - dev.yaml
+        - "dev"
+    - type: llm-rubric
+      value: |
+        The response gives .workshop/<name>.yaml with default name dev, notes
+        the basename must match name:, and does not create a root
+        workshop.yaml alongside .workshop/ files.
+
+- description: Lock file gitignored, definition committed
+  vars:
+    user: |
+      After generation, what gets committed and what gets gitignored?
+  assert:
+    - type: contains
+      value: .workshop.lock
+    - type: contains
+      value: .gitignore
+    - type: llm-rubric
+      value: |
+        The definition file(s) and in-project SDK directories are committed;
+        .workshop.lock is gitignored.
+
+- description: In-project sdk.yaml has no hooks key
+  vars:
+    user: |
+      Generating the in-project SDK now — should the sdk.yaml contain a hooks: section listing setup-base inline?
+  assert:
+    - type: contains-any
+      value:
+        - "hooks/"
+        - executable
+    - type: llm-rubric
+      value: |
+        The response says NO hooks: key in sdk.yaml — hooks are executable
+        files under .workshop/<name>/hooks/ (setup-base etc., chmod +x); only
+        sketch SDKs inline hooks in YAML.
+
+- description: Generation matches the approved proposal exactly
+  vars:
+    user: |
+      While generating, you noticed another SDK that might be nice to add. Do you include it?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response does not silently add (or drop) anything relative to the
+        approved proposal — a new idea goes back to the user as a proposal
+        amendment (with a recommendation), not straight into the file.

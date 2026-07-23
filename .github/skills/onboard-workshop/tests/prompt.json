@@ -1,0 +1,4 @@
+[
+  {"role": "system", "content": "{{skill}}"},
+  {"role": "user", "content": "{{user}}"}
+]

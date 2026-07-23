@@ -5,10 +5,18 @@
 .DS_Store
 *.swp
 
-# Skill-local: regenerated bundle
+# Skill-local: regenerated bundles
 .github/skills/use-workshop/tests/skill-bundle.md
+.github/skills/onboard-workshop/tests/skill-bundle.md
+.github/skills/onboard-workshop/tests/skill-selection-context.md
 
 # Skill-local: per-run promptfoo outputs
 .github/skills/use-workshop/tests/.promptfoo*
 .github/skills/use-workshop/tests/output.*
 .github/skills/use-workshop/tests/results/raw/
+.github/skills/onboard-workshop/tests/.promptfoo*
+.github/skills/onboard-workshop/tests/output.*
+.github/skills/onboard-workshop/tests/results/raw/
+
+# Skill-local: reconstruction eval staging area
+.github/skills/onboard-workshop/tests/reconstruction/.work/

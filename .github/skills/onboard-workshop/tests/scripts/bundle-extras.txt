@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Sibling files appended to skill-bundle.md by regenerate-bundle.sh, relative
+# to the onboard-workshop skill root. These are the use-workshop references
+# and templates the onboarding workflows cite as required reading.
+../use-workshop/references/definition-file.md
+../use-workshop/references/sdk-types.md
+../use-workshop/references/in-project-sdk.md
+../use-workshop/references/interfaces.md
+../use-workshop/references/command-cheatsheet.md
+../use-workshop/references/async-and-recovery.md

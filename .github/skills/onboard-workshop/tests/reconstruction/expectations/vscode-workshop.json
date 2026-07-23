@@ -1,0 +1,18 @@
+{
+  "_comment": "Reconstruction thresholds for the vscode-workshop guinea pig. Ground truth: .workshop/ext.yaml (node@24 + project-test-deps with desktop plug and X-libs setup-base; actions: npm ci + vsce package, npm test, xvfb-run test-ci).",
+  "base": "ubuntu@24.04",
+  "required_sdks": [
+    { "name": "node", "track": "24" }
+  ],
+  "in_project_sdk_required": true,
+  "desktop_plug_required": true,
+  "anywhere_tokens": ["xvfb"],
+  "_build_note": "vsce/npm-ci appear only in the redacted ground truth (vsce is not in devDependencies), so a reconstruction wrapping the repo's own build entry points (npm run compile/package) is functionally equivalent.",
+  "action_token_groups": [
+    { "name": "build", "any": ["vsce", "npm ci", "npm run package", "npm run compile"] },
+    { "name": "test", "any": ["npm test", "npm run test"] },
+    { "name": "test-headless", "any": ["xvfb-run"] }
+  ],
+  "min_action_groups": 3,
+  "gitignore_lock": true
+}

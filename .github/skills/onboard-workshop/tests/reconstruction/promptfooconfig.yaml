@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+description: |
+  Guinea-pig reconstruction eval for the onboard-workshop skill.
+  Sandboxes are staged by run-reconstruction.sh (clean-room repo copies with
+  their real workshop definitions parked as hidden ground truth); the
+  provider runs the onboarding agent, appends the generated files, the
+  ground truth, and the deterministic compare-definition.py scorecard, and
+  the asserts below gate on both the scorecard and a functional-equivalence
+  rubric. Do not invoke this config directly — use `make eval-reconstruction`.
+
+prompts:
+  - "{{task}}"
+
+providers:
+  - id: file://provider-onboard-cli.js
+    config:
+      model: claude-sonnet-4-6
+
+defaultTest:
+  options:
+    cache: false
+    # Same pinned judge as the routing suite; requires OPENAI_API_KEY.
+    provider: openai:gpt-5.5-2026-04-23
+  assert:
+    # Deterministic gate: the scorecard's threshold verdict.
+    - type: contains
+      value: '"overall_pass": true'
+    # The verdict-before-generation contract left a trace in the transcript.
+    - type: contains-any
+      value:
+        - FULL
+        - PARTIAL
+        - feasibility
+        - Feasibility
+    # Functional-equivalence + honesty rubric, graded against the ground
+    # truth the agent never saw.
+    - type: llm-rubric
+      value: |
+        You are comparing a GENERATED workshop definition against the GROUND
+        TRUTH definition (both appended after the transcript; the agent never
+        saw the ground truth). Score 1-5 and pass at 4+:
+        (a) Developer capability: a developer using the generated workshop
+        could do essentially the same daily work as with the ground truth
+        (build, test, lint, docs/dev servers reachable). Construct-for-
+        construct string equality is NOT required — an action named
+        docs-build wrapping the same make target as docs-html counts fully.
+        (b) Envelope discipline: the generated YAML uses only real keys and
+        plausible SDK names/channels; no invented constructs.
+        (c) Honesty: needs the agent could not map (packaging pipelines,
+        macOS-only tools, unverifiable SDKs) are named as gaps or notes in
+        the transcript, not silently dropped or faked.
+        (d) Process: the transcript shows analysis before proposal, a
+        feasibility verdict before generation, and recommendations attached
+        to any questions.
+        Fail (3 or below) if the generated definition would not build/test
+        the project, invents SDKs, or the transcript shows the verdict was
+        skipped.
+
+tests:
+  - file://.work/tests.yaml

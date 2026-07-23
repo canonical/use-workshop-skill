@@ -38,8 +38,11 @@
     - type: contains-any
       value:
         - "move"
+        - "Move"
         - "rename"
-        - "migrate"
+        - "Rename"
+        - "migrat"
+        - "Migrat"
     - type: contains
       value: .workshop/
     - type: llm-rubric

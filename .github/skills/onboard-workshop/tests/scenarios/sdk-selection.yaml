@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Store lookup comes first
+  vars:
+    user: |
+      How will you decide which SDKs go into my workshop definition?
+  assert:
+    - type: contains
+      value: sdk find
+    - type: llm-rubric
+      value: |
+        The selection order is: live Store lookup (sdk find, sdk info) first;
+        the codified catalog only as a fallback with unverified tagging;
+        in-project SDK for custom apt/setup needs; and an admitted gap when
+        nothing fits. No invented names, no git URLs.
+
+- description: Catalog fallback is tagged unverified
+  vars:
+    user: |
+      The sdk CLI isn't installed on this machine. Can you still propose SDKs for my Node project?
+  assert:
+    - type: contains-any
+      value:
+        - unverified
+        - confirm
+    - type: contains
+      value: node
+    - type: llm-rubric
+      value: |
+        The response proposes the node SDK from the catalog but explicitly
+        tags it as unverified / to be confirmed with sdk info before launch —
+        it does not present catalog knowledge as live-verified fact.
+
+- description: CI apt-get lines become an in-project SDK setup-base
+  vars:
+    user: |
+      Our CI installs libgtk-3-0 and xvfb with apt-get before running the Electron test suite. How does that translate into the workshop?
+  assert:
+    - type: contains-any
+      value:
+        - setup-base
+        - in-project
+        - "project-"
+    - type: llm-rubric
+      value: |
+        The response maps the CI apt-get package list into an in-project
+        SDK's setup-base hook (files under .workshop/<name>/hooks/, consumed
+        as project-<name>), rather than telling the user to apt-get install
+        inside the running workshop or inventing a Store SDK for it.
+        Mentioning the desktop plug / xvfb action split for GUI test hosts
+        is a plus.
+
+- description: Node channel from engines field
+  vars:
+    user: |
+      package.json has "engines": {"node": ">=24"}. What goes in the sdks: entry?
+  assert:
+    - type: contains
+      value: node
+    - type: contains
+      value: "24"
+    - type: llm-rubric
+      value: |
+        The response proposes the node SDK with the channel pinned from the
+        engines field (channel "24"), verified or to-verify via sdk info.
+
+- description: Python maps to uv
+  vars:
+    user: |
+      It's a Python project with pyproject.toml and a requirements.txt. Which SDK do you propose?
+  assert:
+    - type: contains
+      value: uv
+    - type: not-contains
+      value: pip-sdk
+
+- description: Docker-compose services go through the docker SDK
+  vars:
+    user: |
+      Local dev needs docker compose up for postgres and redis. Can the workshop cover that?
+  assert:
+    - type: contains
+      value: docker
+    - type: llm-rubric
+      value: |
+        The response proposes the Store docker SDK to run compose INSIDE the
+        workshop (with an action wrapping the compose invocation and tunnels
+        for ports that must reach the host), not hand-installing dockerd via
+        hooks, and not claiming host-docker passthrough.

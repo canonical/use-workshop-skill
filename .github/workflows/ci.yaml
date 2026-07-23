@@ -17,8 +17,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install PyYAML
         run: python3 -m pip install --quiet pyyaml
-      - name: Static checks (doc paths, bundle regen, YAML parse, shellcheck)
+      - name: Static checks, use-workshop (doc paths, bundle regen, YAML parse, shellcheck)
         run: make -C .github/skills/use-workshop/tests check
+      - name: Static checks, onboard-workshop (shared manifests, bundle regen, YAML keys, hooks)
+        run: make -C .github/skills/onboard-workshop/tests check
       - name: REUSE lint
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
 
@@ -44,12 +46,17 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — paid (~$7-8/run), so manual-only via workflow_dispatch.
-  # Requires the ANTHROPIC_API_KEY repository secret. Compare the result
-  # against tests/BASELINE.md before merging skill-content changes.
+  # Routing eval — paid (~$7-8/run per skill), so manual-only via
+  # workflow_dispatch. Requires the ANTHROPIC_API_KEY repository secret.
+  # Compare the result against the per-skill tests/BASELINE.md before merging
+  # skill-content changes. The `skill` input picks which suite(s) to run.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: [use-workshop, onboard-workshop]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -58,12 +65,15 @@ jobs:
       - name: Install promptfoo
         run: npm install -g promptfoo@0.121.9
       - name: Routing eval (Sonnet 4.6 baseline)
-        run: make -C .github/skills/use-workshop/tests eval-routing
+        run: make -C .github/skills/${{ matrix.skill }}/tests eval-routing
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # run-routing.sh preflights the pinned llm-rubric judge and exits 2
+          # without this.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Upload result summaries
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: routing-eval-results
-          path: .github/skills/use-workshop/tests/results/
+          name: routing-eval-results-${{ matrix.skill }}
+          path: .github/skills/${{ matrix.skill }}/tests/results/

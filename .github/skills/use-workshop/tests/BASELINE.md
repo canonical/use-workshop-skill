@@ -37,10 +37,21 @@ surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 
 | Model              | Pass rate                      | Notes |
 |--------------------|--------------------------------|-------|
-| `claude-sonnet-4-6` | **76/76 (100%)** | full run under the 0.9.4 bundle (2026-07-23) |
+| `claude-sonnet-4-6` | **76/76 (100%)** | full run under the 0.9.4 bundle (2026-07-23); re-verified after the onboard-workshop handoff edit (see note below) |
 | `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
 | `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
 
+> ✅ **2026-07-23 (onboard-workshop handoff edit): rerun 75/76 → 76/76.**
+> Adding the onboard-workshop handoff sentence to
+> `workflows/bootstrap-project.md` changed the bundle, so policy required a
+> full rerun: 75/76, with the single failure a case-sensitivity artifact in
+> `multi-workshop-projects.yaml` (the answer was correct — "**Move** the
+> existing definition", "migration path" — but the `contains-any` list had
+> only lowercase "move"/"migrate"; "migrate" is also not a substring of
+> "migration"). The assertion now accepts case variants and the "migrat"
+> stem; the case re-ran green (1/1). No content-caused regressions; the
+> committed `results/2026-07-23-routing-*.json` records the 75/76 run.
+>
 > ✅ **2026-07-23 (0.9.3/0.9.4): Sonnet 4.6 re-pinned at 76/76.**
 > The Sonnet-only `make eval-routing` run was executed against the 0.9.4 bundle +
 > 76-case suite and lands **76/76 (100%, 0 errors)** — Sonnet is re-pinned above.
