@@ -37,20 +37,18 @@ surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 
 | Model              | Pass rate                      | Notes |
 |--------------------|--------------------------------|-------|
-| `claude-sonnet-4-6` | **60/60 (100%)** | full run under the 2026-06-03 bundle — predates the 2026-06-09 changes (see below) |
-| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
-| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
+| `claude-sonnet-4-6` | **76/76 (100%)** | full run under the 0.9.4 bundle (2026-07-23) |
+| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
+| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
 
-> ⚠️ **2026-07-22 (0.9.3/0.9.4): Anthropic pins remain stale by maintainer decision.**
-> This round changed the bundle again (the sdk.yaml-shape and orphan-recovery
-> correctness fixes, plus 0.9.3/0.9.4 feature coverage) and grew the suite to
-> 76 cases, and — consistent with the 2026-06-23 and 2026-06-09 rounds — the
-> Anthropic tiers were NOT re-run as part of the content change. The rates below
-> are the last full Anthropic runs under *earlier* bundles and do not reflect
-> 0.9.3/0.9.4. The planned re-pin is a **Sonnet-only** `make eval-routing` run
-> (≈$7–8), executed as a separate, explicitly-approved step after merge review;
-> re-pin Sonnet at 76/76 or document any investigated deltas here. Haiku/Opus and
-> the open-weight sweeps stay optional per the standing decision.
+> ✅ **2026-07-23 (0.9.3/0.9.4): Sonnet 4.6 re-pinned at 76/76.**
+> The Sonnet-only `make eval-routing` run was executed against the 0.9.4 bundle +
+> 76-case suite and lands **76/76 (100%, 0 errors)** — Sonnet is re-pinned above.
+> The run surfaced two over-strict assertions, both relaxed and re-verified (fixes
+> #10 remount and #11 custom-device below; the answers were correct, the rubrics
+> asked for irrelevant clauses). **Haiku 4.5 and Opus 4.7 remain stale by
+> maintainer decision** — last full-run on the 59-case/0.9.2 bundle; a full re-run
+> under the 0.9.4 bundle is optional. The open-weight sweeps stay diagnostic-only.
 >
 > ⚠️ **2026-06-23 (0.9.2): Anthropic pins were already stale before this round.**
 > The 0.9.2 round substantially changed the bundle (correctness fixes + new
@@ -60,8 +58,9 @@ surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 > above are the last full Anthropic runs under *earlier* bundles and do not
 > reflect 0.9.2 or later.
 
-> **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
-> skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`
+> **Status (historical — superseded by the 2026-07-23 re-pin above).** Sonnet 4.6
+> was previously pinned at **60/60** under the 2026-06-03 bundle: the prior
+> 59-case suite plus 1 new `troubleshoot.yaml`
 > storage case (`No space left on device` → resize the LXD pool). Adding the
 > storage content to the bundle surfaced one over-strict rubric —
 > `Refresh failed (paraphrase 2)` — that forbade even a correctly-scoped
@@ -425,6 +424,14 @@ the fix):
    caveat. Replaced with a rubric that forbids *prescribing* remove+launch as the
    reassignment mechanism while allowing the warning (same mention-vs-prescription
    class as fixes 2, 3, 7, 8, and 9).
+11. **`Narrow a custom-device plug to one USB adapter by vendor/product ID`**
+   (interfaces, 2026-07-23) — the lone Sonnet 4.6 miss on the re-pin run (0.95).
+   Verified against the raw output: the answer was fully correct (quoted
+   `vendorid`/`productid`, `productid` requires `vendorid`, `refresh` + manual
+   `connect`, no invented attributes). The judge docked it only for not reciting
+   the "at least one of subsystem/vendorid/productid is required" rule — which is
+   irrelevant here, since the user's plug already has `subsystem`. Made that
+   recitation optional in this new case's own rubric; Sonnet then passes 76/76.
 
 ### Known variance watch-items (Haiku 4.5)
 

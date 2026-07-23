@@ -159,10 +159,11 @@
       value: |
         The response narrows the custom-device plug with the `vendorid` and
         `productid` attributes (0.9.3+), keeping the values quoted as strings
-        (`"0403"` / `"6001"`) so YAML doesn't mangle them. It notes that at
-        least one of `subsystem`/`vendorid`/`productid` is required and that
+        (`"0403"` / `"6001"`) so YAML doesn't mangle them, and notes that
         `productid` requires `vendorid`. It applies the change with
         `workshop refresh` and (since custom-device never auto-connects)
         `workshop connect`. It does NOT invent attributes like `vendor`,
         `product`, or `serial`, and does NOT route the request to a different
-        interface.
+        interface. (Restating the "at least one of subsystem/vendorid/productid
+        is required" rule is optional — the user's plug already has
+        `subsystem`, so it isn't at issue here.)
