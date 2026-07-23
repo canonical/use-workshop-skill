@@ -28,9 +28,13 @@
       value: node
     - type: llm-rubric
       value: |
-        The response proposes the node SDK from the catalog but explicitly
-        tags it as unverified / to be confirmed with sdk info before launch —
-        it does not present catalog knowledge as live-verified fact.
+        The response confirms the catalog fallback path and never presents
+        catalog knowledge as live-verified fact: any SDK proposed from the
+        catalog (e.g. node) is tagged unverified / to be confirmed with sdk
+        info before launch. Proposing the node SDK immediately, or first
+        requesting the repo evidence needed to propose accurately (a chat
+        cannot inspect the project) while stating the catalog + unverified
+        protocol, are both acceptable.
 
 - description: CI apt-get lines become an in-project SDK setup-base
   vars:

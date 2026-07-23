@@ -43,6 +43,11 @@ INFEASIBLE.
   generated, no matter how helpful a partial file might feel.
 - PARTIAL → enumerate every GAP and get explicit user acknowledgment before
   continuing.
+- PARTIAL where the MAJORITY of the primary loop is GAPs (low confidence) →
+  offer the minimal workshop fallback (base + project mount, no toolchain
+  claims) as an explicit choice with a recommendation, per the
+  low-confidence clause in `references/capability-envelope.md`; declined →
+  stop as for INFEASIBLE.
 
 **Step 4. Interview — only what is genuinely ambiguous, in ONE batch.**
 Every DECISION question states its recommendation and the reason. (Requests

@@ -35,7 +35,9 @@ Five rules that always apply to onboarding. Every workflow assumes them.
    action is then done when `workshop run <action>` succeeded inside the
    workshop — or it is reported UNVERIFIED with a reason. Wrap the repo's
    existing entry points (Makefiles, scripts, CI commands); never
-   re-implement them.
+   re-implement them, and never MODIFY them: an onboarding writes only
+   `.workshop/**` and the `.gitignore` line — the repo's existing Makefiles,
+   build scripts, tests, and configurations stay untouched.
 </essential_principles>
 
 <docs>

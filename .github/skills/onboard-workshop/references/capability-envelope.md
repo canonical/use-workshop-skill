@@ -73,9 +73,25 @@ GAP: <need> — <why it cannot map> — <workaround, or "none">
 
 PARTIAL requires the user to acknowledge the gaps before you generate.
 
-**INFEASIBLE** — the primary loop itself cannot run inside an Ubuntu LXD
+**Low-confidence PARTIAL** — the repo runs on Ubuntu, but the MAJORITY of the
+primary loop lands in GAPs (Store/reference SDKs and CI evidence cover little
+of the stack). The test is RUN vs AUTOMATE: Workshop being unable to INSTALL
+a toolchain (manual or licensed installer, no apt/Store/download path) is not
+infeasibility — the stack still runs on Ubuntu, so a workshop is still useful
+as a plain environment even when its setup can't be automated. Do not stretch
+this to INFEASIBLE, and do not generate a definition full of unproven claims.
+State that confidence is low and OFFER the **minimal workshop fallback**:
+base + implicit `system` SDK + the project mount, zero toolchain claims (copy
+`../use-workshop/templates/workshop-minimal.yaml`); the developer installs
+the unmappable pieces manually inside it. The offer is a decision question
+and carries a recommendation like any other; if the user declines, end the
+run as for INFEASIBLE — report, docs pointers, nothing generated.
+
+**INFEASIBLE** — the primary loop itself cannot RUN inside an Ubuntu LXD
 container (non-Linux toolchain, unsupported OS dependency, mandatory hardware
-with no interface). Deliver the verdict, the reasons, and docs pointers.
+with no interface). Reserve it for cannot-run; "Workshop cannot automate the
+setup" is the low-confidence PARTIAL above, never INFEASIBLE. Deliver the
+verdict, the reasons, and docs pointers.
 Generate NOTHING — a definition that cannot build the project is worse than no
 definition. Do not soften the verdict to be helpful.
 </feasibility_rubric>
@@ -95,6 +111,9 @@ Gaps:                          # omit section when FULL
 
 Unverified:                    # omit when everything was confirmed live
 - <sdk>/<channel> — proposed from catalog; confirm with `sdk info <sdk>`
+
+Fallback offered:              # only for low-confidence PARTIAL
+- minimal workshop (base + project mount only) — accepted | declined
 ```
 </verdict_format>
 
@@ -116,6 +135,12 @@ Unverified:                    # omit when everything was confirmed live
 5. **Firmware repo needing a proprietary vendor IDE** → INFEASIBLE unless the
    vendor ships a Linux CLI toolchain (then re-evaluate: compile may be FULL
    with flashing as a `custom-device` plug or a GAP).
+6. **Linux-only proprietary toolchain installed by hand** (licensed
+   installer, no apt package, no Store SDK, no scriptable download) →
+   low-confidence PARTIAL, not INFEASIBLE: the stack runs on Ubuntu. Offer
+   the minimal workshop fallback — base + project mount, the developer
+   installs the toolchain inside — or a `mount` plug if every developer
+   keeps it at a consistent host path.
 </worked_examples>
 
 <source_docs>

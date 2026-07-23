@@ -10,12 +10,12 @@ must be recorded before release.
 
 ## Routing eval (`make eval-routing`)
 
-46 cases across 8 scenario files (incl. 8 cross-skill selection cases).
+48 cases across 8 scenario files (incl. 8 cross-skill selection cases).
 Judge: pinned in `promptfooconfig.yaml` (same as sibling).
 
 | Model | Pass rate | Date | Notes |
 |-------|-----------|------|-------|
-| `claude-sonnet-4-6` | **46/46 (100%)** | 2026-07-23 | canonical baseline; see round notes below |
+| `claude-sonnet-4-6` | **48/48 (100%)** | 2026-07-23 | canonical baseline; see round notes below |
 | `claude-haiku-4-5` | _pending_ | — | clarity diagnostic |
 | `claude-opus-4-7` | _pending_ | — | headroom check |
 
@@ -41,8 +41,24 @@ Judge: pinned in `promptfooconfig.yaml` (same as sibling).
 > final-report case's past-tense prompt ("everything ran") made the model
 > honestly refuse to fabricate a report for a run that never happened — the
 > honesty gate working as designed against a hypothetical; the prompt now
-> asks prospectively what the report WILL contain. Final canonical run:
-> **46/46 (100%)**, recorded in `results/2026-07-23-routing-*.json`.
+> asks prospectively what the report WILL contain. The canonical run at that
+> point: **46/46 (100%)**.
+>
+> **2026-07-23 issue-triage round.** Two acceptance criteria from the issue
+> were codified explicitly: the low-confidence minimal-workshop fallback
+> (capability-envelope rubric + propose-plan offer + generate-definition
+> path) and the no-modify rule (SKILL.md principle 5 + generate-definition
+> anti-pattern); `feasibility-honesty.yaml` gained one case for each
+> (46→48). The first 48-case run landed 46/48 ($4.04): the new fallback
+> case exposed a genuine content gap — the model stretched a Linux-
+> compatible-but-unautomatable stack to INFEASIBLE instead of offering the
+> fallback — fixed by an explicit RUN-vs-AUTOMATE discriminator in both
+> rubric tiers plus worked example 6; and the pre-existing catalog case
+> flipped on eval modality (the model stated the catalog+unverified
+> protocol correctly but asked for repo evidence before proposing — rubric
+> relaxed per the mention-vs-prescription precedent to accept either).
+> Both re-ran green in a partial, then the full canonical run landed
+> **48/48 (100%)**, recorded in `results/2026-07-23-routing-*.json`.
 
 ## Reconstruction eval (`make eval-reconstruction`, offline tier)
 
@@ -69,6 +85,17 @@ Update expectations when a guinea pig's ground truth changes.
 > information only the hidden ground truth held. Round 2/3 akcano runs were
 > killed mid-flight by "credit balance is too low" and carry no signal —
 > re-run after top-up.
+>
+> **2026-07-23 issue-triage re-run.** After the fallback + no-modify content
+> additions, the offline tier re-ran green on both guinea pigs (2/2,
+> scorecards + rubric). The run staged the skill just before the final
+> RUN-vs-AUTOMATE wording sharpening in `capability-envelope.md`; that
+> delta is confined to the low-confidence clause, which neither FULL-
+> verdict guinea pig exercises, so the cells were not re-run a second time.
+> The full-LXD and agentic tiers were likewise not re-run for this round —
+> the additions are honesty clauses on paths those suites already exercise
+> as FULL-verdict runs (stale-by-decision, same policy as the pending
+> diagnostic rows).
 
 ## Reconstruction eval (full LXD tier, `make eval-reconstruction-full`)
 

@@ -29,7 +29,9 @@ entry. YAML shapes come from templates, never from memory.
   `connections:`, or in-project SDKs: `templates/workshop-dev-server.yaml`
   here, or the sibling `workshop-minimal/multi-sdk/with-actions/
   with-connections` templates. Save as `.workshop/<name>.yaml`; replace every
-  placeholder.
+  placeholder. An accepted minimal-workshop fallback (low-confidence verdict)
+  copies the sibling `workshop-minimal.yaml` and stops there — no actions, no
+  toolchain claims.
 
 **Step 2. Fill actions from the proposal** — each body wraps the repo's real
 entry point per `<action_conventions>` in `references/toolchain-signals.md`.
@@ -77,6 +79,9 @@ Checklist — every box, before handing off or stopping:
   wrong (that path is reserved for workshop definitions). Also mind the
   hook contract: `setup-base` runs as root (apt-get belongs there);
   `setup-project` runs as the workshop user (no apt-get).
+- Editing an existing repo file (Makefile, package.json, CI workflow, test
+  config) to make an action fit — wrap the entry point as it is, or record a
+  GAP. Onboarding writes only `.workshop/**` and the `.gitignore` line.
 - Emitting channels the proposal did not verify or tag.
 - Leaving a root `workshop.yaml` alongside `.workshop/<name>.yaml`.
 - Forgetting the executable bit on hooks — the launch fails late and
