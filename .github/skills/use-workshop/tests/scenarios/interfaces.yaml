@@ -60,8 +60,16 @@
   assert:
     - type: contains
       value: workshop remount
-    - type: not-contains
-      value: workshop launch
+    # No blunt `not-contains: workshop launch`: a correct answer often warns
+    # that the remount does NOT survive a remove+launch (which resets mounts to
+    # definition defaults). The rubric enforces mention-vs-prescription.
+    - type: llm-rubric
+      value: |
+        The response reassigns the mount source in place with `workshop
+        remount` (no relaunch needed). It does NOT prescribe `workshop
+        remove` + `workshop launch` as the way to change the mount source.
+        Mentioning launch only to WARN that a remove+launch would reset the
+        mount to its definition default is fine (mention-vs-prescription).
 
 - description: User asks about ssh-agent forwarding
   vars:

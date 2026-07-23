@@ -416,6 +416,15 @@ the fix):
    allowing example product names (same mention-vs-prescription class as fixes
    2, 3, 7, and 8). Verified against the raw outputs: all three would pass under
    the relaxed rubric.
+10. **`Reassign a mount source to a different host directory`** (interfaces,
+   2026-07-23) — surfaced on the Sonnet 4.6 re-pin run: a blunt
+   `not-contains "workshop launch"` fired on the model's own warning that a
+   `remount` does NOT survive `workshop remove` + `workshop launch` (which resets
+   mounts to definition defaults). Verified against the raw Sonnet output — the
+   answer correctly used `workshop remount` and only mentioned launch inside that
+   caveat. Replaced with a rubric that forbids *prescribing* remove+launch as the
+   reassignment mechanism while allowing the warning (same mention-vs-prescription
+   class as fixes 2, 3, 7, 8, and 9).
 
 ### Known variance watch-items (Haiku 4.5)
 
