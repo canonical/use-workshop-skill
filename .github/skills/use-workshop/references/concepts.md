@@ -24,7 +24,7 @@ The underlying OS image of the workshop, declared as `base: ubuntu@<release>` (c
 </term>
 
 <term name="workshop hostname (DNS)">
-Each workshop has a friendly DNS name of the form `<WORKSHOP>.<PROJECT>.wp` (0.9.2+), shown in `workshop info` (the `hostname:` line) and in the in-workshop shell prompt (`workshop@<workshop>:/project$`). Workshops in the **same project** can reach each other by name — a short name (`backend`) where the base supports the DNS search domain, otherwise the full `backend.<project>.wp`. This removes the host-tunnel hop for same-project workshop-to-workshop traffic; cross-project and host↔workshop traffic still go through a tunnel. Existing workshops need one `workshop refresh` to activate it.
+Each workshop has a friendly DNS name of the form `<WORKSHOP>.<PROJECT>.wp` (0.9.2+), shown in `workshop info` (the `hostname:` line) and in the in-workshop shell prompt (`workshop@<workshop>:/project$`). Workshops in the **same project** can reach each other by name — a short name (`backend`) where the base supports the DNS search domain, otherwise the full `backend.<project>.wp`. This removes the host-tunnel hop for same-project workshop-to-workshop traffic; cross-project and host↔workshop traffic still go through a tunnel. Existing workshops need one `workshop refresh` to activate it. When the preferred hostname can't be assigned (e.g. the project directory name isn't a valid DNS label), `workshop info` shows a `hostname-fallback` note (0.9.3+) and a stable ID-based name is used instead — the `workshopd` log has the specific reason.
 </term>
 
 <term name="SDK">
@@ -38,7 +38,7 @@ A bundled, layered unit of code/data/configuration installed on top of the base.
 
 <term name="interface, plug, slot, connection">
 The mechanism for controlled communication and resource sharing.
-- **Interface**: a predefined resource type (camera, custom-device, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types (`custom-device` is itself predefined — it exposes host devices by kernel subsystem, not a way to define new interfaces).
+- **Interface**: a predefined resource type (camera, custom-device, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types (`custom-device` is itself predefined — it exposes host devices by kernel subsystem, optionally narrowed by vendor/product ID (0.9.3+), not a way to define new interfaces).
 - **Plug**: the consumer side, declared in the SDK that wants to use the resource.
 - **Slot**: the provider side; for host resources, declared on the system SDK; for workshop-internal resources, on a regular SDK.
 - **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount auto-connects to **system-SDK slots only** — a regular-SDK mount slot needs an explicit `connections:` entry; GPU auto-connects; tunnel auto-connects only host→workshop under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, and the remaining tunnel cases.
@@ -65,7 +65,7 @@ A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/
 <gotchas>
 - Two projects with the same workshop `name:` are independent workshops, not a shared one. `workshop list --global` shows the project path.
 - `cp -r` of a project directory does not duplicate the workshop. The copy is silent until you launch in the new directory; then you have two independent workshops with the same name.
-- Deleting a project directory without `workshop remove` first leaves orphaned LXD resources. See the `purge-and-recover` workflow.
+- Deleting a project directory without `workshop remove` first orphans the workshop — `workshop list --global` shows `Error` with a `missing-project` note. Recreate the directory at the same absolute path to remove it cleanly (or restore its content to keep it); see the `purge-and-recover` workflow.
 - `latest/stable` channel is not necessarily either "latest" or "stable" — the SDK publisher chooses what each track means. Don't assume.
 - SDKs are mounted read-only inside the workshop. Updates flow only through `workshop refresh` re-fetching the channel.
 - Workshop's data lives in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL), sized at ~20% of free disk when first created (clamped 5–30 GiB) and **never auto-grown**. A workshop can hit `No space left on device` while the host disk still has plenty free — the limit is the pool, not the host. Grow it with `sudo lxc storage set workshop size=…` (grow only; ZFS can't shrink). See `workflows/troubleshoot.md`.

@@ -116,7 +116,7 @@ actions:
 
 **Custom-device plugs** (regular SDKs only; never the system SDK):
 - Name is freeform.
-- `subsystem` (required): the kernel device subsystem to expose (e.g., `tty`, `input`, `usb`). The only attribute the interface accepts.
+- Attributes: `subsystem` (kernel device subsystem to expose, e.g. `tty`, `input`, `usb`), `vendorid` (0.9.3+), `productid` (0.9.3+) — each optional, at least one required; `productid` requires `vendorid`. Quote IDs as strings (`"0403"`, `"6001"`).
 - Never auto-connects — wire it after launch/refresh with `workshop connect <WORKSHOP>/<SDK>:<PLUG> :custom-device`. The slot exists only as `system:custom-device`.
 </interface_specifics>
 

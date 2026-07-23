@@ -60,8 +60,16 @@
   assert:
     - type: contains
       value: workshop remount
-    - type: not-contains
-      value: workshop launch
+    # No blunt `not-contains: workshop launch`: a correct answer often warns
+    # that the remount does NOT survive a remove+launch (which resets mounts to
+    # definition defaults). The rubric enforces mention-vs-prescription.
+    - type: llm-rubric
+      value: |
+        The response reassigns the mount source in place with `workshop
+        remount` (no relaunch needed). It does NOT prescribe `workshop
+        remove` + `workshop launch` as the way to change the mount source.
+        Mentioning launch only to WARN that a remove+launch would reset the
+        mount to its definition default is fine (mention-vs-prescription).
 
 - description: User asks about ssh-agent forwarding
   vars:
@@ -137,3 +145,25 @@
         `consumer:<plug>` with `provider:<slot>`. It does NOT claim auto-connect
         will pick the regular-SDK slot, and does NOT misuse `bind:` (plug-to-plug)
         as the mechanism for pairing a plug to a slot.
+
+- description: Narrow a custom-device plug to one USB adapter by vendor/product ID
+  vars:
+    user: |
+      My custom-device plug uses `subsystem: tty`, but that exposes every serial adapter on the host. I only want the workshop to see my FTDI adapter, vendor 0403 product 6001. How do I restrict it?
+  assert:
+    - type: contains
+      value: vendorid
+    - type: contains
+      value: productid
+    - type: llm-rubric
+      value: |
+        The response narrows the custom-device plug with the `vendorid` and
+        `productid` attributes (0.9.3+), keeping the values quoted as strings
+        (`"0403"` / `"6001"`) so YAML doesn't mangle them, and notes that
+        `productid` requires `vendorid`. It applies the change with
+        `workshop refresh` and (since custom-device never auto-connects)
+        `workshop connect`. It does NOT invent attributes like `vendor`,
+        `product`, or `serial`, and does NOT route the request to a different
+        interface. (Restating the "at least one of subsystem/vendorid/productid
+        is required" rule is optional — the user's plug already has
+        `subsystem`, so it isn't at issue here.)

@@ -59,7 +59,8 @@
         state, the agent: (a) consulted the skill's
         `author-in-project-sdk.md` workflow and `in-project-sdk.md`
         reference; (b) wrote `.workshop/ruff/sdk.yaml` with
-        `name: ruff` and a `hooks:` list containing `setup-project`;
+        `name: ruff` and NO `hooks:` key (hooks are discovered by
+        filename, not listed in YAML);
         (c) wrote `.workshop/ruff/hooks/setup-project` as an
         executable bash script that installs ruff (e.g.,
         `uv tool install ruff`), and ran `chmod +x` on it; (d) added

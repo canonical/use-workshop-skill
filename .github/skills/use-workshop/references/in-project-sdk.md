@@ -6,7 +6,7 @@ In-project SDKs live inside the project at `.workshop/<NAME>/` and are version-c
 
 Two artifacts make up an in-project SDK:
 1. `.workshop/<NAME>/sdk.yaml` — the SDK manifest.
-2. `.workshop/<NAME>/hooks/<HOOK-NAME>` — executable scripts (one per declared hook).
+2. `.workshop/<NAME>/hooks/<HOOK-NAME>` — executable scripts, discovered automatically by filename (one per hook).
 
 There is NO build step (that is `sdkcraft`'s job, out of scope here). Workshop reads the manifest and runs the hook scripts directly.
 </overview>
@@ -15,12 +15,13 @@ There is NO build step (that is `sdkcraft`'s job, out of scope here). Workshop r
 Minimal `sdk.yaml` shape:
 
 ```yaml
-name: <NAME>           # matches the directory; lowercase, digits, hyphens
-hooks:
-  - <HOOK-NAME>        # one entry per hook script under hooks/
-plugs: {}              # optional; interface plugs the SDK provides
-slots: {}              # optional; interface slots the SDK provides
+# .workshop/<NAME>/sdk.yaml
+name: <NAME>           # matches the directory; the ONLY required key
+# plugs: {}            # optional; interface plugs the SDK requests
+# slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
+
+There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are executable files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with an `unknown field` error and its line/column. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
 
 Reference the SDK from the workshop definition as `project-<NAME>`:
 
@@ -29,9 +30,11 @@ sdks:
   - name: project-<NAME>
 ```
 
-For an in-project SDK only `name` is mandatory; `architecture` is optional (assumed to match the host, or `all`). The post-build JSON Schema (`reference/definition-files/schema-sdk.json`) describes the *post-`sdkcraft`* form (carries `architecture`, `sdkcraft-started-at`, etc.) — that is NOT the in-project authoring shape. Do not reach for it to validate `sdk.yaml`. In particular, in-project hooks are a filesystem layout convention (`hooks/<HOOK-NAME>` executable scripts), not a YAML field.
+Only `name` is mandatory. Valid optional top-level keys: `title`, `version`, `summary`, `description`, `base`, `architecture`, `license`, `plugs`, `slots` (built Store SDKs additionally carry fields like `sdkcraft-started-at` — never author those by hand). `architecture` is assumed to match the host (or `all`). `name` rules: at least one lowercase letter; lowercase letters, digits, and interior hyphens; up to 40 characters; cannot be `agent`, `system`, or `sketch`, and cannot start with `try-` or `project-` — the `project-` prefix appears ONLY in the workshop definition's `sdks:` reference. The manifest lives at `.workshop/<NAME>/sdk.yaml` (or `.workshop/<NAME>/meta/sdk.yaml`).
 
-Note: user-facing YAML is now validated strictly — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front with a line/column, rather than being silently ignored. Fix the key; don't retry the same file.
+The post-build JSON Schema (`reference/definition-files/schema-sdk.json`) describes the *post-`sdkcraft`* form (its `required` list reflects a packed SDK, which carries fields like `sdkcraft-started-at`) — that is NOT the in-project authoring shape. Do not reach for it to validate `sdk.yaml`.
+
+Note: user-facing YAML is validated strictly (0.9.2+) — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front with a line/column, rather than being silently ignored. Fix the key; don't retry the same file.
 </sdk_yaml_schema>
 
 <hook_taxonomy>
@@ -78,9 +81,7 @@ Tool-wrapper SDK (one hook, no plugs/slots) — the canonical pattern for instal
 
 ```yaml
 # .workshop/ruff/sdk.yaml
-name: ruff
-hooks:
-  - setup-project
+name: ruff             # no hooks: key — the hook below is discovered by filename
 ```
 
 ```bash
@@ -96,10 +97,7 @@ Health-aware SDK (with `check-health`):
 
 ```yaml
 # .workshop/db/sdk.yaml
-name: db
-hooks:
-  - setup-project
-  - check-health
+name: db               # hooks/ files below are discovered by filename
 ```
 
 ```bash

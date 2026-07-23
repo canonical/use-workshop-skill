@@ -38,6 +38,7 @@ Paused mid-change because `--wait-on-error` was used and an error occurred. Cont
 <state name="Error">
 Non-operational: the workshop failed at some stage and the container is no longer functional.
 - Transitions: `workshop remove` → `Off`. That's it. Fix the cause and re-launch.
+- Orphan special case: `Error` with a `missing-project` note means the project directory was deleted. `remove` fails until the directory exists again at the original absolute path — recreate it first (`mkdir -p`), then `workshop remove --project <path>`. See `workflows/purge-and-recover.md`.
 </state>
 
 </states>
@@ -52,7 +53,7 @@ Non-operational: the workshop failed at some stage and the container is no longe
 | Stopped | `start`, `remount`, definition reads | exec, run, shell | `workshop start` |
 | Pending | wait | most things | `workshop changes`/`workshop tasks` |
 | Waiting | `shell`, `refresh --continue`/`--abort`, `launch --continue`/`--abort` | most things | resume or abort |
-| Error | `remove` | everything else | `workshop remove` then `launch` |
+| Error | `remove` | everything else | `workshop remove` then `launch`; `missing-project` note → recreate the project directory first (see `workflows/purge-and-recover.md`) |
 
 **Always check status before acting on a workshop you didn't just launch.** Use `workshop info` (single workshop) or `workshop list` (project view).
 </routing_rules>

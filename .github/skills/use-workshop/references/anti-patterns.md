@@ -49,14 +49,14 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 
 <anti_pattern name="Deleting a project directory before removing the workshop">
 **Wrong:** `rm -rf <project-dir>` while the workshop is still launched.
-**Why it's bad:** orphans the LXD container and profiles. `workshop list --global` will still show the workshop; recovery requires manual `lxc delete`.
-**Right:** `workshop remove --project <dir>` first, then delete the directory.
+**Why it's bad:** orphans the workshop — `workshop list --global` shows it as `Error` with a `missing-project` note, and pathname-based commands stop working.
+**Right:** `workshop remove --project <dir>` first, then delete the directory. Already orphaned? Recreate the directory at the same absolute path (`mkdir -p`; it may stay empty) and `workshop remove --project` works again — or restore the project's content there to keep the workshop. Manual `lxc delete` is the fallback, not the first move. See the `purge-and-recover` workflow.
 </anti_pattern>
 
 <anti_pattern name="Reaching for snap remove --purge as a debugging step">
 **Wrong:** suggesting `sudo snap remove workshop --purge` as soon as something seems broken.
 **Why it's bad:** destroys all workshops for all users on the system. Last-resort tool, not a diagnostic.
-**Right:** start with `workshop changes`, `workshop tasks <ID>`, `workshop refresh --wait-on-error`. Escalate to `lxc list/delete` for orphaned containers. Use `snap remove --purge` only after these don't help.
+**Right:** start with `workshop changes`, `workshop tasks <ID>`, `workshop refresh --wait-on-error`. For orphans, try the recreate-directory recovery first, then escalate to `lxc list/delete`. Use `snap remove --purge` only after these don't help.
 </anti_pattern>
 
 <anti_pattern name="Suggesting an apt-style update inside the workshop to upgrade an SDK">

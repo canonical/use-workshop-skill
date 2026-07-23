@@ -50,9 +50,9 @@ providers:
   # (The Qwen3 family was the initial trial — see BASELINE.md for that
   # comparison; GLM was adopted afterward.)
   #
-  # Three tiers (refreshed 2026-06-23) mirroring the Haiku/Sonnet/Opus
-  # diagnostic roles. The prior 4.5-air/4.5/4.6 generation is superseded; its
-  # results stay in BASELINE.md as a historical record.
+  # Three tiers (refreshed 2026-07-23) mirroring the Haiku/Sonnet/Opus
+  # diagnostic roles. The prior 4.5-air/4.5/4.6 and glm-5 generations are
+  # superseded; their results stay in BASELINE.md as a historical record.
   #
   # Clarity diagnostic (≈ Haiku role) — small/fast flash tier.
   - id: openrouter:z-ai/glm-4.7-flash
@@ -60,7 +60,7 @@ providers:
       max_tokens: 1024
       temperature: 0.0
   # Baseline / default target (≈ Sonnet role).
-  - id: openrouter:z-ai/glm-5
+  - id: openrouter:z-ai/glm-5.1
     config:
       max_tokens: 1024
       temperature: 0.0
@@ -77,20 +77,21 @@ providers:
   # `scripts/run-routing.sh --provider openrouter:minimax/<slug>` (or the
   # `make eval-routing-minimax[-all]` targets). Requires OPENROUTER_API_KEY.
   # Slugs confirmed against https://openrouter.ai/models (they drift).
-  # m1 is a reasoning model — the 1024-token budget may truncate it (see the
-  # Qwen3 note in BASELINE.md); the budget is kept at 1024 for cross-row parity.
+  # Refreshed 2026-07-23 to the current m2.x/m3 line; the earlier m1/m2
+  # generation is superseded (results stay in BASELINE.md as a record).
+  # The budget is kept at 1024 for cross-row parity.
   #
-  # Clarity diagnostic (≈ Haiku role) — 1st-gen reasoning model.
-  - id: openrouter:minimax/minimax-m1
+  # Clarity diagnostic (≈ Haiku role) — cheapest current-gen tier.
+  - id: openrouter:minimax/minimax-m2.5
     config:
       max_tokens: 1024
       temperature: 0.0
-  # Baseline / default target (≈ Sonnet role) — compact agentic model.
-  - id: openrouter:minimax/minimax-m2
+  # Baseline / default target (≈ Sonnet role) — newest m2-series.
+  - id: openrouter:minimax/minimax-m2.7
     config:
       max_tokens: 1024
       temperature: 0.0
-  # Headroom check (≈ Opus role) — newest flagship.
+  # Headroom check (≈ Opus role) — newest flagship (1M context).
   - id: openrouter:minimax/minimax-m3
     config:
       max_tokens: 1024
@@ -128,16 +129,19 @@ providers:
   # 1024-token ceiling — read `finishReason: length` as a budget artifact.
   # ====================================================================
 
-  # Kimi (Moonshot) — k2 line.
-  - id: openrouter:moonshotai/kimi-k2.5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
+  # Kimi (Moonshot) — refreshed 2026-07-23 to k2.6 / k2.7-code / k3.
+  # kimi-k3 is the current top-of-line (1M context); k2.7-code is the newest
+  # k2-series (coding-tuned); k2.6 is the small tier. The earlier
+  # k2.5/k2-thinking results stay in BASELINE.md as a record.
   - id: openrouter:moonshotai/kimi-k2.6
     config:
       max_tokens: 1024
       temperature: 0.0
-  - id: openrouter:moonshotai/kimi-k2-thinking
+  - id: openrouter:moonshotai/kimi-k2.7-code
+    config:
+      max_tokens: 1024
+      temperature: 0.0
+  - id: openrouter:moonshotai/kimi-k3
     config:
       max_tokens: 1024
       temperature: 0.0

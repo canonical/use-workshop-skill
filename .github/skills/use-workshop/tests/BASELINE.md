@@ -11,40 +11,56 @@ regression.
 
 ## Routing eval
 
-73 cases across 12 scenario files — the prior 64-case suite plus 9 new cases
-(2026-06-23) covering the Workshop **0.9.2** surface: in
-`author-in-project-sdk.yaml` (`set-health okay|waiting|error` values;
-`save-state`/`restore-state` as refresh hooks; the five-hook list with no
-`setup-sdk`), `interfaces.yaml` (mount ownership `uid`/`gid`/`mode`; reading a
-regular-SDK mount slot via top-level `connections:`), `troubleshoot.yaml`
-(reject-unknown-fields validation; change-conflict vs daemon-stall; the GPU
-device-group refresh fix), and `multi-workshop-projects.yaml` (same-project
-workshops reach each other by `.wp` DNS name; a host-only service still needs a
-tunnel). The same 0.9.2 round corrected four hook bugs the source exposed (no
-`setup-sdk`; `set-health okay|waiting|error` not `Ready|Pending|Error`;
-`check-health`/`save-state`/`restore-state` run as root; the state hooks bracket
-a refresh, not stop/start). Every case is single-turn against the bundled skill
-(`SKILL.md` + 9 references + 10 workflows concatenated). Run with:
-`make eval-routing` (Sonnet 4.6) or `make eval-routing-all-models`.
+76 cases across 12 scenario files — the prior 73-case suite plus 3 new cases
+(2026-07-22) covering the Workshop **0.9.3/0.9.4** surface and two correctness
+fixes: `purge.yaml` (orphaned workshop the user wants to KEEP — restore content
+at the same absolute path), `author-in-project-sdk.yaml` (the minimal in-project
+`sdk.yaml`: `name:` is the only required key, no `hooks:` field), and
+`interfaces.yaml` (narrow a custom-device plug by `vendorid`/`productid`, 0.9.3+).
+The same 2026-07-22 round **rewrote two existing cases and reworded one prompt**
+to match ground truth verified against the upstream code and docs:
+- `purge.yaml` orphan case now requires the recreate-directory recovery
+  (`mkdir -p <same path>` + `workshop remove --project`) as the primary path,
+  with manual `lxc delete` demoted to a mentioned fallback — previously it
+  asserted `lxc list`/`lxc delete` as the answer.
+- `author-in-project-sdk.yaml` ruff and inline-hooks cases now require the
+  correct `sdk.yaml` shape (NO `hooks:` key; hooks are executable files
+  discovered by filename) — previously they asserted a `hooks:` list.
+- the "hook isn't running" prompt dropped its invalid premise (it claimed the
+  script was "pointed at" via `sdk.yaml`'s `hooks:`, which strict validation
+  rejects).
+Because those rewrites can flip a previously-passing answer, every recorded rate
+below predates this round. The earlier 9 cases (2026-06-23) covered the 0.9.2
+surface. Every case is single-turn against the bundled skill (`SKILL.md` +
+9 references + 10 workflows concatenated). Run with: `make eval-routing`
+(Sonnet 4.6) or `make eval-routing-all-models`.
 
 | Model              | Pass rate                      | Notes |
 |--------------------|--------------------------------|-------|
-| `claude-sonnet-4-6` | **60/60 (100%)** | full run under the 2026-06-03 bundle — predates the 2026-06-09 changes (see below) |
-| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
-| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the new bundle optional (see below) |
+| `claude-sonnet-4-6` | **76/76 (100%)** | full run under the 0.9.4 bundle (2026-07-23) |
+| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
+| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
 
-> ⚠️ **2026-06-23 (0.9.2): Anthropic pins remain stale by maintainer decision.**
+> ✅ **2026-07-23 (0.9.3/0.9.4): Sonnet 4.6 re-pinned at 76/76.**
+> The Sonnet-only `make eval-routing` run was executed against the 0.9.4 bundle +
+> 76-case suite and lands **76/76 (100%, 0 errors)** — Sonnet is re-pinned above.
+> The run surfaced two over-strict assertions, both relaxed and re-verified (fixes
+> #10 remount and #11 custom-device below; the answers were correct, the rubrics
+> asked for irrelevant clauses). **Haiku 4.5 and Opus 4.7 remain stale by
+> maintainer decision** — last full-run on the 59-case/0.9.2 bundle; a full re-run
+> under the 0.9.4 bundle is optional. The open-weight sweeps stay diagnostic-only.
+>
+> ⚠️ **2026-06-23 (0.9.2): Anthropic pins were already stale before this round.**
 > The 0.9.2 round substantially changed the bundle (correctness fixes + new
 > feature coverage) and grew the suite to 73 cases, but — as in the 2026-06-09
 > round — the Anthropic tiers were deliberately NOT re-run; only the GLM
-> open-weight family was refreshed this cycle (OpenRouter, see below). The rates
+> open-weight family was refreshed that cycle (OpenRouter, see below). The rates
 > above are the last full Anthropic runs under *earlier* bundles and do not
-> reflect 0.9.2. Re-pin Sonnet (and optionally Haiku/Opus) at 73/73 with
-> `make eval-routing` / `make eval-routing-all-models` when the next Anthropic
-> sweep is scheduled.
+> reflect 0.9.2 or later.
 
-> **Status.** Sonnet 4.6 is pinned at **60/60** from a full run under the current
-> skill bundle (2026-06-03): the prior 59-case suite plus 1 new `troubleshoot.yaml`
+> **Status (historical — superseded by the 2026-07-23 re-pin above).** Sonnet 4.6
+> was previously pinned at **60/60** under the 2026-06-03 bundle: the prior
+> 59-case suite plus 1 new `troubleshoot.yaml`
 > storage case (`No space left on device` → resize the LXD pool). Adding the
 > storage content to the bundle surfaced one over-strict rubric —
 > `Refresh failed (paraphrase 2)` — that forbade even a correctly-scoped
@@ -68,13 +84,54 @@ different question than the Anthropic baseline: *how portable is the skill's
 routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
 (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
 
-**Active families: GLM (Zhipu) and MiniMax.** Both are declared in
-`promptfooconfig.yaml`. The GLM family was refreshed to current tiers on
-2026-06-23 — `make eval-routing-openrouter` now targets `glm-5`, and
-`make eval-routing-openrouter-all` sweeps `glm-4.7-flash` / `glm-5` / `glm-5.2`
-(the 4.5-air/4.5/4.6 generation is superseded; its results stay below as a
-record). `make eval-routing-minimax` targets `minimax-m2`. The newest GLM sweep
-is shown first, then the 2026-06-10 full matrix; Qwen3 (archived) follows.
+**Active families: GLM (Zhipu), MiniMax, and Kimi.** All declared in
+`promptfooconfig.yaml`. Tiers were refreshed to the current OpenRouter catalog
+on 2026-07-23: `make eval-routing-openrouter` targets `glm-5.1` and
+`-openrouter-all` sweeps `glm-4.7-flash` / `glm-5.1` / `glm-5.2`;
+`make eval-routing-minimax` targets `minimax-m2.7` and `-minimax-all` sweeps
+`minimax-m2.5` / `m2.7` / `m3`; `make eval-routing-kimi-all` sweeps
+`kimi-k2.6` / `kimi-k2.7-code` / `kimi-k3`. Superseded slugs (GLM 4.5-air/4.5/4.6
+and glm-5, MiniMax m1/m2, Kimi k2.5/k2-thinking) are retired from the targets;
+their recorded results stay below as a historical record. The 2026-07-23
+refreshed-tier flagships are shown first, then the 2026-06-23 GLM sweep, then the
+2026-06-10 full matrix; Qwen3 (archived) follows.
+
+#### Refreshed-tier flagships (2026-07-23, 76-case suite)
+
+The current flagship of each basic family, run against the 0.9.4 bundle + 76-case
+suite after the tier refresh (GLM `glm-5.2`, MiniMax `minimax-m3`, Kimi
+`kimi-k3`). Diagnostic only — 0 run errors. Run at `2026-07-22T23:50Z` (late
+2026-07-23 local); result files carry the local date.
+
+| Model (via OpenRouter) | Role | Pass rate |
+|------------------------|------|-----------|
+| `z-ai/glm-5.2`            | GLM flagship     | **75/76 (98.7%)** |
+| `moonshotai/kimi-k3`      | Kimi flagship    | **71/76 (93.4%)** |
+| `minimax/minimax-m3`      | MiniMax flagship | 66/76 (86.8%) |
+
+**Reads.**
+- **The two 0.9.4 correctness fixes hold across the flagships.** The in-project
+  `sdk.yaml` cases (ruff / minimal / inline-hooks) and the orphan-recovery case
+  pass on `glm-5.2` and `kimi-k3`. On `minimax-m3` they are only *partial* misses
+  (ruff `llm-rubric` 0.97, hook-not-running 0.92) over peripheral tokens like
+  `chmod +x` — not the old `hooks:`-key shape. No failure on any tier traces to
+  the bugs this round fixed.
+- **`glm-5.2` is the strongest open-weight router** at 98.7%, essentially matching
+  the capable Anthropic tiers. Its lone miss was the vendor-agnostic remote-IDE
+  rubric — an over-strict assertion, since relaxed (fix #9 below).
+- **`minimax-m3`'s one notable miss:** it prescribed `snap remove --purge` for a
+  simple orphan (tripping the `not-contains` guard) instead of the recreate-dir
+  path — a model routing weakness, not a skill gap. Its other misses are
+  borderline (0.75–0.97) token/rubric near-misses.
+- **`--reason` hallucination** on `minimax-m3` and `kimi-k3`: both invented a
+  `set-health --reason` flag the skill explicitly says doesn't exist — the skill
+  is right; the models slip.
+- **One shared miss across all three tiers** was the vendor-agnostic remote-IDE
+  case (~0.87–0.89): a rubric-strictness artifact (all three gave the correct
+  workshop-side answer), relaxed as assertion fix #9. These rates predate that
+  fix; a re-run would show +1 on each.
+- Result files:
+  `results/2026-07-23-routing-openrouter-{z-ai-glm-5.2,minimax-minimax-m3,moonshotai-kimi-k3}.json`.
 
 #### GLM family refresh (2026-06-23, 73-case suite)
 
@@ -347,6 +404,34 @@ the fix):
    five real hooks and names `setup-sdk` precisely to exclude it. Removed; the
    case's `llm-rubric` already forbids presenting `setup-sdk` as a real hook
    (same mention-vs-prescription class as fixes 2, 3, and 7).
+9. **`User wants to attach a remote IDE over SSH (vendor-agnostic)`**
+   (ide-integration, 2026-07-23) — surfaced on the refreshed-tier open-weight
+   sweep: all three flagships (glm-5.2, minimax-m3, kimi-k3) gave the correct
+   workshop-side answer (`sshd` + tunnel + non-privileged host port) and did
+   NOT improvise product-specific config, yet the rubric failed them (~0.87–0.89)
+   solely for naming VS Code / JetBrains as *category examples* — the very names
+   the skill's own routing table uses as the keys for this scenario. Relaxed to
+   forbid improvising vendor-specific *config* the user didn't ask for while
+   allowing example product names (same mention-vs-prescription class as fixes
+   2, 3, 7, and 8). Verified against the raw outputs: all three would pass under
+   the relaxed rubric.
+10. **`Reassign a mount source to a different host directory`** (interfaces,
+   2026-07-23) — surfaced on the Sonnet 4.6 re-pin run: a blunt
+   `not-contains "workshop launch"` fired on the model's own warning that a
+   `remount` does NOT survive `workshop remove` + `workshop launch` (which resets
+   mounts to definition defaults). Verified against the raw Sonnet output — the
+   answer correctly used `workshop remount` and only mentioned launch inside that
+   caveat. Replaced with a rubric that forbids *prescribing* remove+launch as the
+   reassignment mechanism while allowing the warning (same mention-vs-prescription
+   class as fixes 2, 3, 7, 8, and 9).
+11. **`Narrow a custom-device plug to one USB adapter by vendor/product ID`**
+   (interfaces, 2026-07-23) — the lone Sonnet 4.6 miss on the re-pin run (0.95).
+   Verified against the raw output: the answer was fully correct (quoted
+   `vendorid`/`productid`, `productid` requires `vendorid`, `refresh` + manual
+   `connect`, no invented attributes). The judge docked it only for not reciting
+   the "at least one of subsystem/vendorid/productid is required" rule — which is
+   irrelevant here, since the user's plug already has `subsystem`. Made that
+   recitation optional in this new case's own rubric; Sonnet then passes 76/76.
 
 ### Known variance watch-items (Haiku 4.5)
 
