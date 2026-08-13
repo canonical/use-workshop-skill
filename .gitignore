@@ -18,5 +18,6 @@
 .github/skills/onboard-workshop/tests/output.*
 .github/skills/onboard-workshop/tests/results/raw/
 
-# Skill-local: reconstruction eval staging area
+# Skill-local: reconstruction eval staging area and guinea-pig clone cache
 .github/skills/onboard-workshop/tests/reconstruction/.work/
+.github/skills/onboard-workshop/tests/reconstruction/.cache/

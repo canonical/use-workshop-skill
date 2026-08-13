@@ -93,12 +93,24 @@ class OnboardReconstructionProvider {
       ? OFFLINE_ALLOWED_TOOLS.concat(FULL_EXTRA_TOOLS)
       : OFFLINE_ALLOWED_TOOLS;
 
+    // RECON_AUTH=subscription runs on the local CLI login instead of the API.
+    // `--bare` cannot do that ("Anthropic auth is strictly ANTHROPIC_API_KEY
+    // or apiKeyHelper via --settings; OAuth and keychain are never read"), so
+    // subscription mode drops it and replaces the isolation it provided with
+    // explicit flags. Note --safe-mode is NOT an option: it disables skills,
+    // which is the very thing under test.
+    const subscription = String(process.env.RECON_AUTH || 'api') === 'subscription';
     const env = { ...process.env };
-    if (!env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_TOKEN) {
-      env.ANTHROPIC_API_KEY = env.ANTHROPIC_API_TOKEN;
-    }
-    if (!env.ANTHROPIC_API_KEY) {
-      return { error: 'ANTHROPIC_API_KEY (or ANTHROPIC_API_TOKEN) not set' };
+    if (subscription) {
+      delete env.ANTHROPIC_API_KEY;
+      delete env.ANTHROPIC_API_TOKEN;
+    } else {
+      if (!env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_TOKEN) {
+        env.ANTHROPIC_API_KEY = env.ANTHROPIC_API_TOKEN;
+      }
+      if (!env.ANTHROPIC_API_KEY) {
+        return { error: 'ANTHROPIC_API_KEY (or ANTHROPIC_API_TOKEN) not set' };
+      }
     }
 
     const transcriptPath = path.join(sandbox, 'transcript.jsonl');
@@ -106,13 +118,27 @@ class OnboardReconstructionProvider {
     const streamOut = fs.openSync(transcriptPath, 'w');
     const streamErr = fs.openSync(stderrPath, 'w');
 
+    const isolationArgs = subscription
+      ? [
+          // No --bare, so replace what it suppressed: user-level settings
+          // (and therefore any globally installed plugin, including this
+          // skill's released build) and every MCP server.
+          '--setting-sources', 'project',
+          '--strict-mcp-config',
+          '--mcp-config', '{"mcpServers":{}}',
+        ]
+      : [
+          '--bare',
+          // Budget is an API-call rail; on a subscription cost reports as 0.
+          '--max-budget-usd', String(maxBudgetUsd),
+        ];
+
     const claudeArgs = [
-      '--bare',
       '-p',
       '--output-format', 'stream-json',
       '--verbose',
       '--model', model,
-      '--max-budget-usd', String(maxBudgetUsd),
+      ...isolationArgs,
       '--permission-mode', 'acceptEdits',
       '--allowedTools', ...allowedTools,
       '--no-session-persistence',
@@ -181,6 +207,7 @@ class OnboardReconstructionProvider {
       metadata: {
         model,
         tier,
+        auth: subscription ? 'subscription' : 'api',
         repo_name: repoName,
         exit_code: exitCode,
         timed_out: timedOut,
@@ -259,7 +286,23 @@ function flattenStream(transcriptPath) {
     let evt;
     try { evt = JSON.parse(line); } catch (_) { continue; }
     if (evt.type === 'system' && evt.subtype === 'init') {
-      out.push('[SYSTEM init] cwd=' + (evt.cwd || '?') + ' model=' + (evt.model || '?'));
+      // Record what the session actually loaded: without --bare (subscription
+      // mode) contamination from user-level config is possible, and this is
+      // the evidence for whether it happened.
+      out.push(
+        '[SYSTEM init] cwd=' + (evt.cwd || '?') +
+        ' model=' + (evt.model || '?') +
+        ' apiKeySource=' + (evt.apiKeySource || '?') +
+        ' mcp=' + JSON.stringify(evt.mcp_servers || []) +
+        ' plugins=' + JSON.stringify(evt.plugins || evt.enabledPlugins || []) +
+        ' agents=' + JSON.stringify(evt.agents || [])
+      );
+      digest.init = {
+        apiKeySource: evt.apiKeySource || null,
+        mcp_servers: evt.mcp_servers || [],
+        plugins: evt.plugins || evt.enabledPlugins || [],
+        slash_commands: Array.isArray(evt.slash_commands) ? evt.slash_commands.length : null,
+      };
     } else if (evt.type === 'assistant') {
       digest.num_turns++;
       const content = (evt.message && evt.message.content) || [];

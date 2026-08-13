@@ -1,0 +1,19 @@
+{
+  "_comment": "Reconstruction thresholds for canonical/mir @ 5ce58e5f (C++/CMake Wayland compositor). Ground truth: .workshop/dev.yaml (ubuntu@26.04; vscode-remote + copilot + project-mir; system tunnel plug localhost:8000; actions cmake/build/package/test/doc/ccache) plus .workshop/mir/ (desktop + gpu + build/ccache mount plugs, doc tunnel slot 8000, setup-base installing build-dep, setup-project running cmake).",
+  "_derivable_from": "CMakeLists.txt (ptest target), debian/control Build-Depends, HACKING.md (ccache + mold + cmake flags), doc/CMakeLists.txt (doc-html/doc-run targets), doc/sphinx/Makefile (SPHINX_PORT ?= 8000, sphinx-autobuild), doc/sphinx/conf.py (http://127.0.0.1:8000), .github/workflows (ubuntu-26.04, resolute).",
+  "base": ["ubuntu@26.04", "ubuntu@24.04"],
+  "_base_note": "CI pins ubuntu-26.04/resolute, but the skill's canonical default is 24.04 and either is defensible from the tree; the report records which was picked.",
+  "required_sdks": [],
+  "_sdk_note": "No Store SDK is derivable: vscode-remote and copilot are maintainer conveniences, not toolchain evidence. The C++ toolchain has to come from an in-project SDK.",
+  "in_project_sdk_required": true,
+  "tunnel_endpoints": ["8000"],
+  "action_token_groups": [
+    { "name": "configure", "any": ["cmake -", "cmake -B", "cmake ~", "cmake $HOME", "-G Ninja"] },
+    { "name": "build", "any": ["cmake --build"] },
+    { "name": "test", "any": ["ptest", "ctest"] },
+    { "name": "doc", "any": ["doc-html", "doc-run", "doc-", "make -C doc"] },
+    { "name": "package", "any": ["dpkg-buildpackage", "debuild"] }
+  ],
+  "min_action_groups": 3,
+  "gitignore_lock": true
+}

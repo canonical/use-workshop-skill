@@ -1,0 +1,19 @@
+{
+  "_comment": "Reconstruction thresholds for canonical/store-workshop @ f29dee3a (top-level orchestration for 17 Store microservices). Ground truth: .workshop/store-jammy.yaml (ubuntu@22.04; project-store-base + direnv + opencode + vscode-remote + project-local; SIXTEEN system tunnel plugs) plus 6 in-project SDKs (store-base, cassandra, go-dev, sca, charmcraft, local).",
+  "_scoring_posture": "DERIVABLE-ONLY, deliberately. The 17 services are cloned on demand from Launchpad and gitignored, so they are absent from the sandbox; their ports exist nowhere in the tree, only in the hidden ground truth. The README and Makefile that describe the setup are themselves workshop-authored and are gutted by the scrub. Gating on the port map would score information the agent never had. What IS under test here is rubric criterion (c): does the skill NAME the unmappable service/port topology as a gap, or invent ports? That is graded by the rubric and by hand in the comparison report.",
+  "base": ["ubuntu@22.04", "ubuntu@24.04"],
+  "_base_note": "Nothing in the scrubbed tree names a series; jammy is only in the hidden definition's filename. Both accepted.",
+  "required_sdks": [],
+  "in_project_sdk_required": true,
+  "_in_project_note": "The shared system dependencies have no Store SDK; an in-project SDK is the only envelope-legal home for them.",
+  "tunnels_advisory": true,
+  "tunnel_endpoints": [
+    "5000", "8000", "8001", "8002", "8003", "8004", "8005", "8006",
+    "8007", "8010", "8011", "8013", "8014", "8016", "8021"
+  ],
+  "_tunnel_note": "Recorded for the report's recall number only — advisory, never gating.",
+  "action_token_groups": [],
+  "min_action_groups": 0,
+  "_action_note": "The repo's Makefile targets are HOST-side orchestration (cloning Launchpad repos, managing the container). There is no in-container build/test entry point to wrap until the services are cloned, so demanding actions would be demanding invention.",
+  "gitignore_lock": true
+}

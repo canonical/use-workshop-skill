@@ -1,0 +1,20 @@
+{
+  "_comment": "Reconstruction thresholds for locnnil/formally-verify-rust-neetcode-with-creusot @ 4a36c4c1 (Rust workspace proved with Creusot). Ground truth: .workshop/dev.yaml (ubuntu@26.04; rust@latest/stable + uv + copilot + project-fv; one `prove` action) plus .workshop/fv/ (setup-base installs the Creusot snap and aliases cargo-creusot; setup-project exports CREUSOT_RUSTC and adds the pinned toolchain target).",
+  "_derivable_from": "Cargo.toml workspace, why3find.json (solver config), mcp-creusot.json (carries the literal prove command), scripts/prove_one.sh + verify_one.sh + proofstat.py (relocated out of .workshop/ by the harness — they are project tooling), .github/workflows/rust.yml (cargo build / cargo test).",
+  "base": ["ubuntu@26.04", "ubuntu@24.04"],
+  "required_sdks": [
+    { "name": "rust" }
+  ],
+  "_sdk_note": "A Rust toolchain SDK is unambiguous from Cargo.toml; the ground-truth channel is latest/stable, but any track is accepted since nothing in the tree pins one.",
+  "in_project_sdk_required": true,
+  "_in_project_note": "Creusot ships as a snap, not a Store SDK — it can only come from an in-project SDK hook.",
+  "anywhere_tokens": ["creusot"],
+  "action_token_groups": [
+    { "name": "prove", "any": ["cargo creusot", "cargo-creusot"] },
+    { "name": "build", "any": ["cargo build"] },
+    { "name": "test", "any": ["cargo test"] }
+  ],
+  "min_action_groups": 1,
+  "_action_note": "1, not 2: the maintainers' definition ships only `prove`, so a higher bar would fail an exact reproduction of the human answer. build/test stay listed as recorded metrics.",
+  "gitignore_lock": true
+}

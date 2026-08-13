@@ -25,6 +25,16 @@ import sys
 
 import yaml
 
+# The only file names Workshop treats as hooks; anything else under hooks/ is
+# data those hooks read.
+HOOK_NAMES = {
+    "setup-base",
+    "setup-project",
+    "check-health",
+    "save-state",
+    "restore-state",
+}
+
 
 def load_definitions(root):
     """Return (defs, sdk_yamls, hooks) found under a repo-like tree."""
@@ -163,9 +173,20 @@ def main():
     gen_store = store_sdks(gen_primary)
     shared = sorted(set(gt_store) & set(gen_store))
 
+    def definition_names(defs):
+        return sorted(
+            str(d.get("name")) for d in defs.values()
+            if isinstance(d, dict) and d.get("name")
+        )
+
     metrics = {
         "generated_definitions": sorted(gen_defs),
         "ground_truth_definitions": sorted(gt_defs),
+        # Naming is scored by hand in the comparison report, not gated here:
+        # offline runs let the skill pick the name, so a divergence from the
+        # maintainers' `dev` / `store-jammy` is a data point, not a failure.
+        "generated_names": definition_names(gen_defs),
+        "ground_truth_names": definition_names(gt_defs),
         "base_match": bool(gen_defs) and gen_primary.get("base") == gt_primary.get("base"),
         "generated_base": gen_primary.get("base"),
         "ground_truth_base": gt_primary.get("base"),
@@ -194,8 +215,21 @@ def main():
             exp = json.load(fh)
 
     if exp:
-        if exp.get("base") and metrics["generated_base"] != exp["base"]:
-            failures.append(f"base: expected {exp['base']}, got {metrics['generated_base']}")
+        # `base` may be a single string or a list of acceptable values: the
+        # LTS-vs-current call is a judgment the evidence rarely settles.
+        want_base = exp.get("base")
+        if want_base:
+            allowed = want_base if isinstance(want_base, list) else [want_base]
+            if metrics["generated_base"] not in allowed:
+                failures.append(
+                    f"base: expected one of {allowed}, got {metrics['generated_base']}"
+                )
+
+        min_defs = exp.get("min_definitions")
+        if min_defs and len(gen_defs) < min_defs:
+            failures.append(
+                f"definitions: expected at least {min_defs}, got {len(gen_defs)} ({sorted(gen_defs)})"
+            )
 
         for req in exp.get("required_sdks", []):
             name, want_track = req["name"], req.get("track")
@@ -209,22 +243,35 @@ def main():
         if exp.get("in_project_sdk_required") and not metrics["in_project_sdk"]["generated"]:
             failures.append("in-project SDK: required but none generated")
         if metrics["in_project_sdk"]["generated"]:
-            bad = [p for p, ok in metrics["in_project_sdk"]["generated_hooks"].items() if not ok]
+            # Only the five real hooks need the executable bit. A hooks/ dir
+            # may legitimately also hold data files the hooks read (real
+            # in-project SDKs ship packages.list / snaps.list at 0644), and
+            # flagging those is a false failure.
+            bad = [
+                p for p, ok in metrics["in_project_sdk"]["generated_hooks"].items()
+                if not ok and os.path.basename(p) in HOOK_NAMES
+            ]
             if bad:
                 failures.append(f"hooks not executable: {bad}")
 
+        # Advisory tunnels: recorded, never gated. For a repo whose port map
+        # lives only in the hidden ground truth (services cloned on demand),
+        # demanding the ports would score information the sandbox never had.
+        advisory = bool(exp.get("tunnels_advisory"))
+        eps_all = interface_endpoints(gen_defs, gen_sdk_yamls, "tunnel")
+        metrics["tunnel_endpoints_generated"] = eps_all
         for port in exp.get("tunnel_endpoints", []):
-            eps = interface_endpoints(gen_defs, gen_sdk_yamls, "tunnel")
             # The workshop-side SLOT must expose the service's real port; the
             # host-side PLUG may be remapped (e.g. 8000→8001 when the host
             # port is taken), so any tunnel plug counts as the pair's host end.
-            slot_hit = any(port in e for e in eps["slots"])
-            plug_hit = bool(eps["plugs"])
+            slot_hit = any(port in e for e in eps_all["slots"])
+            plug_hit = bool(eps_all["plugs"])
             metrics.setdefault("tunnels", {})[port] = {
                 "slot": slot_hit,
                 "host_plug_present": plug_hit,
+                "advisory": advisory,
             }
-            if not (slot_hit and plug_hit):
+            if not (slot_hit and plug_hit) and not advisory:
                 failures.append(
                     f"tunnel: no slot with endpoint {port} paired with a host-side plug"
                 )
@@ -245,9 +292,26 @@ def main():
                 f"actions: {len(satisfied)}/{need} required token groups satisfied ({satisfied})"
             )
 
+        gen_all_text = "\n".join(
+            [gen_actions, hook_text, all_yaml_text(gen_defs, gen_sdk_yamls)]
+        )
         for tok in exp.get("anywhere_tokens", []):
-            if tok not in gen_actions and tok not in hook_text and tok not in all_yaml_text(gen_defs, gen_sdk_yamls):
+            if tok not in gen_all_text:
                 failures.append(f"token '{tok}' absent from generated actions/hooks/yaml")
+
+        # Any-of variant: a repo's entry point may legitimately be reached by
+        # more than one route (wrapping `make install_deps` wholesale, or
+        # decomposing it into its apt half and its git half across two hooks).
+        # Demanding one literal spelling scores phrasing, not capability.
+        satisfied_groups = []
+        for group in exp.get("anywhere_token_groups", []):
+            if any(tok in gen_all_text for tok in group["any"]):
+                satisfied_groups.append(group["name"])
+            else:
+                failures.append(
+                    f"none of {group['any']} present for '{group['name']}'"
+                )
+        metrics["anywhere_groups_satisfied"] = satisfied_groups
 
         if exp.get("gitignore_lock") and not metrics["gitignore_lock"]:
             failures.append(".gitignore does not cover .workshop.lock")

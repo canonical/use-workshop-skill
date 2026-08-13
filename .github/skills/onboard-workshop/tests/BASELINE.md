@@ -70,6 +70,13 @@ Update expectations when a guinea pig's ground truth changes.
 |------------|-----------|--------|------|-------|
 | workshop-akcano | **PASS (overall_pass: true, 0 failures)** | pass | 2026-07-23 | base+go@1.26 ✓, in-project SDK w/ exec hooks ✓, tunnel 8000 pair ✓, 4/4 action groups ✓, gitignore ✓ (post-strengthening re-run after the credit outage) |
 | vscode-workshop | round 2: green under current expectations | pass | 2026-07-23 | node@"24" ✓, in-project SDK (3 exec hooks) ✓, desktop+xvfb ✓, 6 actions wrapping npm entry points, gitignore ✓ |
+| mir @ `5ce58e5f` | **PASS** (Sonnet 4.6) / **PASS** (Opus 5) | pass 0.8 / pass 0.8 | 2026-08-13 | both models hit the maintainers' exact name (`dev`) and base (`ubuntu@26.04`), both found `ppa:mir-team/dev` in `spread/`, both wired the :8000 docs tunnel pair. Neither reproduced the `build`/`ccache` mount plugs, the `package` action, or the desktop/gpu plugs; `vscode-remote`+`copilot` are information gaps (no `.vscode` in tree) |
+| subiquity @ `2ef6b41e` | **PASS**¹ / **PASS** | pass 0.8 / **pass 1.0** | 2026-08-13 | machine output EXCEEDS ground truth: maintainers ship zero actions, both models wrapped every Makefile entry point (12 / 15). Both split `install_deps` into setup-base apt + setup-project `make gitdeps` — better placement than the human `sudo make install_deps`. Neither produced the second (resolute) series definition — the series matrix lives in the parked CI |
+| creusot @ `4a36c4c1` | **PASS** / **PASS** | **fail 0.6** / pass 0.8 | 2026-08-13 | Opus recovered the ground-truth `prove` command byte-equivalent from `mcp-creusot.json` and kept the maintainers' name `dev`; Sonnet used the single-crate script instead. **Both invented `snap install creusot`** (the snap does not exist; maintainers sideload from `canonical/creusot-snap` releases). Sonnet asserted it → rubric fail; Opus shipped it but named the surrounding gaps → rubric pass |
+| store-workshop @ `f29dee3a` | FAIL (`.gitignore`) / **PASS** | fail 0.4 / pass 0.8 | 2026-08-13 | scored derivable-only (17 services are gitignored on-demand LP clones; the port map exists only in the hidden file). Sonnet: no tunnels, 2 SDKs, **forgot the `.workshop.lock` gitignore line** — the round's only fully-derivable miss. Opus: 5 in-project SDKs matching the maintainers' split, 17 declared-guess tunnel pairs, service-parameterised actions, and independently reproduced the "optional SDKs commented out" structure |
+
+¹ Under the corrected `anywhere_token_groups` expectation; the original literal
+`install_deps` token failed a decomposition that is functionally equivalent.
 
 > **2026-07-23 development round.** Round 1 exposed the core failure the
 > skill exists to prevent: for vscode-workshop the agent detected everything
@@ -96,6 +103,35 @@ Update expectations when a guinea pig's ground truth changes.
 > the additions are honesty clauses on paths those suites already exercise
 > as FULL-verdict runs (stale-by-decision, same policy as the pending
 > diagnostic rows).
+>
+> **2026-08-13 upstream round (4 pinned repos, subscription auth).** First
+> round against repos nobody here wrote: mir, subiquity, creusot and
+> store-workshop at pinned SHAs, run on the local CLI login
+> (`RECON_AUTH=subscription`, `apiKeySource=none` in all 8 runs, zero API
+> spend) with the local rubric judge (`RECON_JUDGE=local`). **Sonnet 4.6:
+> 3/4 scorecards, 2/4 rubrics. Opus 5: 4/4 and 4/4.** Full write-up:
+> `results/2026-08-13-reconstruction-4repo.md`.
+>
+> The round found one harness defect that invalidated prior staging:
+> `git archive` honours `export-ignore`, and mir marks `debian/`, `.github/`,
+> `.gitignore` and `spread/` that way — the build evidence never reached the
+> sandbox. Staging now copies a detached worktree checkout. Two scorer fixes
+> followed: the exec-bit gate no longer flags non-hook data files under
+> `hooks/` (real SDKs ship `packages.list`/`snaps.list` at 0644), and
+> `anywhere_token_groups` (any-of) replaces phrasing-sensitive
+> `anywhere_tokens`. Thresholds for the new guinea pigs are calibrated so that
+> an exact reproduction of the maintainers' own definition passes — subiquity's
+> action gate is 0 because the maintainers wrote no actions, creusot's is 1
+> because they wrote one, store-workshop's tunnels are advisory because its
+> ports exist nowhere in the scrubbed tree.
+>
+> Two skill-level findings, neither yet fixed (this round measures, it does not
+> tune): (1) **both models invented `snap install creusot`** — principle 2
+> forbids invented SDK *names* but nothing covers invented *install commands*
+> in hooks, and the offline tier cannot catch it; (2) the `.gitignore` line is
+> dropped under load on the busiest repo. Also observed: 3 of the 4 upstream
+> repos ship their hooks at **0644**, contradicting the skill's exec-bit
+> requirement — worth confirming against Workshop itself before acting.
 
 ## Reconstruction eval (full LXD tier, `make eval-reconstruction-full`)
 
