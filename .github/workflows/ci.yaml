@@ -47,26 +47,21 @@ jobs:
           retention-days: 1
 
   # Routing eval — paid, so manual-only via workflow_dispatch. Compare the
-  # result against the per-skill tests/BASELINE.md before merging skill-content
-  # changes. The `skill` input picks which suite(s) to run.
+  # result against tests/BASELINE.md before merging skill-content changes.
   #
-  # The two suites bill differently as of 2026-08-13, so all three secrets are
-  # passed because the matrix runs both:
-  #   use-workshop     GLM-5.2 candidate + gpt-5.5 judge, both via OpenRouter
-  #                    (~$4.50/run) — needs OPENROUTER_API_KEY. Its opt-in
-  #                    `eval-routing-anthropic` confirmation run needs the
-  #                    Anthropic key too.
-  #   onboard-workshop Sonnet 4.6 candidate + gpt-5.5 judge direct from OpenAI
-  #                    (~$7-8/run) — needs ANTHROPIC_API_KEY + OPENAI_API_KEY.
-  #                    Deliberately NOT moved to OpenRouter; see that suite's
-  #                    BASELINE.md "GLM-5.2 diagnostic".
+  # use-workshop ONLY. Since 2026-08-13 that suite runs GLM-5.2 as candidate and
+  # gpt-5.5 as the llm-rubric judge, both through OpenRouter (~$4.50/run), so
+  # OPENROUTER_API_KEY is the only secret this job needs.
+  #
+  # onboard-workshop is deliberately NOT in this matrix. It stayed on Sonnet 4.6
+  # with the OpenAI-hosted judge (see that suite's BASELINE.md, "GLM-5.2
+  # diagnostic", for the measurement behind that), which would need
+  # ANTHROPIC_API_KEY + OPENAI_API_KEY as repository secrets — neither exists,
+  # and its routing eval has in practice always been run locally. Adding it back
+  # means adding those two secrets and restoring the matrix.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        skill: [use-workshop, onboard-workshop]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -74,17 +69,15 @@ jobs:
           node-version: 22
       - name: Install promptfoo
         run: npm install -g promptfoo@0.121.9
-      - name: Routing eval (pinned baseline)
-        run: make -C .github/skills/${{ matrix.skill }}/tests eval-routing
+      - name: Routing eval (use-workshop, GLM-5.2 gate)
+        run: make -C .github/skills/use-workshop/tests eval-routing
         env:
-          # run-routing.sh preflights the pinned llm-rubric judge and exits 2
-          # if the key for the judge's provider is missing.
+          # Covers both the candidate and the judge; run-routing.sh preflights
+          # the judge and exits 2 if its provider's key is missing.
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Upload result summaries
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: routing-eval-results-${{ matrix.skill }}
-          path: .github/skills/${{ matrix.skill }}/tests/results/
+          name: routing-eval-results-use-workshop
+          path: .github/skills/use-workshop/tests/results/
