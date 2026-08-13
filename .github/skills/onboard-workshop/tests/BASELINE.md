@@ -24,8 +24,8 @@ Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 > ### GLM-5.2 diagnostic — why this suite stays on Sonnet
 >
 > On 2026-08-13 the **sibling** `use-workshop` suite moved its gate to GLM-5.2
-> via OpenRouter (candidate + judge), landing 76/76 and cutting ~$13.30/run to
-> ~$4.50. The same move was measured here and **rejected**.
+> via OpenRouter (candidate + judge), landing 76/76 and cutting a measured
+> ~$10.43/run to ~$1.41. The same move was measured here and **rejected**.
 >
 > GLM-5.2 scores **50/53** on this suite (0 errors, result file
 > `results/2026-08-13-routing-openrouter-z-ai-glm-5.2.json`). One failure was a
@@ -42,8 +42,9 @@ Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 > GLM-5.2 is simply terser than Sonnet against this suite's honesty-gate and
 > evidence prompts. Pinning the gate to it would leave those two cases
 > **permanently un-gated**, one of them core routing behaviour — a regression
-> there would go undetected. On a 53-case suite the saving (~$6-7 → ~$2.50) did
-> not justify that. The sibling had no such cost: it ported at 100%.
+> there would go undetected. On a 53-case suite the saving (to a measured
+> ~$0.98/run) did not justify that. The sibling had no such cost: it ported
+> at 100%.
 >
 > The provider plumbing in `scripts/run-routing.sh` is shared with the sibling
 > and handles either vendor, so revisiting this is a one-line change to the
