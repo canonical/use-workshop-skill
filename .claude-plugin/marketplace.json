@@ -8,7 +8,7 @@
     {
       "name": "use-workshop",
       "source": "./",
-      "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees."
+      "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees. Also onboard arbitrary repos: analyze their build/test toolchain and bootstrap a tailored workshop definition."
     }
   ]
 }

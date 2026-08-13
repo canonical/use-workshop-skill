@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -project Fjordline.xcodeproj -scheme Fjordline build
+      - run: xcodebuild -project Fjordline.xcodeproj -scheme Fjordline test -destination 'platform=iOS Simulator,name=iPhone 16'

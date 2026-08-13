@@ -6,7 +6,7 @@ In-project SDKs live inside the project at `.workshop/<NAME>/` and are version-c
 
 Two artifacts make up an in-project SDK:
 1. `.workshop/<NAME>/sdk.yaml` — the SDK manifest.
-2. `.workshop/<NAME>/hooks/<HOOK-NAME>` — executable scripts, discovered automatically by filename (one per hook).
+2. `.workshop/<NAME>/hooks/<HOOK-NAME>` — bash scripts, discovered automatically by filename (one per hook).
 
 There is NO build step (that is `sdkcraft`'s job, out of scope here). Workshop reads the manifest and runs the hook scripts directly.
 </overview>
@@ -21,7 +21,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are executable files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with an `unknown field` error and its line/column. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
+There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with an `unknown field` error and its line/column. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
 
 Reference the SDK from the workshop definition as `project-<NAME>`:
 
@@ -38,7 +38,7 @@ Note: user-facing YAML is validated strictly (0.9.2+) — an unknown or misspell
 </sdk_yaml_schema>
 
 <hook_taxonomy>
-Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`. Each is an executable file under `.workshop/<NAME>/hooks/<HOOK-NAME>` (no extension; the file's shebang picks the interpreter). All are optional. **There is no `setup-sdk` hook** — do not invent one.
+Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`. Each is a file under `.workshop/<NAME>/hooks/<HOOK-NAME>` (no extension; Workshop runs it with bash — see the interpreter note below). All are optional. **There is no `setup-sdk` hook** — do not invent one.
 
 | Hook | When it runs | Runs as | Working dir | Typical use |
 |------|--------------|---------|-------------|-------------|
@@ -52,13 +52,13 @@ Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-he
 
 **Health reporting.** From `check-health`, call `workshopctl set-health <okay|waiting|error> [<message>]` (optional `--code=<short-code>`; a message is required for `waiting`/`error` and not allowed with `okay`). Mapping: `okay` → the SDK is *Ready*; `waiting` → Workshop sleeps 1s and re-runs `check-health`, up to 10 times before moving the SDK to *Error*; `error` (or a non-zero exit, no report, or running past 5s) → *Error*. There is no `Ready|Pending|Error` status and no `--reason` flag.
 
-**Executable script requirement.** Each hook file MUST be executable (`chmod +x`) and start with a shebang. Workshop execs hooks — it does NOT shell-source them. A hook without `+x` is silently ignored.
+**Interpreter and the executable bit.** Workshop runs every hook as a **bash** script — a non-interactive bash login session with `errexit` and `pipefail` set — so bash is the interpreter regardless of any shebang, and a hook written for another language will not work by shebang alone. Because Workshop invokes bash rather than exec'ing the file, an in-project hook does NOT need `chmod +x` to run; real in-project SDKs ship hooks at `0644`, some without a shebang at all. Setting `+x` plus a `#!/bin/bash` shebang is still the house style here — it keeps the file runnable by hand and self-documenting — and it becomes a hard requirement only if the SDK is later packed for the Store (out of scope here). Treat `+x` as convention, not as the reason a hook did or did not run.
 
 **Hook environment.** Every hook gets `SDK=<the SDK's install dir>`; `setup-project` additionally gets `$HOME`/`$XDG_RUNTIME_DIR`/`$DBUS_SESSION_BUS_ADDRESS`, and `save-state`/`restore-state` get `$SDK_STATE_DIR`. `errexit` and `pipefail` are always set (a non-zero exit or pipe stage fails the hook); `--verbose` on `launch`/`refresh` adds `xtrace`. Reference SDK-shipped binaries by full path (`"$SDK/bin/<BINARY>"`) — the SDK's `bin/` is not on `PATH` inside the hook unless `setup-base` puts it there (e.g. via `/etc/profile.d`).
 
 **Failure semantics.** A non-zero exit from any hook fails the change. The workshop transitions to `Error` (or `Waiting`, if launched/refreshed with `--wait-on-error`).
 
-**Refresh re-run rules.** An applied `workshop refresh` re-runs `setup-project` and `check-health` (plus `save-state`/`restore-state` when a revision actually changes). It does NOT re-run `setup-base` — that runs only on workshop creation and revision change. To force an edited `setup-base` to take effect, recreate the workshop (`workshop remove` + `workshop launch`).
+**Refresh re-run rules.** An applied `workshop refresh` re-runs `setup-project` and `check-health` (plus `save-state`/`restore-state` when a revision actually changes). It does NOT re-run `setup-base` — that runs only on workshop creation and revision change. To force an edited `setup-base` to take effect, recreate the workshop (`workshop remove` + `workshop launch`). That is the narrow case where recreating is right: YOU changed the script and need it re-run. It is NOT the answer to a refresh that FAILED — diagnose that with `workshop changes` / `workshop tasks <ID>` and recover with `workshop refresh --wait-on-error` (`--continue`/`--abort`); recreating there throws away the previous good state and teaches you nothing. See `../workflows/troubleshoot.md`.
 </hook_taxonomy>
 
 <filesystem_layout>
@@ -68,8 +68,8 @@ Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-he
 │   └── <NAME>/
 │       ├── sdk.yaml
 │       └── hooks/
-│           ├── setup-project        # executable
-│           └── check-health         # executable, optional
+│           ├── setup-project        # bash script
+│           └── check-health         # bash script, optional
 └── workshop.yaml          # references project-<NAME> under sdks:
 ```
 
@@ -91,7 +91,7 @@ set -euo pipefail
 uv tool install ruff
 ```
 
-`chmod +x .workshop/ruff/hooks/setup-project`, then add `- name: project-ruff` to `workshop.yaml` under `sdks:` and `workshop refresh`.
+Optionally `chmod +x .workshop/ruff/hooks/setup-project` (house style — Workshop runs the hook with bash either way), then add `- name: project-ruff` to `workshop.yaml` under `sdks:` and `workshop refresh`.
 
 Health-aware SDK (with `check-health`):
 

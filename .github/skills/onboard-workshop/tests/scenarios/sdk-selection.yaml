@@ -1,0 +1,117 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Store lookup comes first
+  vars:
+    user: |
+      How will you decide which SDKs go into my workshop definition?
+  assert:
+    - type: contains
+      value: sdk find
+    - type: llm-rubric
+      value: |
+        The selection order is: live Store lookup (sdk find, sdk info) first;
+        the codified catalog only as a fallback with unverified tagging;
+        in-project SDK for custom apt/setup needs; and an admitted gap when
+        nothing fits. No invented names, no git URLs.
+
+- description: Catalog fallback is tagged unverified
+  vars:
+    user: |
+      The sdk CLI isn't installed on this machine. Can you still propose SDKs for my Node project?
+  assert:
+    - type: contains-any
+      value:
+        - unverified
+        - confirm
+    - type: contains
+      value: node
+    - type: llm-rubric
+      value: |
+        The response confirms the catalog fallback path and never presents
+        catalog knowledge as live-verified fact: any SDK proposed from the
+        catalog (e.g. node) is tagged unverified / to be confirmed with sdk
+        info before launch. Proposing the node SDK immediately, or first
+        requesting the repo evidence needed to propose accurately (a chat
+        cannot inspect the project) while stating the catalog + unverified
+        protocol, are both acceptable.
+
+- description: CI apt-get lines become an in-project SDK setup-base
+  vars:
+    user: |
+      Our CI installs libgtk-3-0 and xvfb with apt-get before running the Electron test suite. How does that translate into the workshop?
+  assert:
+    - type: contains-any
+      value:
+        - setup-base
+        - in-project
+        - "project-"
+    - type: llm-rubric
+      value: |
+        The response maps the CI apt-get package list into an in-project
+        SDK's setup-base hook (files under .workshop/<name>/hooks/, consumed
+        as project-<name>), rather than telling the user to apt-get install
+        inside the running workshop or inventing a Store SDK for it.
+        Mentioning the desktop plug / xvfb action split for GUI test hosts
+        is a plus.
+
+- description: Node channel from engines field
+  vars:
+    user: |
+      package.json has "engines": {"node": ">=24"}. What goes in the sdks: entry?
+  assert:
+    - type: contains
+      value: node
+    - type: contains
+      value: "24"
+    - type: llm-rubric
+      value: |
+        The response proposes the node SDK with the channel pinned from the
+        engines field (channel "24"), verified or to-verify via sdk info.
+
+- description: Python maps to uv
+  vars:
+    user: |
+      It's a Python project with pyproject.toml and a requirements.txt. Which SDK do you propose?
+  assert:
+    - type: contains
+      value: uv
+    - type: not-contains
+      value: pip-sdk
+
+- description: Docker-compose services go through the docker SDK
+  vars:
+    user: |
+      Local dev needs docker compose up for postgres and redis. Can the workshop cover that?
+  assert:
+    - type: contains
+      value: docker
+    - type: llm-rubric
+      value: |
+        The response proposes the Store docker SDK to run compose INSIDE the
+        workshop (with an action wrapping the compose invocation and tunnels
+        for ports that must reach the host), not hand-installing dockerd via
+        hooks, and not claiming host-docker passthrough.
+
+- description: Compositor build-deps reach desktop and gpu plugs
+  vars:
+    user: |
+      This repo is a Wayland compositor — debian/control build-deps include libwayland-dev, libdrm-dev, libgbm-dev, libegl1-mesa-dev and libinput-dev. Beyond compiling it, what does the workshop need so I can actually run the thing?
+  assert:
+    - type: contains
+      value: desktop
+    - type: contains-any
+      value:
+        - gpu
+        - connect
+    - type: llm-rubric
+      value: |
+        The response maps the graphics/display build dependencies to a
+        `desktop` plug on the in-project SDK (so the built binary can run
+        against the host's display, not merely compile) and a `gpu` plug for
+        hardware-accelerated rendering. It notes that `desktop` does not
+        auto-connect and gives the command — `workshop connect
+        <workshop>/<sdk>:desktop` — while `gpu` connects automatically.
+        Treating this as an xvfb/headless TEST-host problem, or omitting the
+        display access entirely and stopping at the apt package list, is the
+        failure mode.

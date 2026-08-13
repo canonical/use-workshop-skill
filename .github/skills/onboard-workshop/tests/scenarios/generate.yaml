@@ -1,0 +1,130 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Store-SDKs-only proposal uses workshop init
+  vars:
+    user: |
+      The approved proposal is just base ubuntu@24.04 with the go SDK on 1.26/stable, plus a couple of actions. How do you generate it?
+  assert:
+    - type: contains
+      value: workshop init
+    - type: llm-rubric
+      value: |
+        The response scaffolds with workshop init (base + SDKs), then EDITS
+        the generated .workshop/<name>.yaml to add the actions: block —
+        correctly stating init does not scaffold actions/connections/grafts.
+        It does not hand-write the whole file from memory when init covers
+        the skeleton.
+
+- description: Grafts and in-project SDKs go the template path
+  vars:
+    user: |
+      The proposal includes a tunnel pair for the dev server and an in-project SDK. Does workshop init handle that?
+  assert:
+    - type: contains-any
+      value:
+        - template
+        - templates/
+    - type: llm-rubric
+      value: |
+        The response says init only scaffolds base+SDKs; plug/slot grafts,
+        connections, and in-project SDKs come from copying a template and
+        replacing placeholders (or editing the init output using template
+        shapes) — not from synthesizing YAML from memory.
+
+- description: Default layout is .workshop/<name>.yaml named dev
+  vars:
+    user: |
+      Where does the generated definition file live and what's it called by default?
+  assert:
+    - type: contains
+      value: .workshop/
+    - type: contains-any
+      value:
+        - dev.yaml
+        - "dev"
+    - type: llm-rubric
+      value: |
+        The response gives .workshop/<name>.yaml with default name dev, notes
+        the basename must match name:, and does not create a root
+        workshop.yaml alongside .workshop/ files.
+
+- description: Lock file gitignored, definition committed
+  vars:
+    user: |
+      After generation, what gets committed and what gets gitignored?
+  assert:
+    - type: contains
+      value: .workshop.lock
+    - type: contains
+      value: .gitignore
+    - type: llm-rubric
+      value: |
+        The definition file(s) and in-project SDK directories are committed;
+        .workshop.lock is gitignored.
+
+- description: In-project sdk.yaml has no hooks key
+  vars:
+    user: |
+      Generating the in-project SDK now — should the sdk.yaml contain a hooks: section listing setup-base inline?
+  assert:
+    - type: contains-any
+      value:
+        - "hooks/"
+        - executable
+    - type: llm-rubric
+      value: |
+        The response says NO hooks: key in sdk.yaml — hooks are separate files
+        under .workshop/<name>/hooks/ (setup-base etc.), discovered by
+        filename; only sketch SDKs inline hooks in YAML. The behaviour under
+        test is the file-vs-YAML-key distinction; mentioning the executable
+        bit is neither required nor expected here (it is convention, not a
+        requirement, for in-project hooks).
+
+- description: Generation matches the approved proposal exactly
+  vars:
+    user: |
+      While generating, you noticed another SDK that might be nice to add. Do you include it?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response does not silently add (or drop) anything relative to the
+        approved proposal — a new idea goes back to the user as a proposal
+        amendment (with a recommendation), not straight into the file.
+
+- description: Build tree and ccache get mount plugs, not a project subdirectory
+  vars:
+    user: |
+      HACKING.md says to build with `cmake -B ../build -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`. Where do the build directory and the ccache directory live in the workshop?
+  assert:
+    - type: contains
+      value: mount
+    - type: contains-any
+      value:
+        - workshop-target
+        - refresh
+    - type: llm-rubric
+      value: |
+        The response gives each of the build directory and the ccache
+        directory a `mount` plug with `workshop-target:` set to a path
+        OUTSIDE /project/, and explains why: an unsourced mount plug is
+        backed by a host directory, so the contents survive `workshop
+        refresh`, which discards the workshop's writable filesystem. Putting
+        the build tree inside /project/ (the developer's git worktree), or
+        reaching for save-state/restore-state hooks to preserve a cache, is
+        the failure mode.
+
+- description: In-project hook at mode 644 is not broken
+  vars:
+    user: |
+      You generated .workshop/deps/hooks/setup-base but git shows it as mode 100644. Is that hook going to be ignored at launch?
+  assert:
+    - type: not-contains
+      value: silently ignored
+    - type: llm-rubric
+      value: |
+        The response says no — Workshop runs hooks as bash scripts rather
+        than exec'ing them, so an in-project hook at 0644 still runs, and
+        `chmod +x` is convention rather than a requirement (it does matter
+        for SDKs later packed with sdkcraft). Claiming the hook will be
+        skipped or silently ignored for want of the executable bit is a FAIL.

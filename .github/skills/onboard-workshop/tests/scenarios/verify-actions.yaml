@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Actions are proven by running, not by YAML validity
+  vars:
+    user: |
+      The definition is generated and the workshop launched. How do you confirm the actions actually work?
+  assert:
+    - type: contains
+      value: workshop run
+    - type: llm-rubric
+      value: |
+        The response runs EVERY generated action via workshop run inside the
+        workshop (with server actions started, probed, and stopped) — YAML
+        validity or a successful launch alone is explicitly not enough.
+
+- description: Verification triplet after launch
+  vars:
+    user: |
+      workshop launch just returned. What do you check before running the actions?
+  assert:
+    - type: contains
+      value: workshop changes
+    - type: contains
+      value: workshop tasks
+    - type: contains
+      value: workshop info
+    - type: not-contains
+      value: workshop start
+
+- description: Tunnels are probed from the host
+  vars:
+    user: |
+      The definition exposes the docs server on port 8000 through a tunnel. How do you verify the tunnel?
+  assert:
+    - type: contains-any
+      value:
+        - curl
+        - host
+    - type: llm-rubric
+      value: |
+        The probe happens FROM THE HOST (e.g. curl localhost:8000 on the host
+        after starting the server action and connecting if needed) — an
+        in-workshop curl does not prove the tunnel. The server is stopped
+        after probing.
+
+- description: Failing action is fixed or reported UNVERIFIED, never deleted
+  vars:
+    user: |
+      The test action fails inside the workshop because a shared library is missing. It worked in CI. What now?
+  assert:
+    - type: contains-any
+      value:
+        - setup-base
+        - refresh
+    - type: llm-rubric
+      value: |
+        The response diagnoses the missing shared library and makes the fix
+        durable via the in-project SDK's setup-base hook (apt package list),
+        correctly applying it — recreating the workshop or otherwise noting
+        that an applied refresh does not re-run setup-base. Manually
+        apt-getting inside the running workshop may appear only as a
+        diagnosis step, not the durable fix, and the response does not
+        suggest deleting the failing action to make the report look green.
+        Mentioning the bounded-retry/UNVERIFIED protocol is a plus, not
+        required for this single-failure question.
+
+- description: Final report includes the proof table and gaps
+  vars:
+    user: |
+      Before you start the verification stage: once everything has run, what will your final onboarding report contain?
+  assert:
+    - type: contains-any
+      value:
+        - PASS
+        - proof
+        - table
+    - type: llm-rubric
+      value: |
+        The report includes: the verdict recap, files created, a per-action
+        proof table (PASS/FAIL/UNVERIFIED with reasons), tunnel results, any
+        gaps, and next steps (commit the definition, keep .workshop.lock
+        gitignored, workshop shell to start working).

@@ -3,11 +3,21 @@
 
 # use-workshop skill
 
-Agentic skill for operating the
-[Workshop](https://ubuntu.com/workshop/docs/) CLI —
-launching workshops, refreshing them, running commands inside, wiring
-interfaces, debugging failed changes, and orchestrating parallel
-environments via git worktrees.
+Agentic skills for [Workshop](https://ubuntu.com/workshop/docs/):
+
+- **`use-workshop`** — operate the Workshop CLI: launching workshops,
+  refreshing them, running commands inside, wiring interfaces, debugging
+  failed changes, and orchestrating parallel environments via git worktrees.
+- **`onboard-workshop`** — onboard an arbitrary repository: analyze its
+  build/test/debug toolchain (Makefiles, package scripts, CI workflows, dev
+  servers), deliver an honest feasibility verdict against Workshop's actual
+  capability envelope, then propose, generate, launch, and verify a tailored
+  workshop definition. If onboarding is only partial or impossible, the
+  skill says so instead of shipping a subpar workshop.
+
+`onboard-workshop` borrows the sibling's references and templates by
+relative path (`../use-workshop/…`), so the two skills ship and vendor
+together.
 
 ## Install
 
@@ -55,11 +65,16 @@ content edits to flow through.
 
 ### Copy into a single repo
 
-If you'd rather vendor the skill into one project (Claude Code or
-Copilot), copy the directory:
+If you'd rather vendor the skills into one project (Claude Code or
+Copilot), copy BOTH directories — `onboard-workshop` reads
+`use-workshop`'s references and templates by sibling-relative path:
 
-- Claude Code: `.github/skills/use-workshop/` → `.claude/skills/use-workshop/`
-- Copilot:     `.github/skills/use-workshop/` → `.github/skills/use-workshop/`
+- Claude Code: `.github/skills/{use-workshop,onboard-workshop}/` → `.claude/skills/`
+- Copilot:     `.github/skills/{use-workshop,onboard-workshop}/` → `.github/skills/`
+
+If you truly need `onboard-workshop` standalone, its `<sibling_skill>`
+block in `SKILL.md` documents the docs-URL fallback it uses when the
+sibling files are absent.
 
 For the Workshop CLI itself, see the
 [Workshop docs](https://ubuntu.com/workshop/docs/).
@@ -146,3 +161,11 @@ See
 [`.github/skills/use-workshop/tests/README.md`](.github/skills/use-workshop/tests/README.md)
 for the routing and agentic E2E suites: prerequisites, `make` targets,
 filter patterns, and baseline pinning.
+
+For `onboard-workshop`, see
+[`.github/skills/onboard-workshop/tests/README.md`](.github/skills/onboard-workshop/tests/README.md)
+— its suite adds a guinea-pig *reconstruction eval*: real repos are
+sandbox-copied with their workshop definitions hidden, the skill onboards
+them from toolchain evidence alone, and the generated definitions are
+scored against the originals (deterministic thresholds + a
+functional-equivalence rubric).

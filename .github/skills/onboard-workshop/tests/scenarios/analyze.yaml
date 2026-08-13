@@ -1,0 +1,118 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Full onboarding ask routes through analysis first, read-only
+  vars:
+    user: |
+      Set up a workshop for this repo. It's a Go CLI project with a docs/ directory built by Sphinx.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response starts with (or clearly commits to) a read-only analysis
+        of the repo — inspecting manifests (go.mod), Makefiles, CI workflows —
+        BEFORE writing any files or running workshop commands. It does not
+        emit a finished workshop.yaml in the same breath without analysis.
+    - type: contains-any
+      value:
+        - go.mod
+        - Makefile
+        - CI
+    - type: not-contains
+      value: sdkcraft
+
+- description: Analysis checks for an existing definition before anything else
+  vars:
+    user: |
+      Onboard this project to Workshop.
+  assert:
+    - type: contains-any
+      value:
+        - workshop.yaml
+        - .workshop
+        - existing workshop definition
+        - existing definition
+    - type: llm-rubric
+      value: |
+        The response includes checking whether the project already has a
+        workshop definition (workshop.yaml, .workshop.yaml, or a .workshop/
+        directory) as an early step, and does not propose overwriting or
+        regenerating an existing definition. Naming the specific filenames is
+        a plus, not required — in a chat eval the model cannot list the repo,
+        so committing to the check as step one satisfies this. Explicitly mentioning the
+        route-away to the use-workshop skill is a plus, not required.
+
+- description: Evidence-linked facts, CI outranks README
+  vars:
+    user: |
+      Analyze this repo for Workshop onboarding. The README says "build with make" but the CI workflow runs "npm run build". Which do you trust?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response prefers the CI workflow command over the README prose
+        (CI is executed, prose can rot), and records facts with their
+        evidence file rather than guessing.
+    - type: contains-any
+      value:
+        - CI
+        - workflow
+
+- description: Feasibility-only ask stops at the verdict
+  vars:
+    user: |
+      Can this repo run in Workshop? Don't create anything yet — just tell me if it's feasible and what it would take.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response commits to analysis plus a feasibility verdict/proposal
+        and does NOT generate files, honoring "don't create anything yet".
+        A sentence explicitly declining to create anything is a plus, not
+        required — committing only to a read-only pass and stopping at the
+        verdict/proposal satisfies this equally. The failure mode is offering
+        to write files or run a lifecycle command.
+    - type: not-contains
+      value: workshop launch
+
+- description: Subdirectory Makefiles are part of the analysis
+  vars:
+    user: |
+      What parts of my repo will you look at to derive the workshop actions? We keep our docs build in docs/Makefile.
+  assert:
+    - type: contains
+      value: docs/Makefile
+    - type: llm-rubric
+      value: |
+        The response commits to wrapping the existing docs/Makefile targets
+        (e.g. actions that call make -C docs/ <target>) rather than
+        re-implementing the docs build, and lists other evidence sources
+        (manifests, package.json scripts, CI workflows, lint configs).
+
+- description: Packaging pipelines are out of the inner loop
+  vars:
+    user: |
+      My repo has a snapcraft.yaml for releases. Should the workshop actions run snapcraft?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response says packaging (snapcraft) is normally out of the inner
+        dev loop — recorded as a note, not turned into a default action —
+        unless the user actively works on packaging and asks for it.
+
+- description: CI series matrix suggests parallel definitions
+  vars:
+    user: |
+      Our CI runs the same build on a matrix of ubuntu-22.04 and ubuntu-24.04, and debian/changelog ships entries for both series. Which base should the workshop use?
+  assert:
+    - type: contains-any
+      value:
+        - ".workshop/"
+        - two definitions
+        - one per series
+        - per-series
+    - type: llm-rubric
+      value: |
+        The response recognises that one `base:` cannot represent a repo that
+        builds for two series, and offers parallel definitions — one
+        `.workshop/<series>.yaml` per series, each with its own base, sharing
+        one in-project SDK — as a recommendation, naming the
+        single-definition alternative and which series it would pick. It does
+        NOT silently choose the newest series and drop the other.

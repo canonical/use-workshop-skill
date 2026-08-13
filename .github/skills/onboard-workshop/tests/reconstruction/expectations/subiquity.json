@@ -1,0 +1,23 @@
+{
+  "_comment": "Reconstruction thresholds for canonical/subiquity @ 2ef6b41e (Python installer, snap-built). Ground truth: .workshop/subiquity-noble.yaml + subiquity-resolute.yaml (ubuntu@24.04 / @26.04, sole SDK project-install-deps, NO actions) plus .workshop/install-deps/ (setup-base: build-essential + purge udisks2; setup-project: sudo make install_deps).",
+  "_derivable_from": "Makefile (install_deps, aptdeps, gitdeps, check, unit, integration, api, lint/flake8, dryrun*), snapcraft.yaml (base: core24). The workshop-driving .github/workflows/ci.yaml is parked as ground truth.",
+  "base": ["ubuntu@24.04"],
+  "_base_note": "snapcraft.yaml pins base: core24, so 24.04 is unambiguous here.",
+  "required_sdks": [],
+  "in_project_sdk_required": true,
+  "anywhere_token_groups": [
+    {
+      "name": "dependency-bootstrap",
+      "any": ["install_deps", "gitdeps", "aptdeps", "apt-deps.txt"]
+    }
+  ],
+  "_anywhere_note": "The repo's dependency entry point is `make install_deps`, which is itself just `aptdeps gitdeps`. Any route to it counts: the ground truth wraps it wholesale (`sudo make install_deps` in setup-project), but splitting it — apt packages in setup-base where root/pre-mount work belongs, `make gitdeps` in setup-project — is at least as correct. Relaxed from a literal `install_deps` token on 2026-08-13 after the Sonnet run was failed by exactly that decomposition; see BASELINE.md.",
+  "action_token_groups": [
+    { "name": "check", "any": ["make check", "make unit", "make integration", "make api"] },
+    { "name": "lint", "any": ["make lint", "flake8", "black"] },
+    { "name": "dryrun", "any": ["make dryrun", "dryrun-server", "dryrun-serial"] }
+  ],
+  "min_action_groups": 0,
+  "_action_note": "NOT gated, deliberately. The maintainers' definition has no actions at all, so gating on them would fail an exact reproduction of the human answer — the wrong outcome for a human-vs-machine comparison. The groups stay listed so `action_groups_satisfied` records whether the skill wrapped the Makefile anyway (SKILL.md principle 5 says it should); that surplus is judged by the rubric and in the comparison report, not here.",
+  "gitignore_lock": true
+}

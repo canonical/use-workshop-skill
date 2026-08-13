@@ -22,18 +22,20 @@ the manual run summary diff.
 ## Prerequisites
 
 - `promptfoo` 0.121.9 (or a compatible later version) on PATH.
-- `ANTHROPIC_API_KEY` exported (`scripts/run-routing.sh` and
-  `scripts/run-agentic.sh` also accept the same value as
-  `ANTHROPIC_API_TOKEN` and bridge it).
-- `OPENROUTER_API_KEY` exported — only for the OpenRouter routing runs
-  (`make eval-routing-openrouter[-all]`). promptfoo's OpenRouter provider
-  reads it natively; no bridging.
-- `OPENAI_API_KEY` exported — for the `llm-rubric` grading model, which is
-  pinned in `promptfooconfig.yaml` (`defaultTest.options.provider`) so
-  rubric verdicts are reproducible across machines. Every routing run needs
-  it, regardless of which candidate provider is being evaluated. Note the
-  judge takes one call per rubric assertion per case — on large sweeps it
-  is the first thing to hit rate limits.
+- `OPENROUTER_API_KEY` exported — this is the only key an ordinary routing
+  run needs. It covers both the GLM-5.2 candidate and the `llm-rubric`
+  judge, which is pinned in `promptfooconfig.yaml`
+  (`defaultTest.options.provider`) so rubric verdicts are reproducible
+  across machines. promptfoo's OpenRouter provider reads the variable
+  natively; no bridging. Note the judge takes one call per rubric assertion
+  per case and is the *more expensive half* of a run (~$3.20 of ~$4.50) —
+  on large sweeps it is also the first thing to hit rate limits.
+- `ANTHROPIC_API_KEY` exported — only for the Anthropic routing runs
+  (`make eval-routing-anthropic`, `eval-routing-all-models`) and the
+  agentic suite. `scripts/run-routing.sh` and `scripts/run-agentic.sh`
+  also accept the same value as `ANTHROPIC_API_TOKEN` and bridge it.
+- `OPENAI_API_KEY` — no longer required here. The judge model is unchanged
+  (`gpt-5.5`) but is now reached through OpenRouter.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
   and `node` on PATH; the user must be in the `lxd` group.
 
@@ -46,7 +48,8 @@ make check-doc-paths            # assert reference/cli/ paths map to the 4 combi
 make check-source-docs          # assert every cited upstream doc path exists in docs-manifest.txt (offline)
 make check-yaml-keys            # lint skill YAML snippets/templates against the upstream schema key allowlists (offline)
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
-make eval-routing               # routing eval, Sonnet 4.6 only
+make eval-routing               # routing eval, GLM-5.2 via OpenRouter — the pinned gate
+make eval-routing-anthropic     # routing eval, Sonnet 4.6 (former baseline; needs ANTHROPIC_API_KEY)
 make eval-routing-all-models    # routing eval against Sonnet 4.6, Haiku 4.5, Opus 4.7
 make eval-routing-openrouter        # routing eval, GLM-5.1 via OpenRouter (needs OPENROUTER_API_KEY)
 make eval-routing-openrouter-all    # routing eval, GLM-4.7-flash + GLM-5.1 + GLM-5.2 via OpenRouter
@@ -58,10 +61,10 @@ make eval-clean                 # drop generated bundle and raw outputs
 Or invoke the underlying scripts directly:
 
 ```sh
-bash scripts/run-routing.sh                   # full routing run (Sonnet 4.6)
+bash scripts/run-routing.sh                   # full routing run (GLM-5.2 via OpenRouter)
 bash scripts/run-routing.sh --filter-pattern bootstrap   # one scenario
 bash scripts/run-routing.sh --model claude-haiku-4-5     # one Anthropic tier
-bash scripts/run-routing.sh --provider openrouter:z-ai/glm-4.5   # any declared provider
+bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1   # any declared provider
 
 bash scripts/run-agentic.sh                   # full agentic suite
 bash scripts/run-agentic.sh --filter-pattern troubleshoot   # one task
@@ -73,16 +76,24 @@ Inspect results interactively:
 promptfoo view
 ```
 
-## Testing other models via OpenRouter
+## Models and OpenRouter
 
-The routing eval can run against non-Anthropic models through OpenRouter
-(the agentic suite cannot — it drives the `claude` CLI directly). A
-curated set of open-weight GLM tiers is declared in
-`promptfooconfig.yaml` and selected with `--provider`:
+Since 2026-08-13 the routing eval runs entirely through OpenRouter: the
+candidate is `z-ai/glm-5.2` and the `llm-rubric` judge is
+`openai/gpt-5.5` routed through OpenRouter too. An ordinary run therefore
+needs **`OPENROUTER_API_KEY` and nothing else** (~$4.50/run, down from
+~$13.30 when the candidate billed to Anthropic and the judge to OpenAI).
+
+The Anthropic tiers stay declared and selectable — they are the occasional
+confirmation run on the model family the skill is actually written for.
+The agentic suite is unaffected; it drives the `claude` CLI directly and
+cannot use OpenRouter.
 
 ```sh
 export OPENROUTER_API_KEY=...
-make eval-routing-openrouter            # GLM-5.1 (the default tier)
+make eval-routing                       # GLM-5.2 — the pinned gate
+make eval-routing-anthropic             # Sonnet 4.6 — needs ANTHROPIC_API_KEY
+make eval-routing-openrouter            # GLM-5.1, the mid GLM tier
 make eval-routing-openrouter-all        # GLM-4.7-flash + GLM-5.1 + GLM-5.2
 bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1
 ```
@@ -95,19 +106,22 @@ Rules of the road:
   an empty summary). To try a new model, add a 3-line provider block with
   `config: {max_tokens: 1024, temperature: 0.0}` — exactly like adding an
   Anthropic tier. Confirm the slug against <https://openrouter.ai/models>.
-- **Excluded from the default sweep.** OpenRouter providers never run in
-  `make eval-routing` (pinned to Sonnet 4.6) or `eval-routing-all-models`
-  (Anthropic tiers only). `--model` and `--provider` are mutually
-  exclusive.
+- **One provider per run.** `make eval-routing` runs only the GLM-5.2 gate,
+  and `eval-routing-all-models` only the Anthropic tiers — neither sweeps
+  everything declared. `--model` and `--provider` are mutually exclusive.
 - **Determinism preserved.** Selection is by `--filter-providers`, which
-  keeps the provider's `temperature: 0` config block.
-- **Cost caveats.** OpenRouter does not get Anthropic prompt-cache
-  discounts, so each 60-case run resends the full ~30K-token bundle
-  uncached — pricier per run than the cached Anthropic baseline. And the
-  committed summary's `cost_usd` reads **0** (OpenRouter slugs aren't in
-  promptfoo's cost table) — check the OpenRouter dashboard for real spend.
-- **Not a CI gate.** These runs are cross-model diagnostics; see
-  `BASELINE.md` for why they are not pinned.
+  keeps the provider's `temperature: 0` config block. The gate row goes
+  further and pins OpenRouter's *backend* routing (`allow_fallbacks: false`,
+  `quantizations: [fp8]`) — the slug is served by ~32 backends at
+  quantizations down to fp4, so an unpinned row measures a different machine
+  from run to run. Diagnostic tiers are deliberately left unpinned.
+- **Cost caveats.** OpenRouter gets no Anthropic prompt-cache discount, so
+  each run resends the full ~30K-token bundle uncached. And the committed
+  summary's `cost_usd` reads **0** — OpenRouter slugs aren't in promptfoo's
+  cost table, so the gate row now carries no cost signal at all. Check the
+  OpenRouter dashboard for real spend.
+- **Diagnostic tiers are not a CI gate.** Only the GLM-5.2 row is pinned;
+  the other open-weight tiers are cross-model diagnostics. See `BASELINE.md`.
 
 ## What the suites test
 
@@ -180,13 +194,16 @@ suite(s) to confirm nothing regressed:
    top-level keys must be in the upstream schema allowlists), and
    shellcheck. Run this before any paid eval.
 1. `make eval-routing` — fast, deterministic; the canonical regression
-   gate. If pass rate drops below the BASELINE.md value for Sonnet
-   4.6, investigate before merging.
-2. (Optional) `make eval-routing-all-models` — Haiku and Opus give
+   gate. If pass rate drops below the BASELINE.md value for GLM-5.2,
+   investigate before merging.
+2. (Optional) `make eval-routing-anthropic` — the confirmation run on the
+   model family the skill is written for. Worth doing before shipping a
+   substantial content change, since the gate is a proxy.
+3. (Optional) `make eval-routing-all-models` — Haiku and Opus give
    useful diagnostic signal: a Haiku regression where Sonnet still
    passes usually means the skill text grew ambiguous; an Opus
    regression usually means a fact is missing or wrong.
-3. (Optional, slow) `make eval-agentic` — the end-to-end check that
+4. (Optional, slow) `make eval-agentic` — the end-to-end check that
    matters for behaviour, not text. Run before shipping changes that
    touch workflow procedures.
 

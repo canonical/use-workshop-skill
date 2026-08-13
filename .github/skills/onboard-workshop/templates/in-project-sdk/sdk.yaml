@@ -1,0 +1,27 @@
+# .workshop/<sdk-name>/sdk.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# In-project SDK definition. Directory name must match `name:`; the consuming
+# workshop lists it as `project-<sdk-name>`. Setup logic lives in executable
+# scripts under hooks/ (setup-base, setup-project, check-health, save-state,
+# restore-state) — there is NO `hooks:` key in sdk.yaml; a hooks key here is
+# rejected by the schema. Only sketch SDKs inline hooks in YAML.
+
+name: <sdk-name>
+
+# Optional: declare interface endpoints this SDK provides or consumes.
+# Uncomment and adapt what the project needs; delete the rest.
+#
+# A tunnel slot exposing a dev server that runs inside the workshop
+# (pair it with a same-named tunnel plug grafted on the system SDK):
+# slots:
+#   <server-name>:
+#     interface: tunnel
+#     endpoint: <port>
+#
+# A desktop plug for GUI test hosts (Electron, browsers under xvfb).
+# Requires a manual `workshop connect` after launch:
+# plugs:
+#   desktop:
+#     interface: desktop

@@ -1,0 +1,18 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# setup-base: runs as root when the SDK is installed into the base (before the
+# project is mounted). Re-runs only when the base or SDK revision changes —
+# an applied refresh does NOT re-run it; recreate the workshop to apply edits.
+# Source the package list from the repo's own evidence (CI workflow apt-get
+# lines, Dockerfile, README) — or, for Electron/Chromium test hosts, the
+# canonical library set in references/toolchain-signals.md. Do not guess.
+#
+# This file must be executable: chmod +x .workshop/<sdk-name>/hooks/setup-base
+
+set -eu
+
+apt-get update
+apt-get install -y \
+  <packages-from-repo-evidence>

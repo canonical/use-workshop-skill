@@ -22,6 +22,11 @@ Read these references before acting:
 - If not, you'll write one in Steps 2–3.
 
 **Step 2. Identify the user's needs.**
+If the user is really asking you to *analyze an arbitrary repo* and derive a
+definition from its existing build/test toolchain, and the `onboard-workshop`
+skill is installed, use that skill instead — it owns repo analysis,
+feasibility verdicts, and toolchain-to-action mapping.
+
 Ask the user (only what isn't obvious):
 - What base OS? (`ubuntu@22.04`, `24.04`, `26.04` — default to `24.04` if no preference.)
 - What tools/runtimes do they need inside?

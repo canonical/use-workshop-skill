@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright 2026 Canonical Ltd.
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+	};
+	rootObject = FA0000000000000000000001 /* Project object */;
+}

@@ -17,8 +17,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install PyYAML
         run: python3 -m pip install --quiet pyyaml
-      - name: Static checks (doc paths, bundle regen, YAML parse, shellcheck)
+      - name: Static checks, use-workshop (doc paths, bundle regen, YAML parse, shellcheck)
         run: make -C .github/skills/use-workshop/tests check
+      - name: Static checks, onboard-workshop (shared manifests, bundle regen, YAML keys, hooks)
+        run: make -C .github/skills/onboard-workshop/tests check
       - name: REUSE lint
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
 
@@ -44,9 +46,19 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — paid (~$7-8/run), so manual-only via workflow_dispatch.
-  # Requires the ANTHROPIC_API_KEY repository secret. Compare the result
-  # against tests/BASELINE.md before merging skill-content changes.
+  # Routing eval — paid, so manual-only via workflow_dispatch. Compare the
+  # result against tests/BASELINE.md before merging skill-content changes.
+  #
+  # use-workshop ONLY. Since 2026-08-13 that suite runs GLM-5.2 as candidate and
+  # gpt-5.5 as the llm-rubric judge, both through OpenRouter (~$4.50/run), so
+  # OPENROUTER_API_KEY is the only secret this job needs.
+  #
+  # onboard-workshop is deliberately NOT in this matrix. It stayed on Sonnet 4.6
+  # with the OpenAI-hosted judge (see that suite's BASELINE.md, "GLM-5.2
+  # diagnostic", for the measurement behind that), which would need
+  # ANTHROPIC_API_KEY + OPENAI_API_KEY as repository secrets — neither exists,
+  # and its routing eval has in practice always been run locally. Adding it back
+  # means adding those two secrets and restoring the matrix.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -57,13 +69,15 @@ jobs:
           node-version: 22
       - name: Install promptfoo
         run: npm install -g promptfoo@0.121.9
-      - name: Routing eval (Sonnet 4.6 baseline)
+      - name: Routing eval (use-workshop, GLM-5.2 gate)
         run: make -C .github/skills/use-workshop/tests eval-routing
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Covers both the candidate and the judge; run-routing.sh preflights
+          # the judge and exits 2 if its provider's key is missing.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       - name: Upload result summaries
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: routing-eval-results
+          name: routing-eval-results-use-workshop
           path: .github/skills/use-workshop/tests/results/

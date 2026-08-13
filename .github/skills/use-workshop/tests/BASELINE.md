@@ -33,14 +33,88 @@ Because those rewrites can flip a previously-passing answer, every recorded rate
 below predates this round. The earlier 9 cases (2026-06-23) covered the 0.9.2
 surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 9 references + 10 workflows concatenated). Run with: `make eval-routing`
-(Sonnet 4.6) or `make eval-routing-all-models`.
+(GLM-5.2 — the gate), `make eval-routing-anthropic` (Sonnet 4.6
+confirmation), or `make eval-routing-all-models`.
 
-| Model              | Pass rate                      | Notes |
-|--------------------|--------------------------------|-------|
-| `claude-sonnet-4-6` | **76/76 (100%)** | full run under the 0.9.4 bundle (2026-07-23) |
-| `claude-haiku-4-5`  | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
-| `claude-opus-4-7`   | 59/59 prior + new cases 3/3 | full re-run under the 0.9.4 bundle optional (see below) |
+> **The gate moved off Anthropic on 2026-08-13.** Candidate and judge both run
+> through OpenRouter now. See *Gate model change* below for what that preserves
+> and what it costs.
 
+| Model | Role | Pass rate | Notes |
+|-------|------|-----------|-------|
+| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
+| `claude-sonnet-4-6` | opt-in confirmation | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes |
+| `claude-haiku-4-5`  | diagnostic | 59/59 prior + new cases 3/3 | stale (0.9.2 bundle) |
+| `claude-opus-4-7`   | diagnostic | 59/59 prior + new cases 3/3 | stale (0.9.2 bundle) |
+
+### Gate model change (2026-08-13)
+
+The routing eval used to bill two vendors: Sonnet 4.6 as candidate ($10.11 on
+its last full run) and `openai:gpt-5.5-2026-04-23` as the `llm-rubric` judge
+(~$3.20/run, never itemised — promptfoo does not attribute grading cost). It now
+runs entirely through OpenRouter at **~$4.50/run**, needing only
+`OPENROUTER_API_KEY`.
+
+**What is preserved.** The judge is the *same model* — `gpt-5.5`, reached via
+OpenRouter instead of OpenAI directly — so rubric verdicts recorded before and
+after this date are produced by the same instrument and stay comparable.
+
+**What it costs.**
+
+1. **The judge is no longer date-pinned.** OpenRouter exposes only the floating
+   `openai/gpt-5.5` tag, not the `-2026-04-23` snapshot. The judge can now roll
+   under us; watch for a step change in borderline verdicts.
+2. **The gate measures a proxy.** It records how a *GLM* model routes through a
+   skill written for *Claude*. GLM-5.2 tracked Sonnet closely on identical
+   inputs (both 75/76 on the 2026-07-23 suite under the same judge), so it is a
+   good proxy — but it is a proxy. `make eval-routing-anthropic` stays as the
+   occasional confirmation run and should be used before shipping substantial
+   content changes.
+3. **The gate row carries no cost signal.** `cost_usd` reads 0 for OpenRouter
+   slugs (not in promptfoo's cost table). Real spend is on the OpenRouter
+   dashboard.
+
+**Two config choices make this row a gate rather than a snapshot**, and both are
+load-bearing:
+
+- **Backend routing is pinned** (`allow_fallbacks: false`, `quantizations:
+  [fp8]`). OpenRouter serves this slug from ~32 backends at quantizations down
+  to fp4 and picks one per request — the exact reason open-weight rows are
+  described below as snapshots. Pinning holds the measuring conditions still.
+  The diagnostic tiers are deliberately left unpinned.
+- **`showThinking: false` and `max_tokens: 3072`.** GLM-5.2 returns a
+  `reasoning` field that promptfoo otherwise *prepends to the graded output* —
+  measured at ~12% of graded text on a sample case. That grades the wrong
+  artifact: the Anthropic rows were never graded on hidden reasoning, and a
+  reasoning trace enumerates-and-rejects commands far more freely than a final
+  answer does, which is what trips this suite's `not-contains` guards. But
+  reasoning is billed against the same `max_tokens`, so answer-only grading at
+  the usual 1024 budget starved the answer: a first full run scored 73/76 with
+  **9 cases at the ceiling and 2 failing on truncation alone** (one returned a
+  completely empty answer). At 3072 the same cases pass and no case truncates.
+  The diagnostic tiers keep 1024 — they are compared to each other, not gated.
+
+**No assertion or skill content was changed for this re-pin.** The three
+failures in the 73/76 first run were diagnosed and are fully accounted for: two
+were the truncation artifact above, and the third (`host-only service`, 0.938)
+passed on the corrected run once the model had budget for a complete answer.
+The one genuine improvement carried over from `e31d177` is the remote-IDE case
+(assertion fix #9), which went 0.867 → 1.000.
+
+This run also closes the re-pin that was outstanding after `e31d177`, when the
+suite sat at an unverified 73/76 because Anthropic credits were exhausted.
+
+> ✅ **2026-07-23 (onboard-workshop handoff edit): rerun 75/76 → 76/76.**
+> Adding the onboard-workshop handoff sentence to
+> `workflows/bootstrap-project.md` changed the bundle, so policy required a
+> full rerun: 75/76, with the single failure a case-sensitivity artifact in
+> `multi-workshop-projects.yaml` (the answer was correct — "**Move** the
+> existing definition", "migration path" — but the `contains-any` list had
+> only lowercase "move"/"migrate"; "migrate" is also not a substring of
+> "migration"). The assertion now accepts case variants and the "migrat"
+> stem; the case re-ran green (1/1). No content-caused regressions; the
+> committed `results/2026-07-23-routing-*.json` records the 75/76 run.
+>
 > ✅ **2026-07-23 (0.9.3/0.9.4): Sonnet 4.6 re-pinned at 76/76.**
 > The Sonnet-only `make eval-routing` run was executed against the 0.9.4 bundle +
 > 76-case suite and lands **76/76 (100%, 0 errors)** — Sonnet is re-pinned above.
@@ -74,15 +148,21 @@ surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 > relaxation above, which cannot newly fail a case. Seven earlier assertion fixes
 > (plus this one) are documented under "Assertion fixes" below.
 
-### OpenRouter (open-weight) routing — diagnostic only, not a CI gate
+### OpenRouter (open-weight) routing — diagnostics around the gate
 
-The same 60 routing cases can be run against open-weight models through
-OpenRouter (`make eval-routing-openrouter[-all]`, requires
-`OPENROUTER_API_KEY`). These are **cross-model diagnostics, not a regression
-gate** — they are not pinned and a drop here does not fail CI. They answer a
-different question than the Anthropic baseline: *how portable is the skill's
-routing to non-Anthropic models?* Tiers mirror the Anthropic diagnostic roles
-(small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
+> **Scope note (2026-08-13).** One OpenRouter row — `z-ai/glm-5.2` — is now the
+> pinned CI gate and is documented in *Gate model change* above, not here.
+> Everything in this section is the surrounding diagnostic matrix: **not
+> pinned**, and a drop here does not fail CI. The distinction is not just
+> bookkeeping — the gate row pins backend routing and raises the token budget,
+> so its numbers are **not** directly comparable with the unpinned 1024-token
+> rows below, including earlier `glm-5.2` rows.
+
+The routing cases can be run against open-weight models through OpenRouter
+(`make eval-routing-openrouter[-all]`, requires `OPENROUTER_API_KEY`). These
+diagnostics answer a different question than a gate: *how portable is the
+skill's routing across model families?* Tiers mirror the Anthropic diagnostic
+roles (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
 
 **Active families: GLM (Zhipu), MiniMax, and Kimi.** All declared in
 `promptfooconfig.yaml`. Tiers were refreshed to the current OpenRouter catalog

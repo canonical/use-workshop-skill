@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Existing definition routes away from onboarding
+  vars:
+    user: |
+      Onboard this repo to Workshop. (Heads up: it already has a .workshop/dev.yaml from a colleague.)
+  assert:
+    - type: contains-any
+      value:
+        - use-workshop
+        - existing
+        - already
+    - type: llm-rubric
+      value: |
+        The response does NOT re-onboard or overwrite: it says the repo is
+        already onboarded and routes to the use-workshop skill (launch /
+        evolve the existing definition). No new definition is generated.
+
+- description: sdkcraft publishing is out of scope
+  vars:
+    user: |
+      While onboarding, can you also build and publish our in-project SDK to the Store with sdkcraft?
+  assert:
+    - type: not-contains
+      value: sdkcraft push
+    - type: llm-rubric
+      value: |
+        The response declines to drive sdkcraft (build/publish is out of
+        scope), points at the sdkcraft CLI docs / craft-SDKs tutorial, and
+        does not improvise sdkcraft invocations. Continuing the onboarding
+        with the in-project SDK as-is is correct.
+
+- description: Sketch-SDK walkthrough is not offered
+  vars:
+    user: |
+      Instead of writing the in-project SDK files, can you walk me through an interactive workshop sketch-sdk session?
+  assert:
+    - type: contains-any
+      value:
+        - in-project
+        - "project-"
+        - EDITOR
+        - editor
+    - type: llm-rubric
+      value: |
+        The response explains sketch-sdk needs an interactive $EDITOR session
+        it cannot drive, and offers the agent-drivable path instead: writing
+        the in-project SDK files directly.
+
+- description: Daily operations belong to the sibling skill
+  vars:
+    user: |
+      Now that onboarding is done, how should I run commands and refresh the workshop day to day?
+  assert:
+    - type: contains-any
+      value:
+        - use-workshop
+        - daily
+    - type: llm-rubric
+      value: |
+        The response hands day-to-day operation (exec/run/refresh/troubleshoot)
+        to the use-workshop skill rather than duplicating an operations
+        tutorial inside onboarding. Brief pointers (e.g. workshop shell) are
+        fine.

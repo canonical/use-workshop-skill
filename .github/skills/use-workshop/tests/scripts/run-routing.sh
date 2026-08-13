@@ -14,10 +14,15 @@
 # - Writes a slim summary to tests/results/<date>-routing-<tag>.json
 #   (committed, ~KB-scale; one row per case + meta totals).
 #
+# The default target is GLM-5.2 via OpenRouter, and the llm-rubric judge is
+# routed through OpenRouter too — so an ordinary run needs OPENROUTER_API_KEY
+# and nothing else. Anthropic tiers remain selectable with --model.
+#
 # Usage:
-#   scripts/run-routing.sh                                  # default: Anthropic Sonnet 4.6
+#   scripts/run-routing.sh                                  # default: GLM-5.2 via OpenRouter
+#   scripts/run-routing.sh --model claude-sonnet-4-6        # the former baseline (needs ANTHROPIC_API_KEY)
 #   scripts/run-routing.sh --model claude-haiku-4-5         # scope to one Anthropic tier
-#   scripts/run-routing.sh --provider openrouter:z-ai/glm-4.5    # any declared provider
+#   scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1    # any declared provider
 #   scripts/run-routing.sh --filter-pattern foo             # passes through to promptfoo
 #
 # --model and --provider are mutually exclusive. A --provider id must be
@@ -90,14 +95,21 @@ done
 # run stays deterministic.
 #
 #   --model <m>     : the Anthropic <m> tier (back-compat).
-#   --provider <id> : any declared provider id (e.g. openrouter:z-ai/glm-4.5).
-#   neither         : the Sonnet 4.6 baseline. NOTE this deliberately does not
-#                     run every declared provider — that would sweep the
-#                     OpenRouter rows too (and demand OPENROUTER_API_KEY).
+#   --provider <id> : any declared provider id (e.g. openrouter:z-ai/glm-5.1).
+#   neither         : the GLM-5.2 baseline. NOTE this deliberately does not
+#                     run every declared provider — that would sweep every
+#                     other OpenRouter row and the Anthropic tiers too.
 if [[ -n "${model_override}" && -n "${provider_override}" ]]; then
   echo "error: --model and --provider are mutually exclusive" >&2
   exit 1
 fi
+
+# --filter-providers takes a REGEX, and provider ids are interpolated into it.
+# An unescaped id is a latent footgun: `z-ai/glm-5.2`'s dot matches any
+# character, and a future slug containing `+` would match nothing at all —
+# which promptfoo reports as a clean 0-case run, silently overwriting a
+# canonical baseline with an empty summary. Escape literally.
+re_escape() { python3 -c 'import re, sys; print(re.escape(sys.argv[1]))' "$1"; }
 
 if [[ -n "${provider_override}" ]]; then
   # Validate the id is declared. An undeclared id makes --filter-providers match
@@ -124,21 +136,19 @@ if [[ -n "${provider_override}" ]]; then
   fi
   effective_provider="${provider_override}"
   provider_meta="${provider_override%%:*}"   # e.g. "openrouter"
-  model="${provider_override#*:}"            # e.g. "z-ai/glm-4.5"
-  forwarded+=("--filter-providers" "^${provider_override}$")
+  model="${provider_override#*:}"            # e.g. "z-ai/glm-5.1"
 elif [[ -n "${model_override}" ]]; then
   effective_provider="anthropic:messages:${model_override}"
   provider_meta="anthropic:messages"
   model="${model_override}"
-  forwarded+=("--filter-providers" "^anthropic:messages:${model_override}$")
 else
-  effective_provider="anthropic:messages:claude-sonnet-4-6"
-  provider_meta="anthropic:messages"
-  model="claude-sonnet-4-6"
-  forwarded+=("--filter-providers" "^anthropic:messages:claude-sonnet-4-6$")
+  effective_provider="openrouter:z-ai/glm-5.2"
+  provider_meta="openrouter"
+  model="z-ai/glm-5.2"
 fi
+forwarded+=("--filter-providers" "^$(re_escape "${effective_provider}")$")
 
-# Filesystem-safe tag for result filenames (e.g. openrouter-z-ai-glm-4.5).
+# Filesystem-safe tag for result filenames (e.g. openrouter-z-ai-glm-5.2).
 tag="${effective_provider//:/-}"
 tag="${tag//\//-}"
 
@@ -159,32 +169,67 @@ fi
 # Preflight the llm-rubric judge. The grading model is pinned in
 # promptfooconfig.yaml (defaultTest.options.provider); a dead judge (bad key,
 # exhausted credits) otherwise surfaces only as per-case errors mid-run,
-# wasting the candidate-model spend and quarantining the whole run. OpenAI
-# reports credit exhaustion as a generic 429, so probe with a real call and
-# fail fast with the actual API error.
-judge="$(awk '/^[[:space:]]*provider:[[:space:]]*openai:/ {
-    sub(/^[[:space:]]*provider:[[:space:]]*/, ""); print; exit
-  }' "${tests_dir}/promptfooconfig.yaml")"
-if [[ -n "${judge}" ]]; then
-  if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-    echo "error: OPENAI_API_KEY is not set — required for the llm-rubric judge (${judge})" >&2
+# wasting the candidate-model spend and quarantining the whole run — that is
+# not hypothetical, it cost a full sweep once (see BASELINE.md, "Judge-outage
+# incident"). Both OpenAI and OpenRouter report credit exhaustion as a generic
+# 429, so probe with a real call and fail fast with the actual API error.
+#
+# Read the id with a real YAML parse rather than a grep: the pin may be a bare
+# string (`provider: openai:gpt-5.5`) or an object (`provider: {id: ..., config:
+# ...}`), and a pattern that only matches one form silently skips the preflight
+# on the other — losing the protection exactly when the config changes.
+judge="$(python3 -c '
+import sys, yaml
+cfg = yaml.safe_load(open(sys.argv[1]))
+p = ((cfg.get("defaultTest") or {}).get("options") or {}).get("provider")
+if isinstance(p, dict):
+    p = p.get("id")
+print(p if isinstance(p, str) else "")
+' "${tests_dir}/promptfooconfig.yaml")"
+
+case "${judge}" in
+  openrouter:*)
+    judge_url="https://openrouter.ai/api/v1/chat/completions"
+    judge_key="${OPENROUTER_API_KEY:-}"
+    judge_key_name="OPENROUTER_API_KEY"
+    judge_model="${judge#openrouter:}"
+    ;;
+  openai:*)
+    judge_url="https://api.openai.com/v1/chat/completions"
+    judge_key="${OPENAI_API_KEY:-}"
+    judge_key_name="OPENAI_API_KEY"
+    judge_model="${judge#openai:}"
+    ;;
+  "")
+    judge_url=""
+    ;;
+  *)
+    echo "warning: llm-rubric judge '${judge}' uses a scheme this script cannot" >&2
+    echo "         preflight; a dead judge will surface as mid-run case errors." >&2
+    judge_url=""
+    ;;
+esac
+
+if [[ -n "${judge_url}" ]]; then
+  if [[ -z "${judge_key}" ]]; then
+    echo "error: ${judge_key_name} is not set — required for the llm-rubric judge (${judge})" >&2
     exit 2
   fi
   # max_completion_tokens must leave room for reasoning models (e.g. gpt-5.x):
   # a tiny cap is consumed entirely by reasoning, and the API then returns an
   # `error` ("max_tokens ... reached") rather than an empty completion, which
   # would fail this preflight even though the key/credits are fine.
-  probe="$(curl -sS -m 30 https://api.openai.com/v1/chat/completions \
-    -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+  probe="$(curl -sS -m 30 "${judge_url}" \
+    -H "Authorization: Bearer ${judge_key}" \
     -H "Content-Type: application/json" \
-    -d "{\"model\":\"${judge#openai:}\",\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}],\"max_completion_tokens\":2000}" 2>&1)" || true
+    -d "{\"model\":\"${judge_model}\",\"messages\":[{\"role\":\"user\",\"content\":\"ok\"}],\"max_completion_tokens\":2000}" 2>&1)" || true
   if ! python3 -c 'import json,sys
 d = json.loads(sys.argv[1])
 sys.exit(1 if d.get("error") else 0)' "${probe}" 2>/dev/null; then
     echo "error: llm-rubric judge preflight failed for ${judge}:" >&2
     printf '       %s\n' "$(printf '%s' "${probe}" | head -c 400)" >&2
-    echo "       Check OPENAI_API_KEY validity and account credits (OpenAI reports" >&2
-    echo "       credit exhaustion as '429 Too Many Requests')." >&2
+    echo "       Check ${judge_key_name} validity and account credits (both OpenAI and" >&2
+    echo "       OpenRouter report credit exhaustion as '429 Too Many Requests')." >&2
     exit 2
   fi
 fi

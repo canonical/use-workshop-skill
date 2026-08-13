@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Cross-skill routing: vars.skill is OVERRIDDEN with
+# skill-selection-context.md, which holds only the two skills' frontmatter.
+# These cases are the automated guard on the description boundary between
+# use-workshop (operate) and onboard-workshop (analyze + bootstrap).
+
+- description: Repo-analysis onboarding ask picks onboard-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      This repo has no workshop yet. Analyze how it builds and tests, and set up a workshop definition for it.
+  assert:
+    - type: contains
+      value: onboard-workshop
+
+- description: Workshop-ify phrasing picks onboard-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Workshop-ify this project.
+  assert:
+    - type: contains
+      value: onboard-workshop
+
+- description: Feasibility question picks onboard-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Can this repo run in Workshop? What would that take?
+  assert:
+    - type: contains
+      value: onboard-workshop
+
+- description: Failed refresh picks use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      My workshop refresh failed with an error and I need to figure out what went wrong.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: onboard-workshop
+
+- description: Launching a cloned repo's existing definition picks use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      I just cloned a repo that already has a workshop.yaml. Get me up and running.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: onboard-workshop
+
+- description: Interface wiring on a running workshop picks use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Forward port 8080 from my running workshop to the host.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: onboard-workshop
+
+- description: Toolchain-derivation phrasing picks onboard-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Derive a workshop from this codebase's Makefiles and CI so my team can develop in it.
+  assert:
+    - type: contains
+      value: onboard-workshop
+
+- description: Parallel worktree environments pick use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      I want two parallel workshop environments from git worktrees to compare a refactor side by side.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: onboard-workshop

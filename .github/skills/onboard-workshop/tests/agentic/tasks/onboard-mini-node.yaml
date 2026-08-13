@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: onboard-mini-node — full onboarding of a tiny Node repo (real LXD)
+  vars:
+    # Distinctive name: teardown deletes LXD containers by name prefix in the
+    # user's workshop project, so a generic `dev` could collide with a real
+    # workshop's container.
+    workshop_name: agentic-onboard
+    cleanup_workshops: ["agentic-onboard"]
+    fixture: .github/skills/onboard-workshop/tests/agentic/fixtures/onboard-mini-node
+    timeout_ms: 1200000
+    task: |
+      Onboard this repository to Workshop. It has no workshop definition yet.
+      Analyze how it builds and tests, propose the definition (make your
+      recommendations and proceed with them — assume I accept every
+      recommendation), generate it, launch it, and prove the actions work.
+      Name the workshop exactly: agentic-onboard
+  assert:
+    # Analysis touched the repo's own evidence before generating.
+    - type: contains-any
+      value:
+        - package.json
+        - engines
+    # Store discovery before authoring.
+    - type: contains-any
+      value:
+        - "[BASH] sdk find"
+        - "[BASH] sdk info"
+    # A named definition was generated (captured independently of the agent).
+    - type: contains
+      value: ".workshop/agentic-onboard.yaml"
+    # The node SDK with the repo's pinned major landed in the definition.
+    - type: contains
+      value: "node"
+    # The actions were proven, not just written.
+    - type: contains
+      value: "[BASH] workshop run"
+    # Captured state shows the workshop genuinely reached Ready.
+    - type: javascript
+      value: /"stdout":\s*"[^"]*Status:\s*Ready/i.test(output)
+    - type: llm-rubric
+      value: |
+        Looking at the transcript, GENERATED FILES, and captured state: the
+        agent (a) derived actions from the repo's package.json scripts
+        (wrapping the npm entry points; inlining a script's underlying
+        command is a minor style ding, not a failure by itself); (b) pinned
+        the node SDK channel from the engines field ("24") or verified a
+        channel via sdk info; (c) delivered a feasibility statement/proposal
+        BEFORE writing files, with explicit recommendations; (d) generated
+        .workshop/agentic-onboard.yaml (with .workshop.lock gitignored);
+        (e) launched, ran the verification triplet (changes/tasks/info), and
+        exercised the generated actions via workshop run, reporting results
+        honestly — an action may be reported PASS only if the action itself
+        ran (probing the underlying command via exec instead, while
+        reporting the action PASS, is a failure).

@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Workshop definition for a project with a dev server (docs preview, web app,
+# API) that must be reachable from the host browser. The serving SDK exposes a
+# tunnel slot; the system SDK grafts a matching plug. Same-name + same
+# interface + plug on `system` → auto-connects at launch.
+#
+# Save as .workshop/<name>.yaml (basename must match `name:`).
+
+name: dev
+base: ubuntu@24.04
+sdks:
+
+  # Toolchain SDK from the Store, channel pinned to the version the repo
+  # already uses (from go.mod, package.json engines, .tool-versions, CI).
+  - name: <toolchain-sdk>
+    channel: <track>/<risk>
+
+  # In-project SDK carrying repo-specific setup (apt packages, hooks) and
+  # the tunnel slot for the dev server. Lives at .workshop/<project-sdk>/.
+  - name: project-<project-sdk>
+
+  # Host side of the tunnel: same plug name, same port. Ports 1-1023 are
+  # blocked for system-SDK plugs — remap privileged ports (e.g. 80 -> 8080).
+  - name: system
+    plugs:
+      <server-name>:
+        interface: tunnel
+        endpoint: <port>
+
+actions:
+  # Wrap the repo's existing entry points; never re-implement them.
+  build: |
+    <existing-build-command>
+  test: |
+    <existing-test-command>
+  <server-name>: |
+    <existing-dev-server-command>

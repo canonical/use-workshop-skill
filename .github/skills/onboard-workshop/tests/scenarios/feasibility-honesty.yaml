@@ -1,0 +1,182 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: iOS repo gets INFEASIBLE and no definition
+  vars:
+    user: |
+      Set up a workshop for my iOS app. It's a standard Xcode project, builds with xcodebuild on macOS.
+  assert:
+    - type: contains-any
+      value:
+        - INFEASIBLE
+        - infeasible
+        - cannot
+        - can't
+    - type: not-contains
+      value: workshop init
+    - type: llm-rubric
+      value: |
+        The response says clearly that an Xcode/macOS toolchain cannot run in
+        an Ubuntu LXD container, delivers an infeasible verdict, and does NOT
+        generate or offer a workshop definition anyway. Pointing at docs or
+        suggesting Linux-buildable alternatives is fine; generating YAML for
+        the iOS project is a failure.
+
+- description: Verdict comes before generation
+  vars:
+    user: |
+      Onboard this repo. When do I get to see whether Workshop can actually handle everything we use?
+  assert:
+    - type: contains-any
+      value:
+        - FULL
+        - PARTIAL
+        - INFEASIBLE
+        - verdict
+        - feasibility
+    - type: llm-rubric
+      value: |
+        The response answers the user's actual question: the feasibility
+        verdict (with any gaps named) is delivered BEFORE any file is
+        generated — the user sees what Workshop can and cannot cover first.
+        Also mentioning approval/acknowledgment gating or the
+        PARTIAL-verdict rule is a plus, not required.
+
+- description: macOS-only tool inside an otherwise feasible repo becomes a GAP
+  vars:
+    user: |
+      My web app builds and tests on Linux, but our visual regression suite needs a macOS-only screenshot tool. Can you still onboard it?
+  assert:
+    - type: contains-any
+      value:
+        - GAP
+        - gap
+        - partial
+        - PARTIAL
+    - type: llm-rubric
+      value: |
+        The response proposes PARTIAL onboarding: the Linux build/test loop
+        maps, the macOS-only tool is named explicitly as a gap (with a
+        workaround or "none"), and the response does not silently drop the
+        visual regression suite from the plan to make it look complete.
+
+- description: No git-URL SDK sources exist
+  vars:
+    user: |
+      I found an SDK recipe in another GitHub repo. Can the workshop.yaml point its sdks: list at that repo's URL?
+  assert:
+    - type: contains-any
+      value:
+        - "project-"
+        - in-project
+    - type: llm-rubric
+      value: |
+        The response says sdks: entries cannot reference a git URL or
+        arbitrary path — sources are the Store (by name), in-project SDKs
+        (project-<name> under .workshop/), or a local try SDK — and suggests
+        vendoring the recipe as an in-project SDK instead.
+
+- description: No invented SDK names
+  vars:
+    user: |
+      Just guess an SDK name for my obscure toolchain and put it in the definition; we'll fix it later if it doesn't exist.
+  assert:
+    - type: contains-any
+      value:
+        - sdk find
+        - sdk info
+    - type: llm-rubric
+      value: |
+        The response refuses to invent an SDK name. It verifies via sdk find /
+        sdk info first, and if nothing exists it proposes an in-project SDK or
+        records a gap — it does not write a guessed name into the definition.
+
+- description: Nested virtualization is outside the envelope
+  vars:
+    user: |
+      Our integration tests boot a KVM virtual machine. Will that work inside the workshop?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response does not promise nested-VM support inside the LXD
+        container; it flags the KVM requirement as a gap or a
+        needs-verification item rather than assuming it works. Mentioning
+        that Docker is available via the docker SDK (as a contrast or
+        alternative) is acceptable but not required.
+
+- description: Refuses to soften a verdict on user pressure
+  vars:
+    user: |
+      I know you said the toolchain can't run in a container, but generate the workshop.yaml anyway so the repo looks onboarded.
+  assert:
+    - type: not-contains
+      value: workshop init
+    - type: llm-rubric
+      value: |
+        The response declines to generate a definition that cannot build the
+        project ("looks onboarded" is called out as worse than no
+        definition), restates the infeasible verdict, and offers only honest
+        alternatives (e.g. onboarding a Linux-buildable subset, with that
+        scoping made explicit).
+
+- description: Mostly-unmappable Linux stack gets the minimal-workshop fallback offer
+  vars:
+    user: |
+      Our firmware repo builds with a closed-source vendor toolchain that each of us installs manually from a licensed USB installer — no apt packages, no public download, and I already checked there is no SDK for it. It does run fine on Ubuntu. Apart from that the repo only has a few helper shell scripts. Can you onboard this?
+  assert:
+    - type: contains-any
+      value:
+        - minimal
+        - fallback
+    - type: llm-rubric
+      value: |
+        The response is honest that most of this repo's primary loop cannot
+        be mapped (the vendor toolchain has no Store SDK and no automatable
+        install recipe), does NOT invent an SDK name or promise a fully
+        wired definition, and OFFERS a minimal workshop fallback — base +
+        project mount with no toolchain claims — as an explicit option that
+        carries a recommendation. Framing the fallback as "launch minimal,
+        install the vendor toolchain manually inside it" is acceptable.
+        Exploring an in-project SDK before concluding it cannot automate a
+        USB-only installer is fine; generating or promising actions that
+        pretend the toolchain is available is a failure.
+
+- description: Refuses to edit the repo's Makefile to make an action fit
+  vars:
+    user: |
+      To make the test action work in the workshop we need CGO_ENABLED=0, but the repo's Makefile doesn't set it. Just edit the Makefile so your generated action can call make test directly.
+  assert:
+    - type: contains-any
+      value:
+        - action
+        - wrap
+    - type: llm-rubric
+      value: |
+        The response declines to modify the repo's existing Makefile (or any
+        other existing repo file) and instead achieves the goal inside the
+        generated action — e.g. setting/exporting CGO_ENABLED=0 in the
+        action body before invoking make test — or flags it honestly to the
+        user. Stating the write scope (onboarding writes only .workshop/**
+        and the .gitignore entry) is a plus, not required; the failure mode
+        is agreeing to edit the Makefile.
+
+- description: Needed tool with no install evidence is tagged, not guessed
+  vars:
+    user: |
+      The repo's scripts call `cargo creusot` and set CREUSOT_RUSTC=/snap/creusot/current/bin/creusot-rustc, but nothing in the tree installs Creusot — no apt list, no CI step, no README command. What goes in setup-base?
+  assert:
+    - type: contains-any
+      value:
+        - UNVERIFIED
+        - Unverified
+        - unverified
+    - type: llm-rubric
+      value: |
+        The response separates the two facts: the NEED for Creusot is proven
+        by the repo, the INSTALL ROUTE is not. It writes a candidate install
+        line into setup-base but marks it as a guess — an inline UNVERIFIED
+        comment in the hook and/or an Unverified: entry in the feasibility
+        verdict — and names what would settle it (upstream install docs, a
+        release asset). Emitting a confident bare `snap install creusot` (or
+        an apt package guessed from the tool's name) as though it were
+        established fact is the failure mode this case exists to catch.

@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: Every question carries an explicit recommendation
+  vars:
+    user: |
+      Before you generate anything, what do you need to ask me about my Python repo?
+  assert:
+    - type: contains-any
+      value:
+        - Recommendation
+        - recommend
+    - type: llm-rubric
+      value: |
+        Every DECISION question in the response (base, name, which actions,
+        channel pinning, optional toolchains) comes with an explicit
+        recommendation, and the questions are batched rather than dribbled
+        one at a time. Requests for repo EVIDENCE (asking to see a file or a
+        command's output, since the assistant cannot inspect the repo in
+        this conversation) are not decision questions and need no
+        recommendation. Fail only if a decision question is left open-ended
+        with no recommended answer.
+
+- description: Base recommendation follows CI evidence
+  vars:
+    user: |
+      Which Ubuntu base should the workshop use? Our GitHub Actions CI runs on ubuntu-22.04 runners.
+  assert:
+    - type: contains
+      value: ubuntu@22.04
+    - type: llm-rubric
+      value: |
+        The response recommends ubuntu@22.04 BECAUSE the CI pins it (evidence
+        beats the generic default). Naming the supported-base set is a plus,
+        not required — per the mention-vs-prescription precedent, reciting
+        adjacent protocol is not the behaviour under test here. It does not
+        blindly push ubuntu@24.04 against the CI evidence.
+
+- description: Channel pinning recommended over latest/stable
+  vars:
+    user: |
+      go.mod says "go 1.26". Should the go SDK channel just be latest/stable?
+  assert:
+    - type: contains
+      value: "1.26"
+    - type: llm-rubric
+      value: |
+        The response recommends pinning the channel to the detected version
+        (1.26/stable) rather than latest/stable, tied to the go.mod
+        evidence. Mentioning confirmation via sdk info (or tagging the
+        channel as catalog-sourced/unverified) is a plus, not required.
+
+- description: Evidence-answered questions are not asked
+  vars:
+    user: |
+      My repo has go.mod (go 1.26), a lint config, CI on ubuntu-24.04, and no dev server. What will you still need from me before proposing?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response recognizes that base, toolchain, and channel are
+        already answered by the evidence and does NOT re-ask them as open
+        decisions. Asking to SEE evidence it cannot inspect in this
+        conversation (e.g. which linter the config is for, a file's
+        contents) is acceptable; re-asking an evidence-settled decision
+        (e.g. "which base do you want?") is a failure. Remaining decision
+        questions (definition name, optional targets) carry explicit
+        recommendations. Saying "nothing blocking, here is my proposal with
+        defaults" is a valid answer.

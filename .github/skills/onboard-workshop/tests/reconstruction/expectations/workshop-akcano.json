@@ -1,0 +1,17 @@
+{
+  "_comment": "Reconstruction thresholds for the workshop-akcano guinea pig. Ground truth: .workshop/dev.yaml (go@1.26/stable + project-tools + system sphinx tunnel on 8000; actions wrap docs/Makefile, golangci-lint, shellcheck, go test).",
+  "base": "ubuntu@24.04",
+  "required_sdks": [
+    { "name": "go", "track": "1.26" }
+  ],
+  "in_project_sdk_required": false,
+  "tunnel_endpoints": ["8000"],
+  "action_token_groups": [
+    { "name": "docs-build", "any": ["make -C docs"] },
+    { "name": "lint", "any": ["golangci-lint"] },
+    { "name": "shellcheck", "any": ["shellcheck"] },
+    { "name": "test-cover", "any": ["go test"] }
+  ],
+  "min_action_groups": 3,
+  "gitignore_lock": true
+}

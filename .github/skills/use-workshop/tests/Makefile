@@ -21,7 +21,8 @@ YAML_KEYS_PY := scripts/check-yaml-keys.py
 MANIFEST_SH  := scripts/update-docs-manifest.sh
 
 .PHONY: help check check-yaml check-yaml-keys check-shell check-doc-paths check-source-docs \
-        update-docs-manifest eval-bundle eval-routing eval-routing-all-models \
+        update-docs-manifest eval-bundle eval-routing eval-routing-anthropic \
+        eval-routing-all-models \
         eval-routing-openrouter eval-routing-openrouter-all \
         eval-routing-minimax eval-routing-minimax-all \
         eval-routing-kimi-all eval-routing-deepseek-all eval-routing-mimo-all \
@@ -37,9 +38,10 @@ help:
 	@echo "  check-yaml-keys          lint skill YAML snippets/templates against the upstream schema key allowlists (offline)"
 	@echo "  update-docs-manifest     regenerate docs-manifest.txt + allowed-keys.json from a Workshop checkout (needs WORKSHOP_REPO; maintainer-only)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
-	@echo "  eval-routing             run routing eval against Sonnet 4.6 (default)"
+	@echo "  eval-routing             run routing eval against GLM-5.2 via OpenRouter — the pinned gate (needs OPENROUTER_API_KEY only)"
+	@echo "  eval-routing-anthropic   run routing eval against Sonnet 4.6, the former baseline (needs ANTHROPIC_API_KEY)"
 	@echo "  eval-routing-all-models  run routing eval against Sonnet 4.6 + Haiku 4.5 + Opus 4.7"
-	@echo "  eval-routing-openrouter         run routing eval against GLM-5.1 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-openrouter         run routing eval against GLM-5.1, the mid GLM tier (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-openrouter-all     run routing eval against the GLM family (4.7-flash + 5.1 + 5.2) via OpenRouter"
 	@echo "  eval-routing-minimax            run routing eval against MiniMax-M2.7 via OpenRouter (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-minimax-all        run routing eval against MiniMax-M2.5 + M2.7 + M3 via OpenRouter"
@@ -80,8 +82,15 @@ update-docs-manifest:
 eval-bundle:
 	bash $(BUNDLE_SH)
 
+# The pinned gate: GLM-5.2 via OpenRouter, judge routed through OpenRouter too,
+# so this needs OPENROUTER_API_KEY and nothing else (~$4.50/run).
 eval-routing:
 	bash $(ROUTING_SH)
+
+# The former baseline, kept as the occasional confirmation run on the model
+# family the skill is actually written for. Needs ANTHROPIC_API_KEY (~$10/run).
+eval-routing-anthropic:
+	bash $(ROUTING_SH) --model claude-sonnet-4-6
 
 # Multi-tier sweep targets delegate to run-sweep.sh, which CONTINUES past
 # assertion failures (exit 1 — diagnostic outcome, remaining tiers still carry
