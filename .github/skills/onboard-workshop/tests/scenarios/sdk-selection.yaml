@@ -92,3 +92,26 @@
         workshop (with an action wrapping the compose invocation and tunnels
         for ports that must reach the host), not hand-installing dockerd via
         hooks, and not claiming host-docker passthrough.
+
+- description: Compositor build-deps reach desktop and gpu plugs
+  vars:
+    user: |
+      This repo is a Wayland compositor — debian/control build-deps include libwayland-dev, libdrm-dev, libgbm-dev, libegl1-mesa-dev and libinput-dev. Beyond compiling it, what does the workshop need so I can actually run the thing?
+  assert:
+    - type: contains
+      value: desktop
+    - type: contains-any
+      value:
+        - gpu
+        - connect
+    - type: llm-rubric
+      value: |
+        The response maps the graphics/display build dependencies to a
+        `desktop` plug on the in-project SDK (so the built binary can run
+        against the host's display, not merely compile) and a `gpu` plug for
+        hardware-accelerated rendering. It notes that `desktop` does not
+        auto-connect and gives the command — `workshop connect
+        <workshop>/<sdk>:desktop` — while `gpu` connects automatically.
+        Treating this as an xvfb/headless TEST-host problem, or omitting the
+        display access entirely and stopping at the apt package list, is the
+        failure mode.

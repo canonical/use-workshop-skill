@@ -48,6 +48,12 @@ analyze-only).
   actions.
 - Treating packaging pipelines (snapcraft, release workflows) as the dev loop.
 - Proceeding to proposal with an existing `.workshop/` present.
+- **Writing command output you did not get.** Never show an `ls -A`, a file
+  listing, or a manifest excerpt that you did not actually read — a fabricated
+  detection pass produces a definition built on invented evidence, which is
+  the exact failure the honesty gate exists to stop. If you cannot read the
+  repo, say so, name the specific files or command outputs you need, and state
+  what each one decides. Asking for evidence is analysis; inventing it is not.
 </anti_patterns>
 
 <success_criteria>

@@ -40,17 +40,30 @@ entry point per `<action_conventions>` in `references/toolchain-signals.md`.
 Copy `templates/in-project-sdk/` to `.workshop/<sdk-name>/`; set `name:`;
 fill `hooks/setup-base` with the apt list from the recorded CI evidence;
 keep/adapt `hooks/check-health` to probe the tool the SDK sets up; delete
-unused hook stubs; `chmod +x .workshop/<sdk-name>/hooks/*`. Add
-`- name: project-<sdk-name>` to the definition's `sdks:` list. For richer
-hook logic follow `../use-workshop/workflows/author-in-project-sdk.md`.
+unused hook stubs; `chmod +x .workshop/<sdk-name>/hooks/*` (house style —
+Workshop runs hooks with bash either way). Add `- name: project-<sdk-name>`
+to the definition's `sdks:` list. For richer hook logic follow
+`../use-workshop/workflows/author-in-project-sdk.md`.
 
-**Step 4. Housekeeping.**
-- Ensure `.gitignore` contains `.workshop.lock`.
-- Validate: `name:` matches the file basename and the name regex; `base:` is a
-  supported value; no root `workshop.yaml`/`.workshop.yaml` coexists with
-  `.workshop/*.yaml`.
+Every install line in a hook traces to repo evidence. Where the proposal
+recorded a need with no install route, write the candidate and tag it in
+place — `# UNVERIFIED: <what> — no install evidence in the repo` — so the
+guess is legible in the file a reviewer reads, not only in the transcript.
 
-**Step 5. List every created/modified file to the user**, marking each as
+**Step 4. Write the `.gitignore` line.**
+This is a generation step, not a review item: append `.workshop.lock` to
+`.gitignore` (creating the file if the repo has none) immediately after the
+definition is written. It is the only file outside `.workshop/**` an
+onboarding may touch, and it is the step most often lost when the rest of the
+run is large.
+
+**Step 5. Validate.**
+`name:` matches the file basename and the name regex; `base:` is a supported
+value; no root `workshop.yaml`/`.workshop.yaml` coexists with
+`.workshop/*.yaml`; with several definitions, each basename matches its own
+`name:`.
+
+**Step 6. List every created/modified file to the user**, marking each as
 committable (definitions, SDK dirs, .gitignore) — then hand off to
 `launch-and-verify.md`.
 </process>
@@ -62,10 +75,14 @@ Checklist — every box, before handing off or stopping:
 - [ ] Every channel is pinned as proposed (detected versions, not defaults).
 - [ ] Every proposed in-project SDK directory exists with its hooks.
 - [ ] Every proposed tunnel/graft/connection is in the files.
-- [ ] `.gitignore` covers `.workshop.lock`.
+- [ ] `.gitignore` covers `.workshop.lock` (Step 4 — check the file, don't
+      recall having done it).
+- [ ] Every install line in a hook is either repo-evidenced or carries an
+      inline `# UNVERIFIED:` tag and an `Unverified:` entry in the verdict.
 - [ ] Definition parses and uses only real keys (name, base, sdks,
       connections, actions; grafted plugs/slots).
-- [ ] Hook scripts are executable; `sdk.yaml` contains no `hooks:` key.
+- [ ] `sdk.yaml` contains no `hooks:` key; hook files are present under
+      `hooks/` (executable by convention).
 - [ ] Every placeholder from the template was replaced.
 </verification>
 
@@ -84,8 +101,13 @@ Checklist — every box, before handing off or stopping:
   GAP. Onboarding writes only `.workshop/**` and the `.gitignore` line.
 - Emitting channels the proposal did not verify or tag.
 - Leaving a root `workshop.yaml` alongside `.workshop/<name>.yaml`.
-- Forgetting the executable bit on hooks — the launch fails late and
-  confusingly.
+- Writing an install command the repo does not evidence as though it were a
+  fact — `snap install <tool>` for a snap nobody confirmed exists, an apt
+  package guessed from the tool's name. It reads as correct and fails at
+  launch. Tag it `# UNVERIFIED:` and surface it, or record a GAP.
+- Writing a hook for an interpreter other than bash and trusting the shebang
+  to select it — Workshop runs hooks with bash whatever the shebang says.
+  (Missing `+x` is NOT this failure: an in-project hook at 0644 still runs.)
 - Synthesizing YAML from memory instead of a template.
 </anti_patterns>
 

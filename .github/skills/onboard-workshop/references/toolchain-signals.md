@@ -48,6 +48,19 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
      same treatment — the action calls the orchestrator.
    - If the orchestrator itself needs installing (just, task, tox), that's an
      SDK/in-project-SDK need, recorded as such.
+   - **Out-of-tree build directory** (`cmake -B build`/`-B $HOME/build`,
+     `meson setup builddir`, a `build/`-style entry in `.gitignore`, a CI step
+     that configures into a sibling directory) → a `mount` plug on the
+     in-project SDK with `workshop-target:` set to that path.
+   - **Compiler/dependency cache** (`ccache`/`sccache` in README, HACKING, CI,
+     or a `CMAKE_<LANG>_COMPILER_LAUNCHER=ccache` flag; `~/.cargo`, `~/.m2`,
+     `~/.gradle`, a pip/npm cache dir the repo pins) → its own `mount` plug.
+   - Why a mount and not just a directory: an unsourced mount plug is backed
+     by a host directory Workshop allocates, so its contents survive
+     `workshop refresh`, which otherwise discards the workshop's writable
+     filesystem and would throw away a full build tree and a warm cache. Keep
+     these paths OUT of `/project/` — the project mount is the developer's
+     git worktree and build output does not belong in it.
 
 4. **CI workflows** (`.github/workflows/*.y*ml`, `.gitlab-ci.yml`) — the
    highest-signal source; CI is an executable spec of how the project builds:
@@ -70,6 +83,14 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
    - `services:` containers (postgres, redis) → Store `docker` SDK inside the
      workshop, or a GAP if the setup can't be reproduced.
    - Runner OS (`runs-on: ubuntu-24.04`) → `base:` recommendation.
+   - **A matrix over several runner OSes or target series** (`runs-on:
+     ubuntu-${{ matrix.series }}`, a `series:`/`release:` matrix axis, several
+     `debian/changelog` distributions, per-series packaging jobs) → the repo
+     builds for more than one Ubuntu, and one `base:` cannot represent that.
+     Offer parallel definitions — `.workshop/<series>.yaml` per series, each
+     with its own `base:`, sharing one in-project SDK — as a recommendation
+     with the single-definition alternative named. Do not silently pick the
+     newest series and drop the rest.
    - `canonical/launch-workshop` action or `workshop` invocations → the repo
      is already Workshop-aware; stop and surface that instead of onboarding
      over it.
@@ -105,7 +126,38 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
      (`.workshop/cuda.yaml` + `.workshop/rocm.yaml`).
    - Serial/embedded flashing (`/dev/tty*`, udev rules) → `custom-device`
      plug (by `subsystem`/`vendorid`); flashing may still be a GAP.
-   - Webcam/GUI apps → `camera`/`desktop` plugs.
+   - Webcam → `camera` plug.
+   - **The project itself draws on screen** — distinct from "its tests need a
+     GUI host", which is step 4. Evidence is in the build dependencies and the
+     description, not in the test runner: `libwayland-*`, `libxcb-*`,
+     `libx11-*`, `libdrm`, `libgbm`, `libegl`/`libgles`, `libinput`, GTK/Qt/
+     SDL/GLFW dev packages, or a repo that calls itself a compositor, display
+     server, desktop shell, window manager, or graphical application. Map to a
+     `desktop` plug on the in-project SDK so the built binary can be run
+     against the host's display instead of only compiled. For a compositor or
+     display server this IS the normal development workflow — it runs nested
+     as a window on the developer's existing session — so propose the plug
+     rather than dismissing it as a niche mode. Running natively on a TTY
+     against KMS is the case a container cannot serve; name that as a GAP
+     instead of using it to argue the plug away. `desktop` does NOT
+     auto-connect: say so, and give the command — `workshop connect
+     <workshop>/<sdk>:desktop`. Connecting proxies the host display socket and
+     injects `WAYLAND_DISPLAY`/`QT_QPA_PLATFORM` (Wayland host) or
+     `DISPLAY`/`XAUTHORITY` (X11 host).
+   - **`gpu` covers rendering as well as compute.** The CUDA/ROCm case above
+     is acceleration for computation; a project doing hardware-accelerated
+     drawing (DRM/KMS, Mesa, EGL, a compositor) wants the same plug for the
+     host's GPU devices. Unlike `desktop`, `gpu` auto-connects at launch and
+     refresh — nothing for the developer to run.
+   - **A tool the repo uses but never installs.** A binary invoked by scripts
+     or CI, or referenced by absolute path (`/snap/<tool>/current/bin/...`,
+     `/opt/<vendor>/...`), with no package list, apt line, or documented
+     install command anywhere in the tree: the NEED is evidenced, the install
+     ROUTE is not. Record both facts separately. The hook gets the best
+     candidate with an inline `# UNVERIFIED:` tag, the verdict gets an
+     `Unverified:` entry, and the gap names what would settle it. Never let a
+     confident-looking `snap install <tool>` or `apt-get install <tool>` stand
+     in for evidence you do not have.
    - Private git dependencies (go.mod `replace` to private hosts, git+ssh in
      requirements) → `ssh-agent` plug.
 </detection_pass>
@@ -125,6 +177,11 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
 | `docker-compose.yaml` | services, ports | `docker` SDK + compose-wrapping action + tunnels |
 | `.vscode/launch.json` | debug entry | note + `ide-integration.md` pointer |
 | torch + CUDA in requirements | variant | `cuda-toolkit` SDK + `gpu` plug (ROCm variant file if needed) |
+| `cmake -B build` / `meson setup builddir` | build dir path | `mount` plug, `workshop-target: <path>` (outside `/project/`) |
+| `CMAKE_*_COMPILER_LAUNCHER=ccache`, ccache in HACKING/CI | cache dir | second `mount` plug, `workshop-target: $HOME/.cache/ccache` |
+| `libwayland-dev` + `libdrm-dev` + `libgbm-dev` in build-deps | draws on screen | `desktop` plug (manual connect) + `gpu` plug (auto) |
+| CI matrix over `ubuntu-22.04`/`ubuntu-24.04` | series set | one `.workshop/<series>.yaml` per series, shared in-project SDK |
+| Binary used by scripts, installed by nothing | need without route | hook line + inline `# UNVERIFIED:` + `Unverified:` entry + GAP |
 | snapcraft.yaml | packaging | out-of-loop note (not an action by default) |
 </signal_to_construct_table>
 
@@ -154,6 +211,9 @@ Test: <command(s) — evidence file>
 Lint: <command(s) — evidence file>
 Dev servers: <name: port — evidence file> | none found
 Setup deps: <apt/other packages — evidence file> | none found
+Deps with no install route: <tool — where it is used, why unverified> | none
+Build artifacts/caches: <build dir, cache dir — evidence file> | none found
+Target series: <single series | series set — evidence file>
 Hardware/host needs: <gpu/device/desktop/ssh — evidence> | none found
 Packaging (out of loop): <snapcraft/docker release/… — evidence> | none found
 Existing workshop files: none | <path — STOP, route to use-workshop>
@@ -166,6 +226,10 @@ Debug/IDE: <launch.json entries, F5 flow — evidence> | none found
 - `how-to/customize-workshops/add-actions.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/customize-workshops/use-host-devices.md`
+- `how-to/customize-workshops/add-mounts.md`
+- `how-to/customize-workshops/use-multiple-workshops.md`
+- `explanation/interfaces/desktop-interface.md`
+- `explanation/interfaces/gpu-interface.md`
 - `how-to/develop-sdks/write-runtime-hooks.md`
 - `how-to/develop-with-workshops/run-workshops-in-github-actions.md`
 - `how-to/develop-with-workshops/connect-vscode.md`

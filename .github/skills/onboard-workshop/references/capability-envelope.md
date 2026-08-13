@@ -45,6 +45,18 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
 - **No invented SDK names or channels.** An SDK exists when `sdk find`/
   `sdk info` says so (or the catalog lists it, tagged unverified). A channel
   exists when `sdk info` lists it.
+- **No unmarked install routes inside hooks.** Note how this differs from the
+  rule above. An SDK name is checkable, so a guess never enters `sdks:` —
+  verify or fall back. A hook's install command has nothing to check against,
+  and the hook must install *something*, so the rule is not "never write it"
+  but "never write it unmarked". `apt-get install <pkg>`, `snap install
+  <name>`, `add-apt-repository <ppa>`, or a release download URL is a claim
+  about the world, evidenced by the repo (a package list, a CI step, a
+  documented install command, a lockfile) or else a guess. The plausible guess
+  is the dangerous one: it survives review and dies at launch. Write the best
+  candidate, tag it inline (`# UNVERIFIED: <what> — no install evidence in the
+  repo`), and list it under `Unverified:` in the verdict alongside
+  catalog-sourced SDKs.
 - **No privileged ports on system-SDK tunnel plugs.** Host side of a tunnel
   must use port ≥ 1024; remap (80 → 8080) and say so.
 - **No guaranteed host-device passthrough beyond the interfaces.** Only what
@@ -111,6 +123,7 @@ Gaps:                          # omit section when FULL
 
 Unverified:                    # omit when everything was confirmed live
 - <sdk>/<channel> — proposed from catalog; confirm with `sdk info <sdk>`
+- <install command> in <hook> — no install evidence in the repo; confirm before launch
 
 Fallback offered:              # only for low-confidence PARTIAL
 - minimal workshop (base + project mount only) — accepted | declined
@@ -141,6 +154,14 @@ Fallback offered:              # only for low-confidence PARTIAL
    the minimal workshop fallback — base + project mount, the developer
    installs the toolchain inside — or a `mount` plug if every developer
    keeps it at a consistent host path.
+7. **Tool the repo depends on but never installs** (scripts invoke it and
+   reference `/snap/<tool>/current/bin/...`, but no package list, CI step, or
+   README command installs it) → PARTIAL. The need is proven, the install
+   route is not. Write the best candidate into `setup-base` with an inline
+   `# UNVERIFIED:` tag, list it under `Unverified:`, and raise a GAP naming
+   what would settle it (upstream install docs, a release asset). A confident
+   `snap install <tool>` for a snap that does not exist is the failure this
+   example exists to prevent — it passes review and dies at launch.
 </worked_examples>
 
 <source_docs>

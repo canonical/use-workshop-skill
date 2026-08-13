@@ -54,9 +54,15 @@ defaultTest:
         (d) Process: the transcript shows analysis before proposal, a
         feasibility verdict before generation, and recommendations attached
         to any questions.
+        (e) Install routes: every install command in a generated hook
+        (apt package, snap, PPA, download URL) either traces to evidence in
+        the repo — a package list, a CI step, a documented command — or is
+        marked UNVERIFIED inline and in the verdict. A confident install
+        line for something the repo never installs is a fabrication even
+        when the underlying need is real, and is graded as one.
         Fail (3 or below) if the generated definition would not build/test
-        the project, invents SDKs, or the transcript shows the verdict was
-        skipped.
+        the project, invents SDKs, asserts an unevidenced install route as
+        fact, or the transcript shows the verdict was skipped.
 
 tests:
   - file://.work/tests.yaml

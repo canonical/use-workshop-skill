@@ -243,15 +243,20 @@ def main():
         if exp.get("in_project_sdk_required") and not metrics["in_project_sdk"]["generated"]:
             failures.append("in-project SDK: required but none generated")
         if metrics["in_project_sdk"]["generated"]:
-            # Only the five real hooks need the executable bit. A hooks/ dir
-            # may legitimately also hold data files the hooks read (real
-            # in-project SDKs ship packages.list / snaps.list at 0644), and
-            # flagging those is a false failure.
+            # Advisory by default. Workshop runs hooks as bash scripts rather
+            # than exec'ing them, so an in-project hook at 0644 still runs —
+            # mir, subiquity and creusot all ship theirs that way. The bit is
+            # house style (and a real requirement only for sdkcraft-packed
+            # SDKs), so it is recorded, not gated, unless a repo opts in.
+            # Only the five real hooks are considered either way: a hooks/ dir
+            # may also hold data files the hooks read (packages.list,
+            # snaps.list), which are legitimately 0644.
             bad = [
                 p for p, ok in metrics["in_project_sdk"]["generated_hooks"].items()
                 if not ok and os.path.basename(p) in HOOK_NAMES
             ]
-            if bad:
+            metrics["in_project_sdk"]["hooks_not_executable"] = bad
+            if bad and exp.get("hooks_executable_required"):
                 failures.append(f"hooks not executable: {bad}")
 
         # Advisory tunnels: recorded, never gated. For a repo whose port map
@@ -278,6 +283,19 @@ def main():
 
         if exp.get("desktop_plug_required") and not has_interface(gen_defs, gen_sdk_yamls, "desktop"):
             failures.append("desktop interface: required but absent")
+
+        # Generic interface presence. `interfaces_required` gates;
+        # `interfaces_advisory` only records — use the latter where the
+        # construct is a judgement call the scrubbed tree doesn't force.
+        for iface in exp.get("interfaces_required", []):
+            present = has_interface(gen_defs, gen_sdk_yamls, iface)
+            metrics.setdefault("interfaces", {})[iface] = present
+            if not present:
+                failures.append(f"interface '{iface}': required but absent")
+        for iface in exp.get("interfaces_advisory", []):
+            metrics.setdefault("interfaces", {})[iface] = has_interface(
+                gen_defs, gen_sdk_yamls, iface
+            )
 
         gen_actions = actions_text(gen_defs)
         hook_text = "\n".join(h["text"] for h in gen_hooks.values())

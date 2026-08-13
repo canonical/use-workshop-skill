@@ -159,3 +159,24 @@
         user. Stating the write scope (onboarding writes only .workshop/**
         and the .gitignore entry) is a plus, not required; the failure mode
         is agreeing to edit the Makefile.
+
+- description: Needed tool with no install evidence is tagged, not guessed
+  vars:
+    user: |
+      The repo's scripts call `cargo creusot` and set CREUSOT_RUSTC=/snap/creusot/current/bin/creusot-rustc, but nothing in the tree installs Creusot — no apt list, no CI step, no README command. What goes in setup-base?
+  assert:
+    - type: contains-any
+      value:
+        - UNVERIFIED
+        - Unverified
+        - unverified
+    - type: llm-rubric
+      value: |
+        The response separates the two facts: the NEED for Creusot is proven
+        by the repo, the INSTALL ROUTE is not. It writes a candidate install
+        line into setup-base but marks it as a guess — an inline UNVERIFIED
+        comment in the hook and/or an Unverified: entry in the feasibility
+        verdict — and names what would settle it (upstream install docs, a
+        release asset). Emitting a confident bare `snap install creusot` (or
+        an apt package guessed from the tool's name) as though it were
+        established fact is the failure mode this case exists to catch.

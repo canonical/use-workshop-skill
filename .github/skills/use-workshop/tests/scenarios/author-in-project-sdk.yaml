@@ -63,27 +63,28 @@
 - description: User reports a hook script that isn't running
   vars:
     user: |
-      I added a `hooks/setup-project` script under my in-project SDK, but `workshop refresh` claims success and the tool isn't installed. The hook seems to be skipped entirely. What's going on?
+      I added a `hooks/setup-project` script under my in-project SDK, but `workshop refresh` claims success and the tool isn't installed. The hook seems to be skipped entirely. It's mode 644 — is that the problem?
   assert:
-    - type: contains
-      value: chmod +x
     - type: contains-any
       value:
-        - executable
-        - "silently ignored"
-        - "silently skipped"
-        - "+x"
+        - "workshop tasks"
+        - "project-"
+        - filename
     - type: llm-rubric
       value: |
-        The response identifies the missing executable bit on the hook
-        script as the cause of a SILENTLY skipped hook (Workshop execs
-        hooks rather than sourcing them; a hook without `+x` is silently
-        ignored) and tells the user to `chmod +x` the file. It explains
-        how to verify by re-running `workshop refresh` and inspecting
-        `workshop tasks <ID>`. It MAY also mention the shebang requirement
-        (e.g., `#!/bin/bash`), but that is optional — a missing shebang
-        surfaces as an exec error, not the silent skip described here, so a
-        complete `+x` answer satisfies the rubric on its own.
+        The response does NOT blame the 0644 mode. Workshop runs hooks with
+        bash rather than exec'ing them, so a hook without `+x` still runs;
+        `chmod +x` is house style, not a fix for this symptom. It steers the
+        user to the causes that DO silently skip a hook: the SDK not listed
+        in the definition's `sdks:` as `project-<name>`, a directory name
+        that doesn't match `name:` in sdk.yaml, a filename outside the five
+        recognized hook names, or a refresh that had no work to apply. It
+        points at `workshop tasks <ID>` to see what actually ran. Claiming
+        the missing executable bit is the cause is a FAIL. It MAY note that
+        bash is the interpreter regardless of shebang, and that `+x` does
+        matter for SDKs later packed with `sdkcraft`, but that is optional —
+        correctly ruling the mode out and redirecting to the real causes
+        satisfies the rubric on its own.
 
 - description: User asks where hooks go in sdk.yaml
   vars:

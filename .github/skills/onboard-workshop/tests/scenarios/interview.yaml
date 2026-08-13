@@ -31,8 +31,10 @@
     - type: llm-rubric
       value: |
         The response recommends ubuntu@22.04 BECAUSE the CI pins it (evidence
-        beats the generic default), while noting the supported-base set. It
-        does not blindly push ubuntu@24.04 against the CI evidence.
+        beats the generic default). Naming the supported-base set is a plus,
+        not required — per the mention-vs-prescription precedent, reciting
+        adjacent protocol is not the behaviour under test here. It does not
+        blindly push ubuntu@24.04 against the CI evidence.
 
 - description: Channel pinning recommended over latest/stable
   vars:

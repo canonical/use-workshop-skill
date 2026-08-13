@@ -28,7 +28,12 @@ For each toolchain need, walk the SDK decision tree:
    "(catalog, unverified — confirm with `sdk info` before launch)".
 3. No Store fit but an apt-installable recipe exists (from CI evidence) →
    in-project SDK (`project-<name>`).
-4. Nothing fits → GAP entry. Never invent an SDK name or a git source.
+4. No Store fit and the repo never says how the tool is installed → still an
+   in-project SDK, but the install line is a GUESS and is labelled one:
+   inline `# UNVERIFIED:` in the hook, an `Unverified:` entry in the verdict,
+   and a GAP naming what would settle it. The need being obvious does not
+   make the route known.
+5. Nothing fits → GAP entry. Never invent an SDK name or a git source.
 
 For each dev server: tunnel pair per `<pattern name="Dev server exposed to
 the host">`. For hardware/host needs: the matching interface, or a GAP.
@@ -56,6 +61,10 @@ not interview questions, and need no recommendation; but never ask the user
 for what you can read yourself.) Canonical set (skip any the evidence
 already answers):
 - Base: recommend `ubuntu@24.04` unless CI pins another supported base.
+- Series coverage (only when the repo builds for more than one): recommend
+  one definition per series (`.workshop/<series>.yaml`, shared in-project SDK)
+  when CI runs a series matrix; name the single-definition alternative and
+  which series it would pick.
 - Definition name: recommend `dev` (layout is `.workshop/<name>.yaml`).
 - Action set: recommend the inner loop (build, test, lint, dev server);
   docs/packaging targets included only when the user works on them.

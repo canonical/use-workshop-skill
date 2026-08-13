@@ -45,6 +45,8 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 
 **Auto-connect target:** a mount plug auto-connects to the **system SDK's** mount slot. To read from a *regular* SDK's mount slot instead, name the pair in the workshop definition's top-level `connections:` (it won't auto-connect).
 
+**Where the bytes live when no source is set:** a mount plug needs no `host-source` to be useful. Left unset, Workshop allocates a directory for the plug on the **host** — under `~/.local/share/workshop/id/<PROJECT-ID>/<WORKSHOP>/mount/<SDK>/<PLUG>/` — and bind-mounts it at `workshop-target`. The contents therefore survive `workshop start`, `stop`, and **`refresh`**, which is the point: a refresh discards the workshop's writable filesystem, so anything expensive to rebuild (an out-of-tree build tree, a `ccache`/`sccache` directory, a model cache) is kept by giving it a mount plug rather than a `save-state`/`restore-state` hook pair. See `how-to/customize-workshops/add-mounts.md`.
+
 **Conflict resolution:** if two SDKs both declare a plug for the same target, bind one to the other with `bind: <SDK>:<PLUG>` so they share a single connection (note: `bind.N` in `workshop connections`).
 
 **Reassign source:** `workshop remount <WORKSHOP>/<SDK>:<PLUG> <SOURCE>` — atomic if the new source is empty/non-existent on the same filesystem; otherwise requires `Stopped` status.

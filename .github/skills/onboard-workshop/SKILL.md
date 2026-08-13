@@ -16,10 +16,17 @@ Five rules that always apply to onboarding. Every workflow assumes them.
    INFEASIBLE ends the run with a report and docs pointers — a subpar
    workshop is worse than no workshop.
 
-2. **Stay inside the envelope.** Every proposed construct must map to a real
-   definition key, interface, or SDK source per
-   `references/capability-envelope.md`. No git-URL SDKs, no workshop-level
-   env/services keys, no invented SDK names or channels.
+2. **Stay inside the envelope, and don't state guesses as facts.** Every
+   proposed construct must map to a real definition key, interface, or SDK
+   source per `references/capability-envelope.md`. No git-URL SDKs, no
+   workshop-level env/services keys, no invented SDK names or channels — an
+   SDK name is CHECKABLE (`sdk find`/`sdk info`), so a guess never goes into
+   `sdks:` at all; fall back to an in-project SDK or a GAP. Inside a hook the
+   situation differs: an install command has no registry to check against,
+   and the hook must install *something*. There, write the best candidate and
+   mark it — inline `# UNVERIFIED:` plus an `Unverified:` entry in the verdict
+   — never as settled fact. Knowing a tool is needed is not knowing how it is
+   installed; the tag is what keeps that distinction visible to the reader.
 
 3. **Every question carries a recommendation.** Never ask an open question.
    Format: "Options: A / B — Recommendation: A, because <evidence>." Batch

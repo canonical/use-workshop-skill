@@ -10,12 +10,13 @@ must be recorded before release.
 
 ## Routing eval (`make eval-routing`)
 
-48 cases across 8 scenario files (incl. 8 cross-skill selection cases).
+53 cases across 8 scenario files (incl. 8 cross-skill selection cases).
 Judge: pinned in `promptfooconfig.yaml` (same as sibling).
 
 | Model | Pass rate | Date | Notes |
 |-------|-----------|------|-------|
-| `claude-sonnet-4-6` | **48/48 (100%)** | 2026-07-23 | canonical baseline; see round notes below |
+| `claude-sonnet-4-6` | **53/53 (100%)** | 2026-08-13 | canonical baseline; 48→53 in the gap-fix round below |
+| `claude-sonnet-4-6` | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
 | `claude-haiku-4-5` | _pending_ | — | clarity diagnostic |
 | `claude-opus-4-7` | _pending_ | — | headroom check |
 
@@ -78,6 +79,16 @@ Update expectations when a guinea pig's ground truth changes.
 ¹ Under the corrected `anywhere_token_groups` expectation; the original literal
 `install_deps` token failed a decomposition that is functionally equivalent.
 
+### After the gap fixes (2026-08-13, same four guinea pigs)
+
+| Guinea pig | Sonnet 4.6 | Opus 5 | Change vs the pre-fix round |
+|------------|------------|--------|------------------------------|
+| mir | **PASS** (card+rubric) | **PASS** | now generates `build`/`ccache` **mount** plugs at the maintainers' own paths, plus `desktop` (with the connect command) and `gpu` — the G3/G4 fix, verified on both models |
+| subiquity | **PASS** | **PASS** | unchanged; still one definition (see G5 note) |
+| creusot | card PASS, **rubric FAIL** | **PASS** | G1 fixed and confirmed by both judges: `snap install creusot` and the SMT apt lines are now tagged `# UNVERIFIED:` inline **and** listed in the verdict. Sonnet's rubric now fails for a *different* reason — the native build deps Creusot needs (`libclang-dev`, `gcc`, `g++`, `make`, `wget`) are absent, and there is no `setup-project` exporting `CREUSOT_RUSTC` |
+| store-workshop | **FAIL** (`.gitignore`) | **PASS** | G2 only half-closed — Opus writes the lock line reliably, Sonnet still drops it on the largest repo despite the new Step 4. Its transcript shows it *read* the step and did not act on it |
+| **Totals** | **2/4 full, 3/4 scorecards** | **4/4** | Sonnet was 1/4 full before; Opus 4/4 both rounds |
+
 > **2026-07-23 development round.** Round 1 exposed the core failure the
 > skill exists to prevent: for vscode-workshop the agent detected everything
 > (xvfb, X libs, vsce) but generated an init-level skeleton and left the
@@ -132,6 +143,34 @@ Update expectations when a guinea pig's ground truth changes.
 > dropped under load on the busiest repo. Also observed: 3 of the 4 upstream
 > repos ship their hooks at **0644**, contradicting the skill's exec-bit
 > requirement — worth confirming against Workshop itself before acting.
+>
+> **2026-08-13 gap-fix round.** The six gaps above were closed in content and
+> the suites re-run. Routing went 48→53 cases (one per behaviour change) and
+> re-pinned at **53/53**. What the runs taught:
+>
+> - The **exec-bit requirement was fabricated.** Verified against the docs:
+>   hooks run "in a non-interactive **bash** login session"; the only "mark it
+>   executable" line upstream is scoped to *SDKcraft packing*; and
+>   `tutorial/part-3-sketch-sdks.md` walks the in-project path without a
+>   `chmod` anywhere. The sibling's "a hook without `+x` is silently ignored"
+>   appears in no upstream source. Corrected in `use-workshop`, and the
+>   scorecard's exec-bit gate is now advisory (`hooks_executable_required`).
+> - Routing caught a **real bug in the G1 fix**: the UNVERIFIED escape hatch
+>   bled from hook install commands into SDK *names*, where it must never
+>   apply (an SDK name is checkable with `sdk find`; a hook's install command
+>   is not). Principle 2 and `capability-envelope.md` now draw that line.
+> - Routing surfaced a **seventh gap nobody had named**: asked whether a repo
+>   is feasible with no repo attached, the model fabricated `<tool_call>`
+>   blocks and fake `ls -A` output instead of asking for evidence — a
+>   detection pass built on invented facts. `analyze-repo.md` now forbids it.
+>   Failed 3 consecutive runs before the fix, passed 3 consecutive after.
+> - **G5 cannot be verified by reconstruction on subiquity, by construction:**
+>   its series matrix lives in the CI file the harness parks as ground truth,
+>   so the sandbox holds no series evidence and the signal cannot fire. The
+>   routing case, which supplies that evidence in the prompt, is what pins it.
+> - **Still open:** G2 on Sonnet/store-workshop, and the new creusot
+>   native-build-deps finding. Neither is a regression; both are next-round
+>   material.
 
 ## Reconstruction eval (full LXD tier, `make eval-reconstruction-full`)
 

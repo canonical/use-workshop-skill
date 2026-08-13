@@ -45,7 +45,8 @@
         The response routes the user to authoring an in-project SDK at
         `.workshop/ruff/` with a `setup-project` hook that installs ruff
         (e.g., via `uv tool install ruff`). It mentions referencing the
-        SDK in the workshop definition as `project-ruff`, the
-        executable-script requirement (`chmod +x`), and `workshop refresh`
+        SDK in the workshop definition as `project-ruff`, marking the hook
+        executable (`chmod +x` — house style; not required for in-project
+        hooks, which Workshop runs with bash), and `workshop refresh`
         to apply. It does NOT drive the user through `workshop sketch-sdk`
         / interactive sketching.

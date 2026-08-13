@@ -6,6 +6,10 @@
   "required_sdks": [],
   "_sdk_note": "No Store SDK is derivable: vscode-remote and copilot are maintainer conveniences, not toolchain evidence. The C++ toolchain has to come from an in-project SDK.",
   "in_project_sdk_required": true,
+  "desktop_plug_required": true,
+  "_desktop_note": "Gated from 2026-08-13: the repo IS a Wayland compositor and its debian/control build-deps (libwayland-dev, libdrm-dev, libgbm-dev, libegl1-mesa-dev, libgles2-mesa-dev, libinput-dev, libxcb-*) are unambiguous in-tree evidence that the developer needs to RUN what they built, not only compile it. Both models missed this in the first round; toolchain-signals.md now carries the signal.",
+  "interfaces_advisory": ["mount", "gpu"],
+  "_interfaces_note": "Advisory, not gated. The maintainers give the build tree and ccache mount plugs and take a gpu plug; HACKING.md evidences ccache in-tree, but choosing mount over an in-tree build dir is still a judgement call, so it is recorded and discussed rather than failed.",
   "tunnel_endpoints": ["8000"],
   "action_token_groups": [
     { "name": "configure", "any": ["cmake -", "cmake -B", "cmake ~", "cmake $HOME", "-G Ninja"] },

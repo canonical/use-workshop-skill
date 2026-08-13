@@ -13,7 +13,7 @@ CI; paid evals manual with pinned baselines):
    bundle regen; sdk-catalog markers/stamp; template hook executable bits.
    One `make update-docs-manifest` run in the sibling's tests dir refreshes
    both skills' ground truth.
-2. **Routing eval** (`make eval-routing`, paid): 46 promptfoo cases. The
+2. **Routing eval** (`make eval-routing`, paid): 53 promptfoo cases. The
    bundle appends the borrowed sibling references (see
    `scripts/bundle-extras.txt`) so the eval simulates required reading being
    satisfied. `scenarios/skill-selection.yaml` overrides `vars.skill` with

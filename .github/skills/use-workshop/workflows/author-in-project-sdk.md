@@ -42,7 +42,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-Only `name` is required. Do NOT add a `hooks:` key — hooks are the executable files you write in Step 4, discovered automatically by filename; strict validation rejects unknown keys with an `unknown field` error. (Inline `hooks:` maps exist only in sketch SDKs.)
+Only `name` is required. Do NOT add a `hooks:` key — hooks are the script files you write in Step 4, discovered automatically by filename; strict validation rejects unknown keys with an `unknown field` error. (Inline `hooks:` maps exist only in sketch SDKs.)
 
 **Step 4. Write each hook script under `.workshop/<NAME>/hooks/<HOOK>`.**
 
@@ -52,13 +52,17 @@ set -euo pipefail
 # … hook body …
 ```
 
-Then make it executable:
+Then mark it executable — house style, not a requirement:
 
 ```
 chmod +x .workshop/<NAME>/hooks/<HOOK>
 ```
 
-A hook without `+x` is silently ignored — surface this to the user when generating new hook files.
+Workshop runs every hook as a **bash** script (non-interactive bash login session,
+`errexit` and `pipefail` set), so bash is the interpreter regardless of the shebang and
+an in-project hook without `+x` still runs — real in-project SDKs ship hooks at `0644`.
+The bit becomes a requirement only if the SDK is later packed for the Store (out of
+scope here). Set it, but never tell the user their hook is broken without it.
 
 **Step 5. Reference the SDK from the workshop definition.**
 
@@ -129,7 +133,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 </verification>
 
 <anti_patterns>
-- Forgetting `chmod +x` on a hook script — the hook is silently ignored; the workshop reports `Ready` without the hook's effect.
+- Writing a hook for an interpreter other than bash and relying on the shebang to select it — Workshop runs every hook with bash whatever the shebang says. (The missing `+x` bit is NOT this failure: Workshop invokes bash rather than exec'ing the file, so an in-project hook at `0644` still runs.)
 - Naming the SDK directory and the `name:` field differently — the SDK fails to load.
 - Omitting the `project-` prefix in `workshop.yaml`'s `sdks:` entry — Workshop won't find the SDK.
 - Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation with `unknown field`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
@@ -141,7 +145,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 <success_criteria>
 - `workshop info` lists `project-<NAME>` as installed.
 - The hook's promised effect is verifiable via `workshop exec` (e.g., the installed tool resolves on `$PATH`).
-- `.workshop/<NAME>/` is committable: `sdk.yaml` plus `hooks/` scripts with executable bits set.
+- `.workshop/<NAME>/` is committable: `sdk.yaml` plus `hooks/` scripts (executable bits set by convention).
 - For a `check-health`-using SDK, the workshop status reflects the hook's `set-health` call.
 </success_criteria>
 

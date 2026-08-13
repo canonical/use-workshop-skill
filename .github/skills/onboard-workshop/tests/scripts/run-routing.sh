@@ -27,7 +27,7 @@
 #   0 = all assertions passed
 #   1 = assertion failures (a normal eval outcome; the result is recorded)
 #   2 = run-level errors (judge/API/auth/credits — the run says nothing about
-#       the skill; sweeps abort on this, see scripts/run-sweep.sh)
+#       the skill; a sweep driver should abort on this)
 
 set -euo pipefail
 
