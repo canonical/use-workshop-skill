@@ -1,0 +1,432 @@
+{
+  "meta": {
+    "generated_at": "2026-08-13T20:12:56+00:00",
+    "model": "z-ai/glm-5.2",
+    "provider": "openrouter",
+    "total_cases": 53,
+    "passed": 50,
+    "failed": 3,
+    "errors": 0,
+    "pass_rate": 0.9434,
+    "tokens": {
+      "total": 1424898,
+      "prompt": 1388840,
+      "completion": 36058,
+      "cached": 0
+    },
+    "cost_usd": 0
+  },
+  "cases": [
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": false,
+      "score": 0.6666666666666666,
+      "latency_ms": 8586,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "contains-any",
+          "value": [
+            "go.mod",
+            "Makefile",
+            "CI"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"go.mod, Makefile, CI\""
+        }
+      ],
+      "failure_reason": "Expected output to contain one of \"go.mod, Makefile, CI\""
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7744,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 21391,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7253,
+      "cost": 0
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20558,
+      "cost": 0
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12189,
+      "cost": 0
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15648,
+      "cost": 0
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12068,
+      "cost": 0
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23779,
+      "cost": 0
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25387,
+      "cost": 0
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15029,
+      "cost": 0
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14934,
+      "cost": 0
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11814,
+      "cost": 0
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17453,
+      "cost": 0
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": false,
+      "score": 0,
+      "latency_ms": 58760,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "contains-any",
+          "value": [
+            "minimal",
+            "fallback"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"minimal, fallback\""
+        },
+        {
+          "type": "llm-rubric",
+          "value": "The response is honest that most of this repo's primary loop cannot\nbe mapped (the vendor toolchain has no Store SDK and no automatable\ninstall recipe), does NOT invent an SDK name or promise a fully\nwired definition, and OFFERS a minimal workshop fallback \u2014 base +\nproject mount with no toolchain claims \u2014 as an explicit option that\ncarries a recommendation. Framing the fallback as \"launch minimal,\ninstall the vendor toolchain manually inside it\" is acceptable.\nExploring an in-project SDK before concluding it cannot automate a\nUSB-only installer is fine; generating or promising actions that\npretend the toolchain is available is a failure.\n",
+          "passed": false,
+          "reason": "The output is empty, so it does not acknowledge the repo's primary loop cannot be mapped, does not avoid or address toolchain claims, and does not offer the required minimal workshop fallback with a recommendation."
+        }
+      ],
+      "failure_reason": "The output is empty, so it does not acknowledge the repo's primary loop cannot be mapped, does not avoid or address toolchain claims, and does not offer the required minimal workshop fallback with a recommendation."
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14188,
+      "cost": 0
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19965,
+      "cost": 0
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25542,
+      "cost": 0
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6527,
+      "cost": 0
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9867,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22034,
+      "cost": 0
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14609,
+      "cost": 0
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18172,
+      "cost": 0
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20343,
+      "cost": 0
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": false,
+      "score": 0.9166666666666666,
+      "latency_ms": 6812,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response proposes the node SDK with the channel pinned from the\nengines field (channel \"24\"), verified or to-verify via sdk info.\n",
+          "passed": false,
+          "reason": "The output correctly proposes the `node` SDK with channel `\"24\"` pinned from the `engines.node` field, but it does not mention verification or a to-verify step via `sdk info` as specified in the rubric."
+        }
+      ],
+      "failure_reason": "The output correctly proposes the `node` SDK with channel `\"24\"` pinned from the `engines.node` field, but it does not mention verification or a to-verify step via `sdk info` as specified in the rubric."
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10211,
+      "cost": 0
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23904,
+      "cost": 0
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 32733,
+      "cost": 0
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 23841,
+      "cost": 0
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 31590,
+      "cost": 0
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13650,
+      "cost": 0
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17138,
+      "cost": 0
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20984,
+      "cost": 0
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16636,
+      "cost": 0
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 31794,
+      "cost": 0
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15094,
+      "cost": 0
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20927,
+      "cost": 0
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12810,
+      "cost": 0
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25170,
+      "cost": 0
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 29863,
+      "cost": 0
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20423,
+      "cost": 0
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 1750,
+      "cost": 0
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4642,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2291,
+      "cost": 0
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2391,
+      "cost": 0
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 1756,
+      "cost": 0
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2201,
+      "cost": 0
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2235,
+      "cost": 0
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2819,
+      "cost": 0
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11050,
+      "cost": 0
+    },
+    {
+      "description": "sdkcraft publishing is out of scope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13324,
+      "cost": 0
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9661,
+      "cost": 0
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10702,
+      "cost": 0
+    }
+  ]
+}

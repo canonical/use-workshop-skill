@@ -11,7 +11,7 @@ must be recorded before release.
 ## Routing eval (`make eval-routing`)
 
 53 cases across 8 scenario files (incl. 8 cross-skill selection cases).
-Judge: pinned in `promptfooconfig.yaml` (same as sibling).
+Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 
 | Model | Pass rate | Date | Notes |
 |-------|-----------|------|-------|
@@ -19,6 +19,35 @@ Judge: pinned in `promptfooconfig.yaml` (same as sibling).
 | `claude-sonnet-4-6` | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
 | `claude-haiku-4-5` | _pending_ | — | clarity diagnostic |
 | `claude-opus-4-7` | _pending_ | — | headroom check |
+| `z-ai/glm-5.2` (OpenRouter) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
+
+> ### GLM-5.2 diagnostic — why this suite stays on Sonnet
+>
+> On 2026-08-13 the **sibling** `use-workshop` suite moved its gate to GLM-5.2
+> via OpenRouter (candidate + judge), landing 76/76 and cutting ~$13.30/run to
+> ~$4.50. The same move was measured here and **rejected**.
+>
+> GLM-5.2 scores **50/53** on this suite (0 errors, result file
+> `results/2026-08-13-routing-openrouter-z-ai-glm-5.2.json`). One failure was a
+> token-budget artifact — the minimal-workshop-fallback case burned a full 3072
+> tokens on reasoning and returned an empty answer; it passes at 8192. The other
+> two are genuine model-side differences on cases Sonnet passes, both finishing
+> normally rather than truncating:
+>
+> - `Full onboarding ask routes through analysis first, read-only` (0.667) —
+>   answered in 424 characters without naming `go.mod` / `Makefile` / CI.
+> - `Node channel from engines field` (0.917) — pinned channel `"24"` correctly
+>   but omitted the `sdk info` verification step.
+>
+> GLM-5.2 is simply terser than Sonnet against this suite's honesty-gate and
+> evidence prompts. Pinning the gate to it would leave those two cases
+> **permanently un-gated**, one of them core routing behaviour — a regression
+> there would go undetected. On a 53-case suite the saving (~$6-7 → ~$2.50) did
+> not justify that. The sibling had no such cost: it ported at 100%.
+>
+> The provider plumbing in `scripts/run-routing.sh` is shared with the sibling
+> and handles either vendor, so revisiting this is a one-line change to the
+> default branch plus a GLM provider block in `promptfooconfig.yaml`.
 
 > **2026-07-23 development round.** The first canonical run landed 40/46
 > ($3.70). Of the 6 failures: 4 were over-strict rubrics (mention-vs-
