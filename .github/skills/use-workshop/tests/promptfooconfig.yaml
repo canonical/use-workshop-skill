@@ -15,8 +15,13 @@ prompts:
   - file://prompt.json
 
 providers:
-  # Primary baseline. Listed first so scripts that read the first provider
-  # id from this file (e.g. scripts/run-routing.sh) default to Sonnet 4.6.
+  # NOTE: the default target of `scripts/run-routing.sh` is NOT the first entry
+  # here — the script names it explicitly. Since 2026-08-13 that default is
+  # `openrouter:z-ai/glm-5.2` (see the GLM block below); the Anthropic tiers
+  # are an opt-in confirmation run (`--model`, or `make eval-routing-anthropic`).
+  #
+  # Former baseline, kept selectable. Still the reference for how the skill
+  # behaves on the model family it is written for.
   - id: anthropic:messages:claude-sonnet-4-6
     config:
       max_tokens: 1024
@@ -36,10 +41,11 @@ providers:
 
   # --- OpenRouter (open-weight) providers ----------------------------------
   # GLM (Zhipu) family split across tiers, mirroring the Haiku/Sonnet/Opus
-  # roles above. These are EXCLUDED from the default sweep and from
-  # `eval-routing-all-models`; they only run when selected explicitly via
-  # `scripts/run-routing.sh --provider openrouter:<slug>` (or the
-  # `make eval-routing-openrouter[-all]` targets). Requires OPENROUTER_API_KEY.
+  # roles above. `glm-5.2` is the DEFAULT target of `make eval-routing` and the
+  # pinned CI gate (2026-08-13); the other tiers stay diagnostic-only and run
+  # when selected explicitly via `scripts/run-routing.sh --provider
+  # openrouter:<slug>` (or the `make eval-routing-openrouter[-all]` targets).
+  # Every row here requires OPENROUTER_API_KEY.
   #
   # Slugs must be confirmed against https://openrouter.ai/models (they drift).
   # Caveat: OpenRouter slugs are not in promptfoo's built-in cost table, so the
@@ -64,11 +70,44 @@ providers:
     config:
       max_tokens: 1024
       temperature: 0.0
-  # Headroom check (≈ Opus role) — newest flagship (1M context).
+  # PRIMARY BASELINE and CI gate (2026-08-13) — newest flagship (1M context).
+  # Promoted from the headroom (≈ Opus) role after the routing eval moved off
+  # Anthropic; see BASELINE.md for the rationale and the pass-rate pin.
+  #
+  # `provider:` is OpenRouter's provider-routing object, passed through by
+  # promptfoo's openrouter provider. It is what makes this row a GATE rather
+  # than a snapshot: OpenRouter serves this slug from ~32 backends at
+  # quantizations from fp8 down to fp4 and picks one per request, so an
+  # unconstrained row measures a different machine run to run. fp8 + no
+  # fallbacks holds the measuring conditions still while still tolerating a
+  # single backend being down. (The diagnostic tiers below are deliberately
+  # left unpinned — they are snapshots by design.)
+  #
+  # showThinking:false grades the ANSWER, not the reasoning trace. GLM-5.2
+  # returns a `reasoning` field and promptfoo's openrouter provider otherwise
+  # prepends it to the output — measured at ~12% of the graded text on a
+  # sample case. That is the wrong artifact to grade twice over: the Anthropic
+  # rows were never graded on hidden reasoning, and a reasoning trace
+  # enumerates-and-rejects options far more freely than a final answer does,
+  # which is exactly what trips the suite's `not-contains` guards (see the
+  # mention-vs-prescription assertion fixes in BASELINE.md).
+  #
+  # max_tokens 3072, not the 1024 used for cross-row parity elsewhere. GLM-5.2
+  # bills reasoning against the same budget, so with showThinking:false a
+  # reasoning-heavy case can spend the whole 1024 thinking and return an EMPTY
+  # answer — measured: 9 of 76 cases hit a 1024 ceiling and the 2 that had not
+  # front-loaded their answer failed on truncation alone. A gate that fails
+  # cases for running out of budget measures the budget, not the skill. The
+  # diagnostic tiers keep 1024 (they are compared to each other, not gated).
   - id: openrouter:z-ai/glm-5.2
     config:
-      max_tokens: 1024
+      max_tokens: 3072
       temperature: 0.0
+      showThinking: false
+      provider:
+        allow_fallbacks: false
+        quantizations:
+          - fp8
 
   # --- MiniMax (open-weight) providers --------------------------------------
   # A second open-weight family for the same portability question, split across
@@ -246,9 +285,26 @@ defaultTest:
   # happens to be set in the environment — verdicts on borderline rubric
   # cases would then differ across machines. This pin freezes the de-facto
   # judge used for the recorded baselines (promptfoo 0.121.x's OpenAI
-  # default at the time of the 2026-06 sweeps). Requires OPENAI_API_KEY.
+  # default at the time of the 2026-06 sweeps).
+  #
+  # 2026-08-13: routed through OpenRouter instead of OpenAI directly, so the
+  # whole run bills to one vendor and needs only OPENROUTER_API_KEY. The MODEL
+  # is unchanged, so every rate recorded before this date stays comparable —
+  # but OpenRouter exposes only the floating `openai/gpt-5.5` tag, not the
+  # dated `-2026-04-23` snapshot, so the judge can now roll silently under us.
+  # Watch for a step change in borderline llm-rubric verdicts.
+  #
+  # showThinking:false is required, not cosmetic: promptfoo's openrouter
+  # provider prepends "Thinking: <reasoning>" to the output whenever a model
+  # returns a `reasoning` field, and the grader parses the FIRST JSON object it
+  # finds in the response — reasoning prose containing a JSON-ish fragment
+  # would be read as the verdict. No max_tokens: the previous judge passed
+  # none, and matching that keeps the instrument identical.
   options:
-    provider: openai:gpt-5.5-2026-04-23
+    provider:
+      id: openrouter:openai/gpt-5.5
+      config:
+        showThinking: false
   vars:
     # Inject the skill bundle (SKILL.md + all 8 references concatenated)
     # as the system message. This simulates the mid-conversation state where

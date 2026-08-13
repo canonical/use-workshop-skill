@@ -46,10 +46,16 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — paid (~$7-8/run per skill), so manual-only via
-  # workflow_dispatch. Requires the ANTHROPIC_API_KEY repository secret.
-  # Compare the result against the per-skill tests/BASELINE.md before merging
-  # skill-content changes. The `skill` input picks which suite(s) to run.
+  # Routing eval — paid, so manual-only via workflow_dispatch. Compare the
+  # result against the per-skill tests/BASELINE.md before merging skill-content
+  # changes. The `skill` input picks which suite(s) to run.
+  #
+  # The two suites bill differently as of 2026-08-13:
+  #   use-workshop     GLM-5.2 candidate + gpt-5.5 judge, both via OpenRouter
+  #                    (~$4.50/run) — needs OPENROUTER_API_KEY only.
+  #   onboard-workshop Sonnet 4.6 candidate + gpt-5.5 judge direct from OpenAI
+  #                    (~$7-8/run) — needs ANTHROPIC_API_KEY + OPENAI_API_KEY.
+  # All three secrets are passed because the matrix runs both.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -64,12 +70,13 @@ jobs:
           node-version: 22
       - name: Install promptfoo
         run: npm install -g promptfoo@0.121.9
-      - name: Routing eval (Sonnet 4.6 baseline)
+      - name: Routing eval (pinned baseline)
         run: make -C .github/skills/${{ matrix.skill }}/tests eval-routing
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # run-routing.sh preflights the pinned llm-rubric judge and exits 2
-          # without this.
+          # if the key for the judge's provider is missing.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       - name: Upload result summaries
         if: always()
