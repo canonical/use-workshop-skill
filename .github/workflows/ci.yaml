@@ -50,7 +50,7 @@ jobs:
   # result against tests/BASELINE.md before merging skill-content changes.
   #
   # use-workshop ONLY. Since 2026-08-13 that suite runs GLM-5.2 as candidate and
-  # gpt-5.5 as the llm-rubric judge, both through OpenRouter (~$4.50/run), so
+  # gpt-5.5 as the llm-rubric judge, both through OpenRouter (~$1.41/run), so
   # OPENROUTER_API_KEY is the only secret this job needs.
   #
   # onboard-workshop is deliberately NOT in this matrix. It stayed on Sonnet 4.6

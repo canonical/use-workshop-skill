@@ -83,7 +83,7 @@ eval-bundle:
 	bash $(BUNDLE_SH)
 
 # The pinned gate: GLM-5.2 via OpenRouter, judge routed through OpenRouter too,
-# so this needs OPENROUTER_API_KEY and nothing else (~$4.50/run).
+# so this needs OPENROUTER_API_KEY and nothing else (measured ~$1.41/run).
 eval-routing:
 	bash $(ROUTING_SH)
 

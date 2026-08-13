@@ -51,9 +51,18 @@ confirmation), or `make eval-routing-all-models`.
 
 The routing eval used to bill two vendors: Sonnet 4.6 as candidate ($10.11 on
 its last full run) and `openai:gpt-5.5-2026-04-23` as the `llm-rubric` judge
-(~$3.20/run, never itemised — promptfoo does not attribute grading cost). It now
-runs entirely through OpenRouter at **~$4.50/run**, needing only
-`OPENROUTER_API_KEY`.
+(promptfoo does not attribute grading cost, so it was never itemised). It now
+runs entirely through OpenRouter at a **measured ~$1.41/run**, needing only
+`OPENROUTER_API_KEY` — against ~$10.43 before, so ~7x cheaper.
+
+Costs here are computed from each run's reported token usage. That method
+validates against the one run promptfoo prices natively: Sonnet's 3,168,078
+prompt + 40,440 completion tokens at $3/$15 per M gives $10.11, matching its
+recorded `cost_usd` exactly. Breakdown of the 76/76 run: candidate $1.09
+(2,456,030 prompt + 41,157 completion at $0.40/$2.52), judge $0.32 (30,319 +
+5,611 at $5.00/$30.00). Note the judge is **23% of the run, not the expensive
+half** — grading completions average ~49 tokens per call, an order of magnitude
+below a first estimate that assumed reasoning-length grading responses.
 
 **What is preserved.** The judge is the *same model* — `gpt-5.5`, reached via
 OpenRouter instead of OpenAI directly — so rubric verdicts recorded before and

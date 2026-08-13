@@ -28,8 +28,9 @@ the manual run summary diff.
   (`defaultTest.options.provider`) so rubric verdicts are reproducible
   across machines. promptfoo's OpenRouter provider reads the variable
   natively; no bridging. Note the judge takes one call per rubric assertion
-  per case and is the *more expensive half* of a run (~$3.20 of ~$4.50) —
-  on large sweeps it is also the first thing to hit rate limits.
+  per case, but is only ~23% of run cost ($0.32 of a measured $1.41) since
+  grading responses are short — on large sweeps it is still the first thing to
+  hit rate limits.
 - `ANTHROPIC_API_KEY` exported — only for the Anthropic routing runs
   (`make eval-routing-anthropic`, `eval-routing-all-models`) and the
   agentic suite. `scripts/run-routing.sh` and `scripts/run-agentic.sh`
@@ -81,8 +82,9 @@ promptfoo view
 Since 2026-08-13 the routing eval runs entirely through OpenRouter: the
 candidate is `z-ai/glm-5.2` and the `llm-rubric` judge is
 `openai/gpt-5.5` routed through OpenRouter too. An ordinary run therefore
-needs **`OPENROUTER_API_KEY` and nothing else** (~$4.50/run, down from
-~$13.30 when the candidate billed to Anthropic and the judge to OpenAI).
+needs **`OPENROUTER_API_KEY` and nothing else** (a measured ~$1.41/run, down
+from ~$10.43 when the candidate billed to Anthropic and the judge to OpenAI —
+see `BASELINE.md` for the derivation).
 
 The Anthropic tiers stay declared and selectable — they are the occasional
 confirmation run on the model family the skill is actually written for.
