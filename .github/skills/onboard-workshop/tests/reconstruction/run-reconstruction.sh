@@ -7,9 +7,10 @@
 #
 # For each repo in GUINEA_REPOS — either a local checkout path or a pinned
 # remote `owner/repo@<sha>` (also accepts a full github.com URL):
-#   1. Clean-room copy: `git archive <rev>` into .work/<run>/<dir>/repo (no
-#      .git, so the commit history that added the definition never reaches the
-#      sandbox either).
+#   1. Clean-room copy: a detached `git worktree` checkout of <rev>, tar-copied
+#      into .work/<run>/<dir>/repo without `.git` (NOT `git archive` — archive
+#      honours `export-ignore`, which silently drops build evidence; see the
+#      staging step below). No commit history reaches the sandbox.
 #   2. Hide the ground truth: park the definition artifacts (.workshop/*.yaml
 #      and .workshop/<sdk>/ dirs, root workshop.yaml/.workshop.yaml) at
 #      .work/<run>/<dir>/ground-truth/; relocate any NON-definition files that

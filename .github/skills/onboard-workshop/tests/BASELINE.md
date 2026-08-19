@@ -4,9 +4,7 @@
 # Eval baselines for `onboard-workshop`
 
 Same contract as the sibling suite: PRs that change skill content must not
-merge below a pinned cell without investigation. Cells marked _pending_ are
-blocked on API credits at the time of the 2026-07-23 development round and
-must be recorded before release.
+merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
@@ -17,9 +15,11 @@ Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 |-------|-----------|------|-------|
 | `claude-sonnet-4-6` | **53/53 (100%)** | 2026-08-13 | canonical baseline; 48→53 in the gap-fix round below |
 | `claude-sonnet-4-6` | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
-| `claude-haiku-4-5` | _pending_ | — | clarity diagnostic |
-| `claude-opus-4-7` | _pending_ | — | headroom check |
 | `z-ai/glm-5.2` (OpenRouter) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
+
+(The Haiku 4.5 and Opus 4.7 diagnostic rows sat at _pending_ since 2026-07-23
+and were retired 2026-08-20 rather than re-run — a permanently pending cell is
+not a baseline.)
 
 > ### GLM-5.2 diagnostic — why this suite stays on Sonnet
 >
@@ -208,7 +208,7 @@ Manual, pre-release only.
 
 | Guinea pig | Ready | Actions proven | Date | Notes |
 |------------|-------|----------------|------|-------|
-| workshop-akcano | ✓ ("status: ready confirmed — workshop stable throughout the proof loop") | scorecard PASS after tunnel-check fix; `lint-shell` honestly UNVERIFIED (git archive sandbox has no `.git` — sandbox artifact, not a skill defect) | 2026-07-23 | agent remapped the host tunnel port 8000→8001 because the real akcano dev workshop holds 8000 — correct adaptation that exposed a scorer bug (host-side remap now allowed; workshop-side slot must still match) |
+| workshop-akcano | ✓ ("status: ready confirmed — workshop stable throughout the proof loop") | scorecard PASS after tunnel-check fix; `lint-shell` honestly UNVERIFIED (the staged sandbox is copied without `.git` — sandbox artifact, not a skill defect) | 2026-07-23 | agent remapped the host tunnel port 8000→8001 because the real akcano dev workshop holds 8000 — correct adaptation that exposed a scorer bug (host-side remap now allowed; workshop-side slot must still match) |
 | vscode-workshop | **PASS (overall_pass: true, 0 failures; all asserts green)** | ✓ Ready; proof table all-PASS: check-types, lint, build, `xvfb-run -a npm test` (108 tests green in-container), package; clean teardown ($1.12, 7.5 min) | 2026-07-23 | the four runs before the clean pass tell the story: (1) omitted the desktop plug → `toolchain-signals.md` now prescribes it for Electron-family hosts; (2) declared it, hit a launch conflict, STRIPPED it to get green → `launch-and-verify.md` now forbids removing proposed constructs (UNVERIFIED instead); (3) with that fix: kept the plug, marked everything UNVERIFIED with the reason, passed scorecard+rubric — the discipline rule demonstrably working; (4) credit-killed mid-run on a degraded path (inline `hooks:` in a stray `.workshop/deps.yaml`) → scorer now prefers the def with `base:`, and `generate-definition.md` hardens the no-inline-hooks rule + root/non-root hook contract |
 
 ## Agentic suite (`make eval-agentic`)

@@ -176,8 +176,6 @@ tests/
 │   └── _summarize.py            # raw -> slim summary post-processor
 ├── scenarios/                   # routing test cases (12 files)
 ├── agentic/                     # agentic E2E suite (see its README)
-├── fixtures/
-│   └── prompts.txt              # flat corpus of routing prompts, for review
 └── results/
     ├── *.json                   # slim per-run summaries (committed)
     └── raw/*.json               # full promptfoo output (gitignored)

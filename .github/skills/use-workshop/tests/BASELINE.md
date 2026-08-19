@@ -44,8 +44,12 @@ confirmation), or `make eval-routing-all-models`.
 |-------|------|-----------|-------|
 | `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
 | `claude-sonnet-4-6` | opt-in confirmation | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes |
-| `claude-haiku-4-5`  | diagnostic | 59/59 prior + new cases 3/3 | stale (0.9.2 bundle) |
-| `claude-opus-4-7`   | diagnostic | 59/59 prior + new cases 3/3 | stale (0.9.2 bundle) |
+
+(Haiku 4.5 and Opus 4.7 diagnostic rows were retired 2026-08-20: both were
+pinned on the 59-case/0.9.2 bundle, two suite growths behind, and were never
+going to be re-run — carrying them as "stale by decision" was noise. Their
+last full-run numbers — 59/59 each plus 3/3 on the then-new cases — remain in
+the historical notes below.)
 
 ### Gate model change (2026-08-13)
 
@@ -260,10 +264,13 @@ the user's request. 0 run errors.
 #### Full-matrix sweep (2026-06-10): all 10 families on the 64-case suite
 
 The first complete matrix under the daemon-stall/custom-device bundle —
-29 tiers, every result canonical. Result files are dated 2026-06-09 (GLM,
-MiniMax m1/m2, Kimi k2.5/k2.6, DeepSeek) and 2026-06-10 (the rest). `Nt` =
-cases at the 1024-token output ceiling; `–` = not measurable (tier re-run
-cache-warm, token usage recorded as cached).
+29 tiers, every result canonical. The rates in this table are the canonical
+record; the per-case JSONs for this round's 2026-06-09-dated half (GLM,
+MiniMax m1/m2, Kimi k2.5/k2.6, DeepSeek) were pruned with the other
+superseded rounds and live in git history, while the 2026-06-10-dated files
+remain under `results/`. `Nt` = cases at the 1024-token output ceiling;
+`–` = not measurable (tier re-run cache-warm, token usage recorded as
+cached).
 
 | Family | small | mid | large |
 |--------|-------|-----|-------|
@@ -405,13 +412,14 @@ purely routing-limited**.
   tiers); it still misses on Llama (`3.3-70b`, `4-maverick`), `gemma-3-4b`, and
   `ministral-3b` — a per-model routing quirk, not a regression.
 
-Per-case detail for every tier is in `results/<date>-routing-openrouter-<tag>.json`.
+Per-case JSONs for this superseded round were pruned; the rates above are the
+record, and the full files are retrievable from git history.
 
 #### Prior comparison: Qwen3 (2026-06-04)
 
 The first open-weight trial used the Qwen3 family. Recorded here because it
-informed the switch to GLM — the result files remain under `results/` but the
-slugs are no longer declared in the config.
+informed the switch to GLM — the per-case JSONs were pruned (git history has
+them) and the slugs are no longer declared in the config.
 
 | Model (via OpenRouter)   | Pass rate       | Failures (`length` = truncated) |
 |--------------------------|-----------------|----------------------------------|
