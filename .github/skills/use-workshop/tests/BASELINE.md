@@ -33,8 +33,9 @@ Because those rewrites can flip a previously-passing answer, every recorded rate
 below predates this round. The earlier 9 cases (2026-06-23) covered the 0.9.2
 surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 9 references + 10 workflows concatenated). Run with: `make eval-routing`
-(GLM-5.2 — the gate), `make eval-routing-anthropic` (Sonnet 4.6
-confirmation), or `make eval-routing-all-models`.
+(GLM-5.2 — the gate), `make eval-routing-subscription` (Sonnet 4.6
+confirmation via the claude CLI subscription lane, $0), or
+`make eval-routing-sweep` (open-weight diagnostics).
 
 > **The gate moved off Anthropic on 2026-08-13.** Candidate and judge both run
 > through OpenRouter now. See *Gate model change* below for what that preserves
@@ -80,9 +81,9 @@ after this date are produced by the same instrument and stay comparable.
 2. **The gate measures a proxy.** It records how a *GLM* model routes through a
    skill written for *Claude*. GLM-5.2 tracked Sonnet closely on identical
    inputs (both 75/76 on the 2026-07-23 suite under the same judge), so it is a
-   good proxy — but it is a proxy. `make eval-routing-anthropic` stays as the
-   occasional confirmation run and should be used before shipping substantial
-   content changes.
+   good proxy — but it is a proxy. `make eval-routing-subscription` (Sonnet via
+   the claude CLI subscription lane, $0) is the confirmation run and should be
+   used before shipping substantial content changes.
 3. **The gate row carries no cost signal.** `cost_usd` reads 0 for OpenRouter
    slugs (not in promptfoo's cost table). Real spend is on the OpenRouter
    dashboard.
@@ -172,22 +173,20 @@ suite sat at an unverified 73/76 because Anthropic credits were exhausted.
 > rows below, including earlier `glm-5.2` rows.
 
 The routing cases can be run against open-weight models through OpenRouter
-(`make eval-routing-openrouter[-all]`, requires `OPENROUTER_API_KEY`). These
-diagnostics answer a different question than a gate: *how portable is the
-skill's routing across model families?* Tiers mirror the Anthropic diagnostic
-roles (small ≈ Haiku clarity, mid ≈ Sonnet baseline, large ≈ Opus headroom).
+(`make eval-routing-sweep`, or `bash scripts/run-routing.sh --provider
+openrouter:<slug>`; requires `OPENROUTER_API_KEY`). These diagnostics answer a
+different question than a gate: *how portable is the skill's routing across
+model families?*
 
-**Active families: GLM (Zhipu), MiniMax, and Kimi.** All declared in
-`promptfooconfig.yaml`. Tiers were refreshed to the current OpenRouter catalog
-on 2026-07-23: `make eval-routing-openrouter` targets `glm-5.1` and
-`-openrouter-all` sweeps `glm-4.7-flash` / `glm-5.1` / `glm-5.2`;
-`make eval-routing-minimax` targets `minimax-m2.7` and `-minimax-all` sweeps
-`minimax-m2.5` / `m2.7` / `m3`; `make eval-routing-kimi-all` sweeps
-`kimi-k2.6` / `kimi-k2.7-code` / `kimi-k3`. Superseded slugs (GLM 4.5-air/4.5/4.6
-and glm-5, MiniMax m1/m2, Kimi k2.5/k2-thinking) are retired from the targets;
-their recorded results stay below as a historical record. The 2026-07-23
-refreshed-tier flagships are shown first, then the 2026-06-23 GLM sweep, then the
-2026-06-10 full matrix; Qwen3 (archived) follows.
+**Declared providers since the 2026-08-20 prune: the GLM family
+(`glm-4.7-flash` / `glm-5.1` / `glm-5.2`) plus `minimax-m2.7`, the documented
+runner-up candidate** — kept so a GLM deprecation has a measured fallback.
+The wider 2026-06 matrix (MiniMax tiers, Kimi, DeepSeek, MiMo, gpt-oss,
+Nemotron, Gemma, Llama, Mistral, Qwen3) is retired from the config and its
+Make targets are gone; every measured rate stays below as the historical
+record, and the provider blocks are one `git log` away. The 2026-07-23
+refreshed-tier flagships are shown first, then the 2026-06-23 GLM sweep, then
+the 2026-06-10 full matrix; Qwen3 (archived) follows.
 
 #### Refreshed-tier flagships (2026-07-23, 76-case suite)
 
@@ -529,18 +528,6 @@ the fix):
    the "at least one of subsystem/vendorid/productid is required" rule — which is
    irrelevant here, since the user's plug already has `subsystem`. Made that
    recitation optional in this new case's own rubric; Sonnet then passes 76/76.
-
-### Known variance watch-items (Haiku 4.5)
-
-Not currently failing, but historically flickery under uncached re-runs.
-If a future Haiku run dips, check these first — they are model-side
-variance, not skill gaps:
-
-- **`User wants to attach a remote IDE over SSH (vendor-agnostic)`** — Haiku
-  tends to enumerate named IDE products on vendor-neutral prompts where
-  Sonnet/Opus stay generic.
-- **`User omits workshop name in a multi-workshop project`** — Haiku
-  sometimes shows a name-less command elsewhere in the same response.
 
 ## Agentic E2E eval
 
