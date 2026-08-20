@@ -36,10 +36,17 @@
       value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
     - type: llm-rubric
       value: |
-        The agent walked the diagnostic flow before changing anything:
-        used `workshop changes` and/or `workshop tasks` to find the
-        actual error (an SDK that doesn't exist), then fixed the
-        definition (removed or replaced the bogus SDK reference), then
-        re-attempted the launch (or refresh) and confirmed Ready. The
-        agent did NOT reach for `sudo snap remove --purge workshop` or
-        any other system-wide nuke as a recovery step.
+        The agent grounded its fix in real error evidence rather than
+        guessing: either it walked the `workshop changes` / `workshop
+        tasks` diagnostic flow before changing anything, OR — equally
+        acceptable — it read the actual error from the failed `workshop
+        launch`'s own output (a bogus SDK reference fails synchronously at
+        launch time, printing the cause directly; there may be no
+        change/task to inspect yet). Then it fixed the definition (removed
+        or replaced the bogus SDK reference), re-attempted the launch (or
+        refresh), and confirmed Ready — running `workshop changes` /
+        `workshop tasks` / `workshop info` as the post-fix verification
+        loop satisfies the diagnostic-command requirement. What FAILS: a
+        speculative edit made without citing any error evidence, or
+        reaching for `sudo snap remove --purge workshop` or any other
+        system-wide nuke as a recovery step.

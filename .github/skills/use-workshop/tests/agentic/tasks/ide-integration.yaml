@@ -25,8 +25,10 @@
       value:
         - "[BASH] workshop launch"
         - "[BASH] workshop refresh"
-    - type: contains
-      value: "[BASH] workshop info"
+    # Marker + command on the same [BASH] line — tolerant of the agent
+    # chaining commands ("workshop tasks <ID> && workshop info").
+    - type: javascript
+      value: /\[BASH\][^\n]*workshop info/.test(output)
     - type: contains
       value: ".wp"
     - type: contains

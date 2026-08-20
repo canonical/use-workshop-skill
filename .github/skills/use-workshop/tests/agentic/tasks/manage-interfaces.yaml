@@ -28,10 +28,10 @@
       value:
         - "[BASH] workshop launch"
         - "[BASH] workshop refresh"
-    - type: contains-any
-      value:
-        - "[BASH] workshop info"
-        - "[BASH] workshop connections"
+    # Marker + command on the same [BASH] line — tolerant of the agent
+    # chaining commands ("workshop tasks <ID> && workshop info && ...").
+    - type: javascript
+      value: /\[BASH\][^\n]*workshop (info|connections)/.test(output)
     - type: contains
       value: "tunnel"
     - type: contains

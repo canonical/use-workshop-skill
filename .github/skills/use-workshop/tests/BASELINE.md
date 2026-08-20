@@ -578,37 +578,40 @@ task drives `.workshop/<name>/` authoring end-to-end). Each task spawns
 and asserts on the transcript + captured state. Run with:
 `make eval-agentic`.
 
-| Model              | Pass rate | Notes |
-|--------------------|-----------|-------|
-| `claude-sonnet-4-6` | **TBD** (was 7/7 (100%) on the prior 7-task suite) | re-baseline after rerun; expect ~16–18 min wall, ~$4 with the new task |
+| Model              | Auth | Pass rate | Notes |
+|--------------------|------|-----------|-------|
+| `claude-sonnet-4-6` | **claude CLI subscription** ($0) | **8/8 (100%)** | 0.9.5 round, 2026-08-20 — the first full run since the harness fix (the retired provider resolved skills from a nonexistent `.claude/skills` path, which had parked this suite at TBD since May). Full run 5/8 in 6.5 min; all 3 failures were eval-authoring artifacts verified against the transcripts and re-run green: two `[BASH] workshop info` marker asserts broke when the agent chained commands (`… && workshop info` — now matched with a same-line regex), and the troubleshoot rubric demanded the changes/tasks flow *before* a fix whose error surfaces synchronously in `workshop launch`'s own output (now accepted as real evidence; the post-fix verification triplet still required). Costs below are the CLI's nominal figures — nothing billed |
 
-### Per-task baseline (Sonnet 4.6)
+### Per-task baseline (Sonnet 4.6, subscription, 2026-08-20)
 
-| Task                              | Pass | Wall  | Cost   |
+| Task                              | Pass | Wall  | Cost (nominal) |
 |-----------------------------------|------|-------|--------|
-| bootstrap-project                 | ✓    | 103 s | $0.28  |
-| daily-ops                         | ✓    |  95 s | $0.09  |
-| customize-actions                 | ✓    |  37 s | $0.08  |
-| author-in-project-sdk             | ✓    |  71 s | $0.09  |
-| manage-interfaces (HTTP tunnel)   | ✓    | 645 s | $1.42  |
-| ide-integration¹                  | ✓    | 573 s | $1.35  |
-| multi-workshop-projects           | ✓    |  71 s | $0.12  |
-| troubleshoot (broken-SDK recovery)| ✓    |  76 s | $0.15  |
+| bootstrap-project                 | ✓    |  72 s | $0.34  |
+| daily-ops                         | ✓    |  67 s | $0.20  |
+| customize-actions                 | ✓    |  49 s | $0.24  |
+| author-in-project-sdk             | ✓    |  69 s | $0.28  |
+| manage-interfaces (HTTP tunnel)   | ✓    | 161 s | $0.50  |
+| ide-integration (built-in SSH)¹   | ✓    |  49 s | $0.22  |
+| multi-workshop-projects           | ✓    |  67 s | $0.25  |
+| troubleshoot (broken-SDK recovery)| ✓    |  41 s | $0.19  |
 
-¹ The recorded ide-integration numbers are for the retired sshd+tunnel
-task; the 2026-08-20 rewrite verifies the 0.9.5 out-of-the-box SSH path
-(launch → `workshop info` hostname → non-interactive ssh probe) and is
-expected to be much faster.
+¹ The rewritten task verifies the 0.9.5 out-of-the-box SSH path end to
+end — launch → `workshop info` hostname → `ssh -o BatchMode=yes
+workshop@<ws>.<project>.wp true` succeeding against real LXD — in 49 s,
+where the retired sshd+tunnel ritual took 573 s. The prior 7-task suite's
+API-billed numbers (7/7, 2026-05-07) remain in
+`results/2026-05-07-agentic-claude-sonnet-4-6.json`.
 
 > `author-in-project-sdk` numbers are TBD pending the first green
 > agentic rerun against the updated skill. The renamed
 > `customize-actions` task is unchanged from `customize-actions-sketches`
 > in body — its baseline numbers carry over.
 
-Tunnel-setup tasks (`manage-interfaces` and `ide-integration`) dominate
-runtime and cost — the agent does extra refresh + verification work
-around plug/slot wiring. The other five tasks complete in 1–2 minutes
-each thanks to LXD's image cache being warm after the first launch.
+`manage-interfaces` is now the only long task — the agent does extra
+refresh + verification work around plug/slot wiring. Everything else
+(including the rewritten SSH task) completes in under ~75 s thanks to
+LXD's image cache being warm after the first launch; the full 8-task
+suite lands in ~7 minutes at concurrency 2.
 
 Coverage gaps (workflows not yet wired into the agentic suite, only
 the routing eval covers them):
