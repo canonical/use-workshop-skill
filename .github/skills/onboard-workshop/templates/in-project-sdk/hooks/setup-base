@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright 2026 Canonical Ltd.
 #
@@ -9,9 +9,11 @@
 # lines, Dockerfile, README) — or, for Electron/Chromium test hosts, the
 # canonical library set in references/toolchain-signals.md. Do not guess.
 #
-# This file must be executable: chmod +x .workshop/<sdk-name>/hooks/setup-base
+# chmod +x is house style (keeps the file runnable by hand) — Workshop runs
+# hooks with bash regardless, so a 0644 hook still executes. The interpreter
+# is always bash with errexit+pipefail, whatever the shebang says.
 
-set -eu
+set -euo pipefail
 
 apt-get update
 apt-get install -y \

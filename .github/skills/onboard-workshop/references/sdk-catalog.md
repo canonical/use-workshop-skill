@@ -13,7 +13,7 @@ Regenerate via `tests/scripts/update-sdk-catalog.sh` (maintainer-only).
 
 <catalog>
 <!-- catalog:start -->
-Generated from canonical/reference-sdks @ main on 2026-07-23 (hand-curated v1)
+Generated from canonical/reference-sdks @ e5c56a90 on 2026-08-20 (hand-curated v1)
 — fallback only; always prefer live `sdk find`.
 
 | SDK | Provides | Typical channels | Matching repo signals |
@@ -23,7 +23,10 @@ Generated from canonical/reference-sdks @ main on 2026-07-23 (hand-curated v1)
 | `rust` | Rust toolchain | `latest/stable` | `Cargo.toml` |
 | `dotnet` | .NET SDK | `9/stable`, `8/stable` | `global.json`, `*.csproj` |
 | `flutter` | Flutter SDK | `latest/stable` | `pubspec.yaml` |
-| `uv` | Python via uv; shared-venv slot (`uv:venv`) | `latest/stable` | `pyproject.toml`, `requirements*.txt`, `uv.lock` |
+| `uv` | Python via uv; shared-venv slot (`uv:venv`) — venv created in `setup-base` (0.9.4+), so `uv:venv` consumers have no install-ordering issues | `latest/stable` | `pyproject.toml`, `requirements*.txt`, `uv.lock` |
+| `openjdk` | Java (OpenJDK) toolchain (0.9.4+) | `latest/stable` | `*.java`, `pom.xml`, `build.gradle` |
+| `maven` | Maven build tool (0.9.4+; pair with `openjdk`) | `latest/stable` | `pom.xml`, `mvnw` |
+| `gradle` | Gradle build tool (0.9.4+; pair with `openjdk`) | `latest/stable` | `build.gradle(.kts)`, `gradlew` |
 | `docker` | Docker engine inside the workshop | `latest/stable` | `Dockerfile`, `docker-compose.yaml`, CI `services:` |
 | `cuda-toolkit` | NVIDIA CUDA toolkit | `latest/stable` | CUDA/torch-gpu deps |
 | `rocm` | AMD ROCm stack | `latest/stable` | ROCm deps |
@@ -35,9 +38,9 @@ Generated from canonical/reference-sdks @ main on 2026-07-23 (hand-curated v1)
 | `zephyr` + `zephyr-sdk-ng` + `zephyr-<arch>` | Zephyr RTOS + arch toolchains (wired via `connections:`) | `4.3/stable`, `0.17.4/stable` | `west.yml`, Zephyr trees |
 | `esp32-core` | ESP-IDF | `24.04/edge` | `idf.py`, ESP-IDF projects |
 | `direnv` | direnv | `latest/stable` | `.envrc` |
-| `vscode-remote` | VS Code remote server prerequisites | `latest/stable` | user wants VS Code attach |
+| `vscode-remote` | VS Code remote server prerequisites — **deprecated (0.9.5)**: automatic OpenSSH config makes it obsolete and the VS Code Workshop extension takes over; do NOT propose for new definitions, steer to plain Remote-SSH via `<ws>.<project>.wp` | `latest/stable` | user wants VS Code attach (legacy repos may still list it) |
 | `github-runner` | Self-hosted GitHub Actions runner | `latest/stable` | act/runner workflows |
-| `claude-code`, `codex`, `copilot`, `opencode`, `agy` | AI coding agents | `latest/stable` | user asks for agent tooling |
+| `claude-code`, `codex`, `copilot`, `opencode`, `agy` | AI coding agents (`agy` = Antigravity CLI, 0.9.4+) | `latest/stable` | user asks for agent tooling |
 <!-- catalog:end -->
 </catalog>
 

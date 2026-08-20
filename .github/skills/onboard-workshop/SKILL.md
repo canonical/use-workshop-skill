@@ -51,7 +51,7 @@ Five rules that always apply to onboarding. Every workflow assumes them.
 Authoritative readable docs:
 - Base URL: `https://ubuntu.com/workshop/docs/`
   Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop.md`). Fetch by concatenating `<base>` + relative path → `https://ubuntu.com/workshop/docs/reference/cli/workshop.md`. The CLI reference is four combined pages — `workshop.md`, `sdk.md`, `sdkcraft.md`, `workshopctl.md` — each holding every subcommand of that tool as a section; there are no per-subcommand pages.
-- Whole-tree fallback: `<base>/llms.txt` — `https://ubuntu.com/workshop/docs/llms.txt`. Load this when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree).
+- Whole-tree fallback: `<base>/llms.txt` (index) and `<base>/llms-full.txt` (the full docs tree concatenated). Load one when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree). The docs are also served through the Context7 MCP server for agents that have it.
 
 The base URL may change. It is recorded HERE only — every other file lists relative paths so a single edit re-points the whole skill. Do not embed local `docs/` paths in any file under this skill; the docs site is the source of truth.
 </docs>

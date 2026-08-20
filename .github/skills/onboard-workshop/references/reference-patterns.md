@@ -34,7 +34,8 @@ sdks:
 <pattern name="Shared Python venv across SDKs">
 Python-ecosystem SDKs (jupyter, tooling SDKs) share the `uv` SDK's venv by
 wiring their `venv` plug to `uv:venv` under `connections:` — one interpreter
-and package set for every tool.
+and package set for every tool. (0.9.4+: `uv` creates the venv in
+`setup-base`, so consumers no longer depend on SDK listing order.)
 
 ```yaml
 connections:
@@ -117,8 +118,11 @@ docs/ html`) and forward arguments with `"$@"` where useful (e.g.
 <pattern name="Toolchain graphs via connections">
 Multi-SDK toolchains (e.g. RTOS + per-architecture cross-compilers) wire
 explicitly under `connections:` — each toolchain SDK exposes a slot, the
-consuming SDK plugs into it. If onboarding lands here, the SDKs' own docs
-(`sdk docs <name>`) define the expected wiring; copy it, don't guess it.
+consuming SDK plugs into it. If onboarding lands here, the SDK's own
+documentation defines the expected wiring — `sdk info <name>` (metadata,
+channels, website) plus the SDK's Store/README docs; copy it, don't guess
+it. (The `sdk` CLI has exactly `find`/`info`/`list` — there is no
+`sdk docs` subcommand.)
 </pattern>
 
 </patterns>
