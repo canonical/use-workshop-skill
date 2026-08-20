@@ -35,7 +35,7 @@ help:
 	@echo "  check-catalog-stamp       sdk-catalog.md markers + generation stamp intact (offline)"
 	@echo "  check-hooks-exec          template hook stubs carry the executable bit (offline)"
 	@echo "  eval-bundle               regenerate skill-bundle.md + skill-selection-context.md"
-	@echo "  eval-routing              routing eval vs Sonnet 4.6 (paid; needs ANTHROPIC_API_KEY + OPENAI_API_KEY judge)"
+	@echo "  eval-routing              routing eval vs Sonnet 4.6 via the local claude CLI login + local judge (\$$0, no keys; slow)"
 	@echo "  eval-agentic              agentic E2E tasks (slow, real LXD; \$$0 on the claude CLI subscription login)"
 	@echo "  eval-reconstruction       guinea-pig reconstruction, offline tier (paid ~\$$1-2/repo; needs sibling checkouts)"
 	@echo "  eval-reconstruction-full  reconstruction incl. LXD launch + action proof (slow, manual)"

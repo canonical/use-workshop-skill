@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+description: |
+  Subscription-lane routing eval for the use-workshop skill: the same 76
+  cases as promptfooconfig.yaml, but the candidate is Sonnet via the local
+  claude CLI login (tool-less, single-turn) and the llm-rubric judge is the
+  local claude judge — $0, no API keys. This is the confirmation run on the
+  model family the skill is written for; the GLM-5.2 HTTP config stays the
+  fast CI gate.
+
+  NOTE: keep the prompts/tests/defaultTest.vars sections in sync with
+  promptfooconfig.yaml — the two configs must run the same suite.
+
+prompts:
+  - file://prompt.json
+
+providers:
+  # Local claude CLI candidate (see _testlib/provider-routing-cli.js for the
+  # delivery mechanics: system prompt via --system-prompt-file because the
+  # bundle exceeds the 128 KiB per-argv limit; user message on stdin).
+  - id: file://../../_testlib/provider-routing-cli.js
+    label: claude-cli:claude-sonnet-4-6
+    config:
+      model: claude-sonnet-4-6
+      timeout_ms: 240000
+
+defaultTest:
+  options:
+    # Local claude judge — grading also runs on the subscription login. The
+    # driver additionally passes --grader with the same file, belt and braces.
+    # Scores from this judge are NOT comparable with the OpenRouter gpt-5.5
+    # judge's: baselines are per (candidate, judge) pair.
+    provider: file://../../_testlib/provider-judge-cli.js
+  vars:
+    skill: file://skill-bundle.md
+
+tests:
+  - file://scenarios/bootstrap.yaml
+  - file://scenarios/daily-ops.yaml
+  - file://scenarios/interfaces.yaml
+  - file://scenarios/parallel-envs.yaml
+  - file://scenarios/troubleshoot.yaml
+  - file://scenarios/troubleshoot-multiturn.yaml
+  - file://scenarios/purge.yaml
+  - file://scenarios/out-of-scope.yaml
+  - file://scenarios/customize-actions.yaml
+  - file://scenarios/author-in-project-sdk.yaml
+  - file://scenarios/ide-integration.yaml
+  - file://scenarios/multi-workshop-projects.yaml

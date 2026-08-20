@@ -9,13 +9,20 @@ merge below a pinned cell without investigation.
 ## Routing eval (`make eval-routing`)
 
 53 cases across 8 scenario files (incl. 8 cross-skill selection cases).
-Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 
-| Model | Pass rate | Date | Notes |
-|-------|-----------|------|-------|
-| `claude-sonnet-4-6` | **53/53 (100%)** | 2026-08-13 | canonical baseline; 48→53 in the gap-fix round below |
-| `claude-sonnet-4-6` | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
-| `z-ai/glm-5.2` (OpenRouter) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
+Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
+the local claude CLI login as candidate, the local claude judge for
+llm-rubric grading — $0, no API keys. Baselines are per **(candidate,
+judge) pair**; the rows below were recorded under the retired
+`openai:gpt-5.5-2026-04-23` API judge and are not comparable with
+local-judge rates. The first full subscription-lane run seeds the new pair's
+row.
+
+| Candidate | Judge | Pass rate | Date | Notes |
+|-----------|-------|-----------|------|-------|
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | `gpt-5.5-2026-04-23` (OpenAI, retired path) | **53/53 (100%)** | 2026-08-13 | canonical under the retired pair; 48→53 in the gap-fix round below |
+| `claude-sonnet-4-6` (Anthropic HTTP) | `gpt-5.5-2026-04-23` (OpenAI) | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
+| `z-ai/glm-5.2` (OpenRouter) | `gpt-5.5-2026-04-23` (OpenAI) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
 
 (The Haiku 4.5 and Opus 4.7 diagnostic rows sat at _pending_ since 2026-07-23
 and were retired 2026-08-20 rather than re-run — a permanently pending cell is
@@ -46,9 +53,9 @@ not a baseline.)
 > ~$0.98/run) did not justify that. The sibling had no such cost: it ported
 > at 100%.
 >
-> The provider plumbing in `scripts/run-routing.sh` is shared with the sibling
-> and handles either vendor, so revisiting this is a one-line change to the
-> default branch plus a GLM provider block in `promptfooconfig.yaml`.
+> The routing driver is shared with the sibling (`_testlib/run-routing.sh`),
+> so revisiting this would mean re-adding an HTTP lane to this suite's
+> wrapper plus a GLM provider block — deliberately not kept on standby.
 
 > **2026-07-23 development round.** The first canonical run landed 40/46
 > ($3.70). Of the 6 failures: 4 were over-strict rubrics (mention-vs-

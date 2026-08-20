@@ -21,8 +21,8 @@ YAML_KEYS_PY := $(TESTLIB)/check-yaml-keys.py
 MANIFEST_SH  := scripts/update-docs-manifest.sh
 
 .PHONY: help check check-yaml check-yaml-keys check-shell check-source-docs \
-        update-docs-manifest eval-bundle eval-routing eval-routing-sweep \
-        eval-agentic eval-clean
+        update-docs-manifest eval-bundle eval-routing eval-routing-subscription \
+        eval-routing-sweep eval-agentic eval-clean
 
 help:
 	@echo "use-workshop eval targets:"
@@ -32,6 +32,7 @@ help:
 	@echo "  update-docs-manifest     regenerate docs-manifest.txt + allowed-keys.json from a Workshop checkout (needs WORKSHOP_REPO; maintainer-only)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             run routing eval against GLM-5.2 via OpenRouter — the pinned gate (needs OPENROUTER_API_KEY only)"
+	@echo "  eval-routing-subscription  Sonnet confirmation via the local claude CLI login + local judge (\$$0, no keys; slow)"
 	@echo "  eval-routing-sweep       diagnostic sweep: GLM 4.7-flash + 5.1 + 5.2 and MiniMax-M2.7, the documented runner-up (needs OPENROUTER_API_KEY)"
 	@echo "  eval-agentic             run agentic E2E suite (slow, real LXD)"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
@@ -71,6 +72,13 @@ eval-bundle:
 # so this needs OPENROUTER_API_KEY and nothing else (measured ~$1.41/run).
 eval-routing:
 	bash $(ROUTING_SH)
+
+# The $0 confirmation run on the model family the skill is written for:
+# Sonnet via the local claude CLI login, local claude judge, no API keys.
+# Slower than the gate (one CLI spawn per case; ~25-45 min) — run it before
+# shipping substantial content changes, not in the inner loop.
+eval-routing-subscription:
+	bash $(ROUTING_SH) --subscription
 
 # Diagnostic sweep over every provider still declared in promptfooconfig.yaml:
 # the GLM family plus MiniMax-M2.7 (the documented runner-up candidate, kept

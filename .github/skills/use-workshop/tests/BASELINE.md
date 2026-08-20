@@ -41,10 +41,14 @@ confirmation via the claude CLI subscription lane, $0), or
 > through OpenRouter now. See *Gate model change* below for what that preserves
 > and what it costs.
 
-| Model | Role | Pass rate | Notes |
-|-------|------|-----------|-------|
-| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
-| `claude-sonnet-4-6` | opt-in confirmation | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes |
+Baselines are per **(candidate, judge) pair** — the OpenRouter `gpt-5.5`
+judge and the local Claude judge are different instruments, and rates
+recorded under one are not comparable with the other.
+
+| Candidate | Role | Judge | Pass rate | Notes |
+|-----------|------|-------|-----------|-------|
+| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes. The confirmation run is now `make eval-routing-subscription` (claude CLI Sonnet + local judge); its first full run seeds a new row here |
 
 (Haiku 4.5 and Opus 4.7 diagnostic rows were retired 2026-08-20: both were
 pinned on the 59-case/0.9.2 bundle, two suite growths behind, and were never
