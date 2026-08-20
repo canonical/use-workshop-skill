@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
 <!-- Copyright 2026 Canonical Ltd. -->
 
-# use-workshop skill
+# use-workshop skill family
 
 Agentic skills for [Workshop](https://ubuntu.com/workshop/docs/):
 
