@@ -22,7 +22,10 @@ defaultTest:
   options:
     cache: false
     # Same pinned judge as the routing suite; requires OPENAI_API_KEY.
-    provider: openai:gpt-5.5-2026-04-23
+    # Local claude judge by default (belt and braces with run-reconstruction's
+    # --grader flag). RECON_JUDGE=openai swaps in the retired API judge at the
+    # driver level; scores are per (candidate, judge) pair.
+    provider: file://../../../_testlib/provider-judge-cli.js
   assert:
     # Deterministic gate: the scorecard's threshold verdict.
     - type: contains

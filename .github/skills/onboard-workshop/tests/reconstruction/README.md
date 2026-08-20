@@ -12,10 +12,11 @@ equivalent to what the maintainers actually wrote?**
 `GUINEA_REPOS` is a space-separated list; each entry is either a **local
 checkout path** or a **pinned remote** `owner/repo@<sha>` (a full
 `https://github.com/owner/repo@<sha>` URL also works). Remote repos are cloned
-once into `.cache/` and reused across runs. Default:
-`~/Documents/workshop-akcano ~/Documents/vscode-workshop`.
+once into `.cache/` and reused across runs. **Default (since 2026-08-20): the
+four SHA-pinned upstream repos below** — reproducible on any machine; the
+maintainer-local pair is opt-in via `GUINEA_REPOS`.
 
-Local pair (fast, maintainer machines):
+Local pair (fast, maintainer machines; opt-in):
 
 - `workshop-akcano` — Go CLI; ground truth wraps `docs/Makefile`,
   golangci-lint, shellcheck, and `go test` into actions; sphinx preview via a
@@ -25,7 +26,7 @@ Local pair (fast, maintainer machines):
   `setup-base`, desktop plug), actions wrap npm/vsce with an `xvfb-run`
   headless variant.
 
-Pinned upstream set (harder, no local checkout needed):
+Pinned upstream set (harder, no local checkout needed; the default):
 
 ```
 canonical/mir@5ce58e5f285d635439baed882fc77f1e3f3c50fe
@@ -71,8 +72,8 @@ returns `overall_pass: null` and the promptfoo assert fails.
 
 | Env | Values | Effect |
 |-----|--------|--------|
-| `RECON_AUTH` | `api` (default) / `subscription` | `api` runs `claude --bare` on `ANTHROPIC_API_KEY`. `subscription` runs on the local CLI login — `--bare` cannot (its auth is *strictly* the API key; OAuth and keychain are never read), so it is dropped and the isolation it gave is replaced with `--setting-sources project --strict-mcp-config --mcp-config '{"mcpServers":{}}'` plus a sandbox `.claude/settings.json`. `--safe-mode` is not an option: it disables skills. |
-| `RECON_JUDGE` | `openai` (default) / `local` | `openai` uses the pinned gpt-5.5 rubric judge (`OPENAI_API_KEY`). `local` uses the shared `../../../_testlib/provider-judge-cli.js`, the same local CLI, graded tool-less from a scratch cwd. |
+| `RECON_AUTH` | `subscription` (default) / `api` | `subscription` runs on the local CLI login at $0 — `--bare` cannot (its auth is *strictly* the API key; OAuth and keychain are never read), so it is dropped and the isolation it gave is replaced with `--setting-sources project --strict-mcp-config --mcp-config '{"mcpServers":{}}'` plus a sandbox `.claude/settings.json`. `--safe-mode` is not an option: it disables skills. `api` runs `claude --bare` on `ANTHROPIC_API_KEY`, billed per token. |
+| `RECON_JUDGE` | `local` (default) / `openai` | `local` uses the shared `../../../_testlib/provider-judge-cli.js`, the same local CLI, graded tool-less from a scratch cwd — $0. `openai` uses the retired gpt-5.5 API judge (`OPENAI_API_KEY`); scores are per (candidate, judge) pair. |
 | `RECON_CONCURRENCY` | int | promptfoo `--max-concurrency`; defaults to 1 under `subscription` (one account, one rate limit) and 4 otherwise. |
 | `RECON_MODEL_OVERRIDE` | model id | Model for the agent under test; also tags the raw results filename so model passes stay separable. |
 
