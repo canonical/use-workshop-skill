@@ -124,6 +124,7 @@
     - type: contains-any
       value:
         - reject
+        - refuse
         - "can't"
         - cannot
         - "won't"
