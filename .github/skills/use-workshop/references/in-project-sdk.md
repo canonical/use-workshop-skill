@@ -21,7 +21,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with an `unknown field` error and its line/column. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
+There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with `unknown SDK YAML fields: hooks (line N, column M)`. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
 
 Reference the SDK from the workshop definition as `project-<NAME>`:
 
@@ -30,11 +30,11 @@ sdks:
   - name: project-<NAME>
 ```
 
-Only `name` is mandatory. Valid optional top-level keys: `title`, `version`, `summary`, `description`, `base`, `architecture`, `license`, `plugs`, `slots` (built Store SDKs additionally carry fields like `sdkcraft-started-at` — never author those by hand). `architecture` is assumed to match the host (or `all`). `name` rules: at least one lowercase letter; lowercase letters, digits, and interior hyphens; up to 40 characters; cannot be `agent`, `system`, or `sketch`, and cannot start with `try-` or `project-` — the `project-` prefix appears ONLY in the workshop definition's `sdks:` reference. The manifest lives at `.workshop/<NAME>/sdk.yaml` (or `.workshop/<NAME>/meta/sdk.yaml`).
+Only `name` is mandatory. Valid optional top-level keys: `title`, `version`, `summary`, `description`, `base`, `architecture`, `license`, `plugs`, `slots` (built Store SDKs additionally carry fields like `sdkcraft-started-at` — never author those by hand). Caution: the upstream `sdk-definition` docs and `schema-sdk.json` also list `contact`, `issues`, `source-code`, and `website`, but the runtime validator **rejects** those four in an in-project `sdk.yaml` — stick to the list above. `architecture` is assumed to match the host (or `all`). `name` rules: at least one lowercase letter; lowercase letters, digits, and interior hyphens; up to 40 characters; cannot be `agent`, `system`, or `sketch`, and cannot start with `try-` or `project-` — the `project-` prefix appears ONLY in the workshop definition's `sdks:` reference. The manifest lives at `.workshop/<NAME>/sdk.yaml` (or `.workshop/<NAME>/meta/sdk.yaml`).
 
 The post-build JSON Schema (`reference/definition-files/schema-sdk.json`) describes the *post-`sdkcraft`* form (its `required` list reflects a packed SDK, which carries fields like `sdkcraft-started-at`) — that is NOT the in-project authoring shape. Do not reach for it to validate `sdk.yaml`.
 
-Note: user-facing YAML is validated strictly (0.9.2+) — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front with a line/column, rather than being silently ignored. Fix the key; don't retry the same file.
+Note: SDK YAML is validated strictly (0.9.2+) — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front as `unknown SDK YAML fields: <name> (line N, column M)`, rather than being silently ignored. Fix the key; don't retry the same file. (This strictness is SDK-YAML-only — `workshop.yaml` has no such check; see `references/definition-file.md`.)
 </sdk_yaml_schema>
 
 <hook_taxonomy>
@@ -48,7 +48,9 @@ Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-he
 | `save-state` | During an *applied* `workshop refresh`, on the **old** SDK revision, before the writable filesystem is discarded. | `root` | the SDK's `hooks/` dir | Copy anything that must survive the rebuild into `$SDK_STATE_DIR`. |
 | `restore-state` | During the **same** refresh, on the **new** SDK revision, after every SDK's `setup-project` has run. | `root` | the SDK's `hooks/` dir | Read state back from `$SDK_STATE_DIR`; keep it idempotent and tolerant of missing input. |
 
-**`save-state`/`restore-state` are refresh hooks, not stop/start hooks.** They run only when a `workshop refresh` actually has work to apply (a new revision, an added/removed SDK, or a definition change); a no-op refresh skips every hook. `$SDK_STATE_DIR` is the only directory that survives the rebuild.
+**`save-state`/`restore-state` are refresh hooks, not stop/start hooks.** They run only when a `workshop refresh` actually has work to apply (a new revision, an added/removed SDK, or a definition change); a no-op refresh skips every hook. **`workshop restore` runs the same machinery as an applied refresh** — `setup-project`, `check-health`, and `save-state`/`restore-state` all fire on a restore too. `$SDK_STATE_DIR` is the only directory that survives the rebuild; it is a dedicated per-SDK, per-workshop volume that is **removed when the workshop stops** — it carries state across a refresh, not across stop/start — and is not accessible to the `workshop` user, the SDK tree, or the definition.
+
+**Hook ordering is the contract.** For each hook kind, SDKs run **sequentially** in a fixed order — the `system` SDK, then the user-listed SDKs in definition order, then the sketch SDK — each waiting for the previous. There is no dependency resolution: if SDK B's hook needs something SDK A installs, list A above B. And because base snapshots chain, changing the base or an SDK re-runs `setup-base` for that SDK **and every SDK listed after it**.
 
 **Health reporting.** From `check-health`, call `workshopctl set-health <okay|waiting|error> [<message>]` (optional `--code=<short-code>`; a message is required for `waiting`/`error` and not allowed with `okay`). Mapping: `okay` → the SDK is *Ready*; `waiting` → Workshop sleeps 1s and re-runs `check-health`, up to 10 times before moving the SDK to *Error*; `error` (or a non-zero exit, no report, or running past 5s) → *Error*. There is no `Ready|Pending|Error` status and no `--reason` flag.
 

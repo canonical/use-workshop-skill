@@ -9,9 +9,15 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 
 <anti_pattern name="Reaching for remove + launch on a failed refresh from Ready">
 **Wrong:** `workshop remove && workshop launch` to "fix" a `workshop refresh` that errored from a previously `Ready` workshop.
-**Why it's bad:** discards the workshop's previous good state and forces a full rebuild. Loses any non-default mounts and connections set via `remount`/`connect`.
+**Why it's bad:** discards the workshop's previous good state and forces a full rebuild. Loses any non-default mounts and connections set via `remount`/`connect` — which an ordinary `refresh` would have preserved (0.9.5+ refresh keeps manual connect/disconnect wiring and remount sources; remove+launch drops all of it).
 **Right:** rerun with `workshop refresh --wait-on-error`, then either `--continue` (after fixing the cause inside `workshop shell`) or `--abort`. Workshop reverts cleanly without losing prior state.
 **Exception:** if the workshop is already in `Error` (no recoverable previous state), remove + launch IS the correct path — see the next anti-pattern.
+</anti_pattern>
+
+<anti_pattern name="Downgrading the Workshop snap, or resuming an old workshop right after a snap update">
+**Wrong:** `sudo snap refresh --channel=<older> workshop` to roll back; or running `workshop restore` / `workshop launch --continue` / `workshop refresh --continue` on a workshop that hasn't been refreshed since the snap updated.
+**Why it's bad:** Workshop is not forward compatible (0.9.5+ documented policy). After a snap update those three operations are *refused* on an old-format workshop, because the new daemon can't reproduce the previous version's exact behavior. And a snap downgrade isn't supported at all — the only way down is `snap remove` + reinstall, **which deletes every workshop and SDK on the machine**.
+**Right:** after a snap update, run `workshop refresh` on each workshop first — that migrates it and everything works again. Never prescribe a snap downgrade as a troubleshooting step. Source: `reference/workshops.md` (backward-compatibility policy).
 </anti_pattern>
 
 <anti_pattern name="Ignoring workshop status">

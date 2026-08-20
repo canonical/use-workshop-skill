@@ -4,16 +4,16 @@
 <overview>
 Dense reference for every `workshop` and `sdk` subcommand. One block per command: signature, purpose, key flags, single-line example. The most-loaded reference — read this first when you know roughly what you want and need to confirm the flag.
 
-All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them.
+All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them. The snap enables completion automatically; manual setup is `source <(workshop completion bash)` (also `zsh`/`fish`, and `sdk completion …`).
 
 **Workshop-name argument rule.** What matters is the *number* of workshops in the project, not the file layout. In a single-workshop project the workshop name is OPTIONAL and may be omitted on most subcommands — this holds whether the definition is a root `workshop.yaml` or a lone `.workshop/<NAME>.yaml` (e.g. one created by `workshop init`; tutorial part 1 runs `workshop launch`/`info`/`stop`/`start`/`refresh` with no name against `.workshop/dev.yaml`). In a multi-workshop project (two or more definitions under `.workshop/`) the workshop name is REQUIRED on every subcommand that takes one — bare `workshop refresh`, `workshop exec`, `workshop run`, etc. are rejected with a name-required error, NOT silently expanded across all workshops. Always surface this when diagnosing a multi-workshop "command complained" symptom.
 </overview>
 
 <workshop_lifecycle>
-**`workshop init <NAME> --sdks <SDKs> [--base <BASE>] [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml`. Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`.
-- `--sdks` — comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.26/stable`). Example: `--sdks go,uv/latest/stable`.
-- `--base` — base image for the workshop (e.g. `ubuntu@24.04`); optional.
-- Scaffolds base + SDKs only. For `actions:`, `connections:`, or plug/slot grafts, edit the generated `.workshop/<NAME>.yaml` afterward (or start from a `templates/` file).
+**`workshop init <NAME> [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml`. Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`.
+- `--sdks` — optional (0.9.5+; bare `workshop init dev` scaffolds a base-only definition). Comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.26/stable`) and may be an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). Example: `--sdks go,project-tools`.
+- `--base` — base image; optional, defaults to `ubuntu@24.04` (`--help` lists the supported bases).
+- Scaffolds base + SDK list only. For `actions:`, `connections:`, or plug/slot grafts, edit the generated `.workshop/<NAME>.yaml` afterward (or start from a `templates/` file). An in-project SDK's *directory* (`.workshop/<NAME>/`) is still authored separately.
 - Example: `workshop init dev --sdks ollama/cpu/stable --base ubuntu@22.04`
 
 **`workshop launch <WORKSHOP>... [flags]`** — Construct workshop(s) from definition; runs SDK setup hooks; on success ties the workshop to the project and starts it. Exists in `Off` → moves to `Ready` (or `Error`/`Waiting` on failure).
@@ -21,10 +21,12 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - `--no-wait` returns the change ID immediately without blocking.
 - `--verbose` combines stdout+stderr from hooks.
 - Workshop name is optional if the project has only one workshop.
+- Launching an already-launched workshop fails with no effect — use `refresh` to update it.
 - Example: `workshop launch nimble jazzy`
 
 **`workshop refresh [<WORKSHOP>...] [flags]`** — Update existing workshops to match the current definition. Workshop must be `Ready`. Same `--wait-on-error`/`--continue`/`--abort`/`--no-wait`/`--verbose` flags as `launch`.
 - Use this — not `remove`+`launch` — for definition changes, including `base:`, `sdks:`, `connections:`, and `actions:`. (Action edits don't actually require it; everything else does.)
+- Connection stickiness (0.9.5+): manual `workshop connect` connections are PRESERVED across refresh (as long as their plugs and slots still exist in the new definition), and a manual `workshop disconnect` made without `--forget` stays disconnected. Auto-connections are re-evaluated as usual. `workshop restore` is the reset, not refresh.
 - The recovery path for ANY hook failure during refresh is the diagnostic flow (`workshop changes` → `workshop tasks <ID>`) and `--wait-on-error` for live debug, NOT remove+launch. See `workflows/troubleshoot.md` and `references/async-and-recovery.md`.
 - Note for in-project SDK authors only: `setup-base` is a creation-only hook (it becomes part of the workshop snapshot at launch), so picking up edits to a `setup-base` *script* requires recreating the workshop. This is an authoring-time constraint, not a recovery prescription. See `references/in-project-sdk.md` for the full hook taxonomy.
 - Example: `workshop refresh --wait-on-error`
@@ -36,10 +38,12 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - Example: `workshop stop nimble jazzy`
 
 **`workshop remove <WORKSHOP>... [flags]`** — Delete the workshop container but preserve the definition file. Requires not `Off`/`Pending`. Auto-stops if `Ready`.
-- Non-default sources set by `workshop remount` are NOT removed.
+- Host directories set by `workshop remount` are NOT deleted, but the remount *record* does not survive — after a later `launch` the plug mounts its default source again.
 - Example: `workshop remove nimble`
 
-**`workshop restore <WORKSHOP>... [flags]`** — Revert container filesystem to last `launch`/`refresh` state and reset connections+mounts to defaults. Workshop must be `Ready`. Transactional across multiple workshops.
+**`workshop restore <WORKSHOP>... [flags]`** — Revert container filesystem to last `launch`/`refresh` state and reset interface wiring to definition defaults. Workshop must be `Ready`. Transactional across multiple workshops.
+- The reset is total (0.9.5+ semantics): manual `workshop connect` connections are dropped; plugs disconnected with `workshop disconnect` are re-established *whether or not* `--forget` was used; `workshop remount` sources revert to their defaults.
+- Refused on a workshop not yet refreshed after a Workshop snap update — run `workshop refresh` first (see `workflows/troubleshoot.md`).
 - `--no-wait`, `--verbose`.
 - Example: `workshop restore nimble`
 </workshop_lifecycle>
@@ -95,14 +99,15 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 </workshop_execution>
 
 <workshop_interfaces>
-**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. Listed as `manual` in `workshop connections` output.
+**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+); `workshop restore` drops them.
 - If the second argument is omitted, target is `<WORKSHOP>/system:<PLUG>`.
 - If only `:<SLOT>`: target is `<WORKSHOP>/system:<SLOT>`.
+- If the second argument names only `<WORKSHOP>/<SDK>` (no `:<SLOT>`), the slot is chosen by matching the plug's interface — errors if several slots share that interface.
 - `--no-wait`.
 - Example: `workshop connect nimble/go:mod-cache :mount`
 
-**`workshop disconnect <WORKSHOP>/<SDK>:<PLUG OR SLOT> [<WORKSHOP>/<SDK>]:[<SLOT>] [flags]`** — Disconnect a plug from its slot, or a slot from all its plugs.
-- `--forget`: prevents reconnection on the next `workshop refresh` for plugs that were originally auto-connected.
+**`workshop disconnect <WORKSHOP>/<SDK>:<PLUG OR SLOT> [<WORKSHOP>/<SDK>]:[<SLOT>] [flags]`** — Disconnect a plug from its slot, or a slot from all its plugs. Same second-argument forms as `connect`.
+- `--forget` (semantics matter — easy to invert): WITHOUT it, disconnecting an auto-connected plug is sticky — it stays disconnected across `workshop refresh` (0.9.5+). WITH `--forget`, the disconnect is forgotten and auto-connect re-establishes the plug at the next refresh (i.e. a temporary off-switch). Either way, `workshop restore` reconnects it.
 - `--no-wait`.
 
 **`workshop connections [<WORKSHOP>] [flags]`** — List interface plug/slot connections for one workshop or the whole project.
@@ -113,6 +118,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - Tries an atomic remount; if not possible, requires the workshop to be `Stopped`.
 - `--no-wait`.
 - The next `workshop refresh` re-applies the last source set this way.
+- Reset recipe: `workshop disconnect <ref> --forget` + `workshop refresh` returns the plug to its default source; `workshop restore` also resets remount sources (0.9.5+).
 - Example: `workshop remount nimble/go:mod-cache ~/new-cache-mount`
 </workshop_interfaces>
 
@@ -147,12 +153,12 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 </sdk_cli>
 
 <storage_and_lxd>
-There is NO `workshop` subcommand for storage — don't invent one. A workshop's data lives in an LXD storage pool (named `workshop`; ZFS on Linux, Btrfs on WSL) that Workshop sizes once at creation (~20% of free disk, clamped 5–30 GiB) and never auto-grows. Inspecting and resizing it is an LXD-level operation:
+There is NO `workshop` subcommand for storage — don't invent one. A workshop's data lives in an LXD storage pool (named `workshop`; ZFS on Linux, Btrfs on WSL). Workshop only enforces a 5 GiB *minimum* at creation — otherwise LXD's own default (~20% of free disk) applies, and the pool is never auto-grown. There is no upper clamp. Inspecting and resizing it is an LXD-level operation:
 - `sudo lxc storage list` — find the pool (typically `workshop`).
 - `sudo lxc storage info <POOL>` — space used vs total.
 - `sudo lxc storage show <POOL>` — config, including the `source:` (loop file vs block device) and current `size:`.
 - `sudo lxc storage set <POOL> size=<N>GiB` — grow a loop-backed pool (grow only; ZFS can't shrink).
-A full pool surfaces inside a workshop as `No space left on device`. See `workflows/troubleshoot.md`.
+At ≥90% pool usage the daemon proactively enters a degraded state with an actionable error instead of letting writes fail opaquely. Caveat: that daemon message suggests `lxc storage volume set workshop size=…` — a *volume*-level command that is the wrong layer; use the pool-level `sudo lxc storage set <POOL> size=<N>GiB` above. A completely full pool surfaces inside a workshop as `No space left on device`. See `workflows/troubleshoot.md`.
 </storage_and_lxd>
 
 <source_docs>

@@ -16,7 +16,7 @@ The workshop exists only as a definition file; no container yet. Always the star
 <state name="Ready">
 Operational. Container running, project mounted, ready for use.
 - Transitions: `workshop stop` → `Stopped`; `workshop remove` → `Off`; `workshop refresh` → `Ready` (or `Error`/`Waiting --wait-on-error` on failure); `workshop remount` → `Ready`; `workshop restore` → `Ready`.
-- Accepts: every command including `exec`, `run`, `shell`, interface ops.
+- Accepts: every command including `exec`, `run`, `shell`, interface ops. Exception right after a Workshop snap update: `restore` and `launch/refresh --continue` are refused until the workshop is refreshed once (see `workflows/troubleshoot.md`).
 </state>
 
 <state name="Stopped">

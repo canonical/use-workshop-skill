@@ -58,7 +58,7 @@ The daemon will NOT recover this on its own: there is no change timeout, and aut
 
 Recovery (in order):
 1. Restart the daemon: `snap restart workshop` (no sudo needed; preferred over the equivalent `sudo systemctl restart snap.workshop.workshopd.service`). This restarts workshopd and abandons the stuck change.
-2. Treat the workshop as poisoned. workshopd reconciles state correctly only for transitions IT initiated (`workshop stop`). After an uncontrolled Off, the recorded state may not match reality even if `workshop info` reports `Ready`. Do not resume work on it — recreate it: `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring.
+2. Treat the workshop as poisoned. workshopd reconciles state correctly only for transitions IT initiated (`workshop stop`). After an uncontrolled Off, the recorded state may not match reality even if `workshop info` reports `Ready`. Do not resume work on it — recreate it: `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring. (That wiring loss is a *remove+launch* cost specifically — remove drops the records; an ordinary applied `workshop refresh` preserves manual connections, disconnects, and remount sources, 0.9.5+.)
 
 SCOPE GUARD: this path is ONLY for the symptom signature above. An ordinary failed `launch`/`refresh` (change reaches `Error`, other commands still accepted) is NOT this case — use the `changes`/`tasks` diagnosis and the `--wait-on-error` flow instead. Never restart the daemon as a response to a hook or SDK failure.
 </stuck_change_recovery>

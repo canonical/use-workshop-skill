@@ -18,7 +18,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 <type name="Regular Store SDK">
 **Origin:** SDK Store, fetched at launch/refresh.
 **YAML name:** the SDK's own name (e.g., `<sdk-name>`).
-**Versioning:** `channel:` field, snap-like format `<TRACK>/<RISK>/<BRANCH>`. Default `latest/stable`. Risks: `stable`, `candidate`, `beta`, `edge`.
+**Versioning:** `channel:` field, snap-like format `<TRACK>/<RISK>/<BRANCH>` — all parts optional, at least one present. Default `latest/stable`. Risks: `stable`, `candidate`, `beta`, `edge`. Quote numeric-looking channels in YAML (`channel: "1.26"`, `"24"`).
 **Lifetime:** versioned and refreshed via `workshop refresh`. Read-only inside the workshop — updates ONLY happen via `refresh`.
 **When to use:** the workshop needs a published SDK (a language, framework, tool). Discover available SDKs with `sdk find <query>` and `sdk info <name>`.
 </type>
