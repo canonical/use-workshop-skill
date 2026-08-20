@@ -8,7 +8,7 @@
     # vars as a parameter sweep, expanding to one run per element. The
     # provider parses both forms.
     cleanup_workshops: "agentic-mw-api,agentic-mw-web"
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/multi-workshop-projects
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/multi-workshop-projects
     # Migrating + launching two workshops takes longer than one workshop.
     timeout_ms: 1500000
     task: |

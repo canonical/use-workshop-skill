@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-tunnel
     cleanup_workshops: ["agentic-tunnel"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/manage-interfaces
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/manage-interfaces
     timeout_ms: 900000
     task: |
       The project has a minimal `workshop.yaml` for a workshop named

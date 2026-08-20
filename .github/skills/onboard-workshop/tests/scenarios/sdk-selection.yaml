@@ -115,3 +115,27 @@
         Treating this as an xvfb/headless TEST-host problem, or omitting the
         display access entirely and stopping at the apt package list, is the
         failure mode.
+
+- description: JVM repo maps to openjdk plus the matching build-tool SDK
+  vars:
+    user: |
+      The repo has a pom.xml at the root, an mvnw wrapper script, and src/main/java/. Which SDKs should the workshop use?
+  assert:
+    - type: contains
+      value: openjdk
+    - type: contains-any
+      value:
+        - maven
+        - mvnw
+    - type: llm-rubric
+      value: |
+        The response proposes the `openjdk` SDK for the Java toolchain plus
+        the `maven` SDK for the build tool (the pom.xml + mvnw evidence; a
+        gradle repo would get `gradle` instead), following the catalog's
+        JVM rows (0.9.4+). Catalog-sourced picks are tagged unverified /
+        to-confirm via `sdk find` / `sdk info` per the catalog protocol —
+        wording may vary, but the response must not present unconfirmed
+        Store SDKs as certain. Falling back to a bare in-project apt SDK for
+        Java WITHOUT first proposing the Store SDKs, or inventing SDK names
+        (e.g. `java`, `jdk`, `maven-sdk`), is the failure mode. Noting that
+        mvnw could reduce the maven SDK to optional is acceptable nuance.

@@ -136,3 +136,25 @@
         run multiple workshops you must migrate the root workshop.yaml into
         the .workshop/<name>.yaml form first (so all definitions live under
         .workshop/). It does not tell the user they can simply keep both.
+
+- description: Bare workshop init and in-project SDK references (0.9.5 forms)
+  vars:
+    user: |
+      Can `workshop init` give me a bare ubuntu@24.04 definition with no SDKs at all? And can it reference the in-project SDK I keep under .workshop/tools/?
+  assert:
+    - type: contains
+      value: workshop init
+    - type: contains
+      value: project-tools
+    - type: llm-rubric
+      value: |
+        The response answers yes to both (Workshop 0.9.5+): `--sdks` is
+        optional, so a bare `workshop init <name>` scaffolds a base-only
+        definition (and `--base` defaults to ubuntu@24.04, so it can be
+        omitted too); and `--sdks project-tools` puts the in-project SDK
+        reference into the scaffolded definition (try-<name> works the same
+        way). It keeps the boundary honest: init writes the definition file
+        only — the SDK's directory (.workshop/tools/ with sdk.yaml and
+        hooks) is authored separately, and actions/connections/grafts still
+        come from editing the file or a template. It does NOT claim these
+        forms need an older/newer flag or invent extra scaffolding flags.

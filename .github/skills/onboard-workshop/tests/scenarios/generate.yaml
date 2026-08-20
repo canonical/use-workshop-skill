@@ -27,10 +27,15 @@
         - templates/
     - type: llm-rubric
       value: |
-        The response says init only scaffolds base+SDKs; plug/slot grafts,
-        connections, and in-project SDKs come from copying a template and
-        replacing placeholders (or editing the init output using template
-        shapes) — not from synthesizing YAML from memory.
+        The response says init scaffolds only the base + SDK list; the
+        tunnel pair (plug/slot grafts, connections) and the in-project SDK's
+        DIRECTORY (.workshop/<name>/ with sdk.yaml and hooks) come from
+        copying a template and replacing placeholders (or editing the init
+        output using template shapes) — not from synthesizing YAML from
+        memory. It is CORRECT (0.9.5+) for the response to note that
+        `workshop init --sdks project-<name>` can now put the in-project SDK
+        reference into the scaffolded definition; a response claiming init
+        generates the grafts, connections, or hook files themselves FAILS.
 
 - description: Default layout is .workshop/<name>.yaml named dev
   vars:

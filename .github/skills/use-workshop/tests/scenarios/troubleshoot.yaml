@@ -295,15 +295,14 @@
         rejecting it — what's forbidden is endorsing the restart as the fix
         here.)
 
-- description: Definition rejected by strict validation (unknown field)
+- description: SDK YAML rejected by strict validation (unknown SDK YAML fields)
   vars:
     user: |
-      `workshop refresh` rejects my workshop.yaml with an error like `field workshp-target not found` pointing at line 7. The file looks fine to me. What's going on?
+      `workshop refresh` fails with `unknown SDK YAML fields: workshp-target (line 7, column 3)` for my `.workshop/tools/sdk.yaml`. The file looks fine to me. What's going on?
   assert:
     - type: contains-any
       value:
-        - "unknown field"
-        - "field"
+        - "unknown"
         - typo
         - misspelled
         - misspelling
@@ -311,12 +310,38 @@
       value: snap restart
     - type: llm-rubric
       value: |
-        The response explains that user-facing YAML is validated strictly — an
-        unknown or misspelled key (here `workshp-target`, a typo for
-        `workshop-target`) is rejected up front with a line/column. The fix is to
-        correct the offending key (consult the definition reference / schema);
-        retrying the same file unchanged won't help. It does NOT treat this as a
-        daemon stall or prescribe a daemon restart or remove+launch.
+        The response explains that SDK YAML (an in-project `sdk.yaml`, or a
+        sketch SDK) is validated strictly — an unknown or misspelled key
+        (here `workshp-target`, a typo for `workshop-target`) is rejected up
+        front with the line and column named in the error. The fix is to
+        correct the offending key (consult the definition reference);
+        retrying the same file unchanged won't help. A response that also
+        notes this strictness applies to SDK YAML only — `workshop.yaml`
+        itself silently ignores unknown keys — earns extra credit but it is
+        not required. It does NOT treat this as a daemon stall or prescribe
+        a daemon restart or remove+launch.
+
+- description: Restore refused right after a Workshop snap update
+  vars:
+    user: |
+      I updated the workshop snap this morning and now `workshop restore` refuses to run on my workshop. It worked last week. What gives?
+  assert:
+    - type: contains
+      value: workshop refresh
+    - type: not-contains
+      value: snap restart
+    - type: llm-rubric
+      value: |
+        The response identifies the backward-compatibility guard: after a
+        Workshop snap update, `restore` (and `launch/refresh --continue`)
+        are refused on a workshop that has not yet been refreshed under the
+        new version, because the new daemon cannot reproduce the old
+        version's exact behavior. The fix is one `workshop refresh <name>`,
+        after which restore works again. The response MUST NOT prescribe
+        downgrading the snap (Workshop has no forward compatibility — a
+        downgrade requires snap remove + reinstall, which deletes every
+        workshop and SDK) and MUST NOT prescribe a daemon restart or
+        remove+launch as the fix.
 
 - description: Refresh rejected because another change is already running
   vars:

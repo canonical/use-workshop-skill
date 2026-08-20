@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-troubleshoot
     cleanup_workshops: ["agentic-troubleshoot"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/troubleshoot
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/troubleshoot
     timeout_ms: 1200000
     extra_allowed_tools:
       # The recovery flow may include `lxc delete` for a stuck container,

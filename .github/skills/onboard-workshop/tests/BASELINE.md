@@ -8,7 +8,11 @@ merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
-53 cases across 8 scenario files (incl. 8 cross-skill selection cases).
+**54 cases across 8 scenario files** (incl. 8 cross-skill selection cases)
+since the 2026-08-20 Workshop 0.9.5 round, which added a JVM-repo SDK
+selection case (openjdk/maven per the new catalog rows) and updated the
+`generate.yaml` init rubric for the 0.9.5 `--sdks project-<name>` unlock.
+Rates recorded below are for the 53-case suite and need a re-pin.
 
 Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
 the local claude CLI login as candidate, the local claude judge for

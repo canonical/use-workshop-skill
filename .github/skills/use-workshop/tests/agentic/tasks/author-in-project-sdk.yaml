@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-author-sdk
     cleanup_workshops: ["agentic-author-sdk"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/author-in-project-sdk
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/author-in-project-sdk
     extra_allowed_tools: "Bash(chmod *)"
     timeout_ms: 900000
     task: |

@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-daily
     cleanup_workshops: ["agentic-daily"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/daily-ops
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/daily-ops
     timeout_ms: 900000
     task: |
       You are in a project directory that already has a `workshop.yaml`

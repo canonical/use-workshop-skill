@@ -167,3 +167,45 @@
         interface. (Restating the "at least one of subsystem/vendorid/productid
         is required" rule is optional — the user's plug already has
         `subsystem`, so it isn't at issue here.)
+
+- description: Sticky disconnect — keep an auto-connected plug off across refreshes
+  vars:
+    user: |
+      I disconnected the auto-connected mod-cache mount plug on my go SDK. Will the next `workshop refresh` reconnect it? I want it to STAY off — and separately, how would I turn it off only until the next refresh?
+  assert:
+    - type: contains
+      value: "--forget"
+    - type: llm-rubric
+      value: |
+        The response gets the 0.9.5 semantics the right way around: a plain
+        `workshop disconnect` (WITHOUT --forget) is sticky — the plug stays
+        disconnected across `workshop refresh`; adding `--forget` makes the
+        disconnect temporary — auto-connect re-establishes the plug at the
+        next refresh. A response that inverts this (claiming --forget is
+        what PREVENTS reconnection) FAILS. Noting that `workshop restore`
+        reconnects the plug in either case is a plus, not a requirement.
+
+- description: Sticky manual connection — does refresh drop workshop connect wiring
+  vars:
+    user: |
+      Yesterday I ran `workshop connect dev/tools:ssh-agent`. If I `workshop refresh` today after editing the definition, do I have to run the connect again afterwards?
+  assert:
+    - type: contains-any
+      value:
+        - preserved
+        - persists
+        - persist
+        - survives
+        - keeps
+        - "no"
+        - "No"
+    - type: llm-rubric
+      value: |
+        The response says NO re-connect is needed (Workshop 0.9.5+):
+        manual `workshop connect` connections are preserved across
+        `workshop refresh`, as long as the plug and slot still exist in the
+        new definition. It correctly identifies what DOES reset the wiring —
+        `workshop restore`, or `workshop remove` + `launch` — rather than
+        refresh. A response prescribing a routine post-refresh re-connect
+        ritual FAILS; mentioning the pre-0.9.5 behavior as historical
+        context is acceptable.

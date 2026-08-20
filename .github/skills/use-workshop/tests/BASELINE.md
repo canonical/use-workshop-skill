@@ -11,8 +11,20 @@ regression.
 
 ## Routing eval
 
-76 cases across 12 scenario files — the prior 73-case suite plus 3 new cases
-(2026-07-22) covering the Workshop **0.9.3/0.9.4** surface and two correctness
+**81 cases across 12 scenario files** — the 2026-08-20 Workshop **0.9.5**
+round: the prior 76-case suite plus 5 new cases (sticky-disconnect
+`--forget` semantics, sticky manual connections across refresh, the SSH
+remove-and-relaunch migration caveat, the post-snap-update restore refusal,
+and the 0.9.5 `workshop init` forms), with 3 existing cases rewritten to the
+0.9.5 surface (both `ide-integration.yaml` SSH cases now assert the
+zero-setup hostname path instead of the retired sshd+tunnel ritual, and the
+`troubleshoot.yaml` strict-validation case now targets SDK YAML with the
+real `unknown SDK YAML fields:` string). **Every rate recorded below
+predates this round and needs a re-pin.**
+
+Historical context — the 76-case suite was the prior 73-case suite plus 3
+new cases (2026-07-22) covering the Workshop 0.9.3/0.9.4 surface and two
+correctness
 fixes: `purge.yaml` (orphaned workshop the user wants to KEEP — restore content
 at the same absolute path), `author-in-project-sdk.yaml` (the minimal in-project
 `sdk.yaml`: `name:` is the only required key, no `hooks:` field), and
@@ -555,9 +567,14 @@ and asserts on the transcript + captured state. Run with:
 | customize-actions                 | ✓    |  37 s | $0.08  |
 | author-in-project-sdk             | ✓    |  71 s | $0.09  |
 | manage-interfaces (HTTP tunnel)   | ✓    | 645 s | $1.42  |
-| ide-integration (sshd + tunnel)   | ✓    | 573 s | $1.35  |
+| ide-integration¹                  | ✓    | 573 s | $1.35  |
 | multi-workshop-projects           | ✓    |  71 s | $0.12  |
 | troubleshoot (broken-SDK recovery)| ✓    |  76 s | $0.15  |
+
+¹ The recorded ide-integration numbers are for the retired sshd+tunnel
+task; the 2026-08-20 rewrite verifies the 0.9.5 out-of-the-box SSH path
+(launch → `workshop info` hostname → non-interactive ssh probe) and is
+expected to be much faster.
 
 > `author-in-project-sdk` numbers are TBD pending the first green
 > agentic rerun against the updated skill. The renamed

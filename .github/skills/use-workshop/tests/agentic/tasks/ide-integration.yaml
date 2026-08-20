@@ -1,50 +1,49 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright 2026 Canonical Ltd.
 
-- description: ide-integration — set up sshd + tunnel for a remote-SSH IDE workflow
+- description: ide-integration — verify out-of-the-box SSH access for a remote-SSH IDE workflow
   vars:
     workshop_name: agentic-ssh
     cleanup_workshops: ["agentic-ssh"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/ide-integration
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/ide-integration
     timeout_ms: 900000
+    extra_allowed_tools: '["Bash(ssh *)"]'
     task: |
       The project has a minimal `workshop.yaml` for `agentic-ssh`. I want
       to use a remote-SSH IDE workflow (any vendor — stay generic) to
       edit code inside this workshop.
 
-      Set up the workshop-side pieces:
-        - install/run `sshd` inside the workshop (a sketch SDK is fine
-          for prototyping),
-        - tunnel the workshop's SSH port (22 inside) to host port 12222,
-        - launch / refresh as needed,
-        - verify the tunnel via `workshop info` or `workshop connections`.
-
-      Leave `sshd` configuration minimal — the goal is the wiring, not a
-      production-grade auth setup.
+      Get it to the point where I can point a remote-SSH tool at it, and
+      tell me exactly what to enter:
+        - launch the workshop if needed,
+        - find the address/hostname I should use and the user to connect as,
+        - prove SSH access works from the host non-interactively (e.g.
+          `ssh -o BatchMode=yes <hostname> true`) before telling me it's
+          ready.
   assert:
-    - type: contains-any
-      value:
-        - sshd
-        - openssh-server
-    - type: contains
-      value: tunnel
-    - type: contains
-      value: "12222"
     - type: contains-any
       value:
         - "[BASH] workshop launch"
         - "[BASH] workshop refresh"
-    - type: contains-any
-      value:
-        - "[BASH] workshop info"
-        - "[BASH] workshop connections"
+    - type: contains
+      value: "[BASH] workshop info"
+    - type: contains
+      value: ".wp"
+    - type: contains
+      value: "[BASH] ssh"
+    - type: not-contains
+      value: openssh-server
     - type: javascript
       value: /"stdout":\s*"[^"]*status:\s*ready/i.test(output)
     - type: llm-rubric
       value: |
-        The agent set up sshd inside the workshop (via a sketch SDK or
-        equivalent) and added a tunnel exposing the SSH port to host
-        port 12222. The workshop reaches Ready and the tunnel shows up
-        in `workshop info` / `workshop connections`. The response stays
-        vendor-neutral on the IDE side — does not improvise specific
-        commercial-IDE config (e.g., VS Code `settings.json` entries).
+        The agent used the built-in SSH path (Workshop 0.9.5+): it launched
+        the workshop, read the hostname from `workshop info` (the
+        `hostname:` line, `<workshop>.<project>.wp`), verified SSH access
+        from the host with a real ssh invocation, and told the user to
+        point their remote-SSH tool at that hostname as the `workshop`
+        user. It did NOT install sshd inside the workshop, did NOT wire an
+        SSH tunnel, and stayed vendor-neutral on the IDE side (no
+        improvised commercial-IDE config). The workshop reaches Ready. If
+        the ssh probe failed for a host-environment reason, the agent
+        surfaced that honestly instead of claiming success.
