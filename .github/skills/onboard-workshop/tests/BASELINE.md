@@ -12,7 +12,6 @@ merge below a pinned cell without investigation.
 since the 2026-08-20 Workshop 0.9.5 round, which added a JVM-repo SDK
 selection case (openjdk/maven per the new catalog rows) and updated the
 `generate.yaml` init rubric for the 0.9.5 `--sdks project-<name>` unlock.
-Rates recorded below are for the 53-case suite and need a re-pin.
 
 Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
 the local claude CLI login as candidate, the local claude judge for
@@ -24,7 +23,8 @@ row.
 
 | Candidate | Judge | Pass rate | Date | Notes |
 |-----------|-------|-----------|------|-------|
-| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | `gpt-5.5-2026-04-23` (OpenAI, retired path) | **53/53 (100%)** | 2026-08-13 | canonical under the retired pair; 48→53 in the gap-fix round below |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | **54/54 (100%)** | 2026-08-20 | **the pinned gate pair** — first full run under the subscription lane on the 0.9.5 suite: 52/54, 0 errors, ~13 min, $0 API spend; both failures were assertion-authoring artifacts verified against raw outputs and re-run green (a brittle `contains-any` missing the phrasing variants "existing-workshop check"/"definition already present" on a fully correct evidence-first answer, and a blunt `not-contains "silently ignored"` firing on the correct negation "will NOT be … silently ignored" — mention-vs-prescription, per the sibling's fix-#12 class). Committed summary: `results/2026-08-20-routing-claude-cli-claude-sonnet-4-6.json` |
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 53/53 (100%) | 2026-08-13 | historical canonical under the retired pair; 48→53 in the gap-fix round below |
 | `claude-sonnet-4-6` (Anthropic HTTP) | `gpt-5.5-2026-04-23` (OpenAI) | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
 | `z-ai/glm-5.2` (OpenRouter) | `gpt-5.5-2026-04-23` (OpenAI) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
 

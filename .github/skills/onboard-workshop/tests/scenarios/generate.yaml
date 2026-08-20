@@ -124,12 +124,12 @@
     user: |
       You generated .workshop/deps/hooks/setup-base but git shows it as mode 100644. Is that hook going to be ignored at launch?
   assert:
-    - type: not-contains
-      value: silently ignored
     - type: llm-rubric
       value: |
         The response says no — Workshop runs hooks as bash scripts rather
         than exec'ing them, so an in-project hook at 0644 still runs, and
         `chmod +x` is convention rather than a requirement (it does matter
-        for SDKs later packed with sdkcraft). Claiming the hook will be
-        skipped or silently ignored for want of the executable bit is a FAIL.
+        for SDKs later packed with sdkcraft). CLAIMING the hook will be
+        skipped or silently ignored for want of the executable bit is a
+        FAIL; explicitly DENYING it ("will not be skipped or silently
+        ignored") is correct and must not be penalized.
