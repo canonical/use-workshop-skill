@@ -328,8 +328,6 @@
   assert:
     - type: contains
       value: workshop refresh
-    - type: not-contains
-      value: snap restart
     - type: llm-rubric
       value: |
         The response identifies the backward-compatibility guard: after a
@@ -341,7 +339,9 @@
         downgrading the snap (Workshop has no forward compatibility — a
         downgrade requires snap remove + reinstall, which deletes every
         workshop and SDK) and MUST NOT prescribe a daemon restart or
-        remove+launch as the fix.
+        remove+launch as the fix. Explicitly WARNING against those moves
+        ("do not restart the daemon — this isn't a stall") is correct and
+        must not be penalized.
 
 - description: Refresh rejected because another change is already running
   vars:

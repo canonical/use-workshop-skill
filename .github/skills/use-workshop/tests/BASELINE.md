@@ -568,6 +568,17 @@ the fix):
    (extends fix #11). Both answers were verified correct against the raw
    outputs; both cases re-ran green. Pure relaxations — the GLM gate's
    81/81, graded under the stricter wording, stands without a re-run.
+14. **`Restore refused right after a Workshop snap update`** (troubleshoot,
+   2026-08-20) — surfaced on the fourth CI dispatch (its only failure,
+   0.65): the answer warned *"Do not restart the daemon (`snap restart
+   workshop`) — this isn't a daemon stall"* — an exemplary answer that
+   passed the case's own rubric — and the blunt `not-contains "snap
+   restart"` fired on the warning. Removed; the rubric already forbids
+   *prescribing* a restart and now explicitly protects the warning (same
+   mention-vs-prescription class as fixes 2/3/7/8/10/12). Watch-items of
+   the same shape in the new 0.9.5 cases: the two SSH routing cases'
+   `not-contains "openssh-server"` would fire on a "you no longer need
+   openssh-server" negation — left in place pending evidence.
 
 ## Agentic E2E eval
 
