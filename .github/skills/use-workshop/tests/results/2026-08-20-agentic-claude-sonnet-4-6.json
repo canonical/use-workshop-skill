@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "generated_at": "2026-08-20T01:37:59+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 8,
+    "passed": 5,
+    "failed": 3,
+    "errors": 0,
+    "pass_rate": 0.625,
+    "tokens": {
+      "total": 0,
+      "prompt": 301,
+      "completion": 19987,
+      "cached": 2917480
+    },
+    "cost_usd": 2.2603
+  },
+  "cases": [
+    {
+      "description": "bootstrap-project \u2014 greenfield Python workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 72194,
+      "cost": 0.340412
+    },
+    {
+      "description": "daily-ops \u2014 launch workshop and run a defined action",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 67146,
+      "cost": 0.203363
+    },
+    {
+      "description": "customize-actions \u2014 add a new action and run it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 48790,
+      "cost": 0.244766
+    },
+    {
+      "description": "author-in-project-sdk \u2014 write .workshop/ruff/ with setup-project, launch, verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 69280,
+      "cost": 0.276606
+    },
+    {
+      "description": "manage-interfaces \u2014 wire an HTTP service tunnel from workshop to host",
+      "passed": false,
+      "score": 0.875,
+      "latency_ms": 171730,
+      "cost": 0.50796,
+      "failed_assertions": [
+        {
+          "type": "contains-any",
+          "value": [
+            "[BASH] workshop info",
+            "[BASH] workshop connections"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"[BASH] workshop info, [BASH] workshop connections\""
+        }
+      ],
+      "failure_reason": "Expected output to contain one of \"[BASH] workshop info, [BASH] workshop connections\""
+    },
+    {
+      "description": "ide-integration \u2014 verify out-of-the-box SSH access for a remote-SSH IDE workflow",
+      "passed": false,
+      "score": 0.8571428571428571,
+      "latency_ms": 53094,
+      "cost": 0.242064,
+      "failed_assertions": [
+        {
+          "type": "contains",
+          "value": "[BASH] workshop info",
+          "passed": false,
+          "reason": "Expected output to contain \"[BASH] workshop info\""
+        }
+      ],
+      "failure_reason": "Expected output to contain \"[BASH] workshop info\""
+    },
+    {
+      "description": "multi-workshop-projects \u2014 migrate to multi-workshop layout and add a second workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 66610,
+      "cost": 0.249524
+    },
+    {
+      "description": "troubleshoot \u2014 diagnose a failed launch and recover to Ready",
+      "passed": false,
+      "score": 0.8800000000000001,
+      "latency_ms": 44928,
+      "cost": 0.195597,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The agent walked the diagnostic flow before changing anything:\nused `workshop changes` and/or `workshop tasks` to find the\nactual error (an SDK that doesn't exist), then fixed the\ndefinition (removed or replaced the bogus SDK reference), then\nre-attempted the launch (or refresh) and confirmed Ready. The\nagent did NOT reach for `sudo snap remove --purge workshop` or\nany other system-wide nuke as a recovery step.\n",
+          "passed": false,
+          "reason": "The agent correctly identified the bogus SDK, removed it, relaunched, and confirmed Ready without using any system-wide destructive commands. However, the rubric specifically requires using `workshop changes` and/or `workshop tasks` to find the actual error *before* changing anything. The agent skipped that diagnostic step entirely \u2014 it read the error directly from `workshop launch --no-wait` stderr, then immediately ran `sdk list` and edited the file. The `workshop changes`/`workshop tasks` com"
+        }
+      ],
+      "failure_reason": "The agent correctly identified the bogus SDK, removed it, relaunched, and confirmed Ready without using any system-wide destructive commands. However, the rubric specifically requires using `workshop changes` and/or `workshop tasks` to find the actual error *before* changing anything. The agent skipped that diagnostic step entirely \u2014 it read the error directly from `workshop launch --no-wait` stderr, then immediately ran `sdk list` and edited the file. The `workshop changes`/`workshop tasks` com"
+    }
+  ]
+}

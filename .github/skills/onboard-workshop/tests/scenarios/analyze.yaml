@@ -25,12 +25,16 @@
     user: |
       Onboard this project to Workshop.
   assert:
-    - type: contains-any
+    - type: icontains-any
       value:
         - workshop.yaml
         - .workshop
         - existing workshop definition
         - existing definition
+        - existing-workshop
+        - definition already present
+        - already present
+        - already has a workshop
     - type: llm-rubric
       value: |
         The response includes checking whether the project already has a

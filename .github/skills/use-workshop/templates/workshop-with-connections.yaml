@@ -24,15 +24,27 @@ sdks:
         interface: tunnel
         endpoint: localhost:8080      # port on the host
 
-  # Another regular SDK with a manually wired mount slot.
+  # A provider SDK exposing a mount slot. The workshop-source directory must
+  # already exist when the connection is established — Workshop does not
+  # create it (an SDK ships it, or a hook creates it).
   - name: <data-sdk>
     slots:
       data:
         interface: mount
         workshop-source: $SDK/data    # path inside the workshop
 
+  # The consumer SDK with the matching mount plug.
+  - name: <consumer-sdk>
+    plugs:
+      data:
+        interface: mount
+        workshop-target: /home/workshop/data
+
 # Explicit connection: ties a plug to a specific slot when auto-connect
-# would not pick the right target (e.g., multiple slots match the interface).
+# would not pick the right target (a regular-SDK mount slot never
+# auto-connects). Note: `connections:` entries still pass the interface's
+# auto-connect policy — manual-only interfaces (ssh-agent, camera, desktop,
+# custom-device) cannot be wired here and need `workshop connect`.
 connections:
   - plug: <consumer-sdk>:data
     slot: <data-sdk>:data

@@ -17,14 +17,17 @@ entry. YAML shapes come from templates, never from memory.
 <process>
 
 **Step 1. Pick the generation path.**
-- *Path A — `workshop init`* when the proposal is base + Store SDKs only:
-  `workshop init <name> --sdks <sdk1>,<sdk2>/<channel> --base <base>`,
+- *Path A — `workshop init`* when the proposal is base + an SDK list:
+  `workshop init <name> [--sdks <sdk1>,<sdk2>/<channel>] [--base <base>]`,
   then edit the generated `.workshop/<name>.yaml` to add `actions:`.
-  (`init` scaffolds base+SDKs only; it refuses if a root `workshop.yaml` /
-  `.workshop.yaml` or same-named definition exists.) The init skeleton is
-  NOT a completed generation — generation is done only when every element
-  of the approved proposal (actions, channels, grafts, in-project SDKs) is
-  in the files.
+  0.9.5+: `--sdks` is optional and accepts `project-<name>`/`try-<name>`
+  entries, so a proposal that includes an in-project SDK can still scaffold
+  via init — the SDK's *directory* (`.workshop/<name>/`, Step 3) is authored
+  separately either way. (`--base` defaults to `ubuntu@24.04`; `init`
+  refuses if a root `workshop.yaml` / `.workshop.yaml` or same-named
+  definition exists.) The init skeleton is NOT a completed generation —
+  generation is done only when every element of the approved proposal
+  (actions, channels, grafts, in-project SDK directories) is in the files.
 - *Path B — copy a template* when the proposal needs plug/slot grafts,
   `connections:`, or in-project SDKs: `templates/workshop-dev-server.yaml`
   here, or the sibling `workshop-minimal/multi-sdk/with-actions/
@@ -91,8 +94,8 @@ Checklist — every box, before handing off or stopping:
   actions, hooks, or wiring into prose recommendations — the definition
   must encode them.
 - A `hooks:` key inside ANY generated YAML — in-project SDK hooks are
-  executable FILES at `.workshop/<name>/hooks/<hook>`; only sketch SDKs
-  inline hooks. A `.workshop/<name>.yaml` file carrying `hooks:` is doubly
+  script FILES at `.workshop/<name>/hooks/<hook>` (`+x` by convention);
+  only sketch SDKs inline hooks. A `.workshop/<name>.yaml` file carrying `hooks:` is doubly
   wrong (that path is reserved for workshop definitions). Also mind the
   hook contract: `setup-base` runs as root (apt-get belongs there);
   `setup-project` runs as the workshop user (no apt-get).

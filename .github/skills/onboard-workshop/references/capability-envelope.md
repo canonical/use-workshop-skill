@@ -23,7 +23,7 @@ The complete expressive surface of a workshop definition:
 | `connections` | Explicit plug↔slot wiring when auto-connect isn't enough | venv sharing, cross-SDK content |
 | `actions` | Named bash scripts (`errexit`+`pipefail`; args as `"$@"`); parsed at `workshop run` time, no refresh needed | The repo's build/test/lint/serve commands |
 | Interfaces | `tunnel` (ports/sockets; system-SDK plugs can't use ports 1–1023), `mount`, `gpu`, `camera`, `desktop`, `ssh-agent`, `custom-device` | Host resources |
-| In-project SDK | `.workshop/<name>/sdk.yaml` + executable `hooks/` (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`) | Repo-specific apt packages and setup |
+| In-project SDK | `.workshop/<name>/sdk.yaml` + `hooks/` scripts (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`; `+x` is house style — Workshop runs hooks with bash regardless) | Repo-specific apt packages and setup |
 | Project mount | Host project directory appears at `/project/` inside the workshop | All actions run against it |
 </envelope>
 

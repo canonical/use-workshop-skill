@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. The schema is enforced strictly (0.9.2+): an unknown or misspelled key is **rejected up front with a line and column** — Workshop validates `workshop.yaml`, `sdk.yaml`, and sketch SDKs the same way — rather than being silently ignored. When you see an `unknown field` / `field not found` error, fix the offending key; don't retry the same file. Other small errors (e.g. a bad value) may still surface only at `workshop launch` or `workshop refresh` time.
+Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. Validation scope matters: strict unknown-field rejection (0.9.2+) applies to **SDK YAML only** — an in-project `sdk.yaml` or a sketch SDK fails up front with `unknown SDK YAML fields: <name> (line N, column M)` (sketch wording: `sketch SDK YAML contains unknown fields: …`). **`workshop.yaml` itself gets no such check**: an unknown or misspelled top-level key there is silently ignored, and the symptom is the *effect* going missing (an SDK not installed, a connection never proposed) or a downstream error about a required attribute — not a validation message. Never quote an `unknown field` / `field not found` error for `workshop.yaml`; those strings don't exist. The published `reference/definition-files/schema.json` is the editor-side lint for workshop.yaml. Bad *values* (as opposed to keys) surface at `workshop launch` / `workshop refresh` time in both file kinds.
 </overview>
 
 <file_layout>
@@ -12,7 +12,7 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 
 **Cannot mix:** if both a root-level `workshop.yaml` and `.workshop/` files exist, Workshop reports an error.
 
-**Workshop names:** start with a lowercase letter; lowercase letters, digits, and hyphens only.
+**Workshop names:** start with a lowercase letter; lowercase letters, digits, and hyphens only; at most 40 characters.
 
 **Lock file:** `.workshop.lock` is created at the project root on first interaction (e.g., `workshop list` or `workshop launch`) and binds the entire project — single file regardless of single- or multi-workshop layout (empirically verified: `workshop list` produces `<project>/.workshop.lock` for both `<project>/workshop.yaml` and `<project>/.workshop/<name>.yaml` layouts). Add `.workshop.lock` to `.gitignore`. Definition files themselves are MEANT to be committed.
 </file_layout>
@@ -32,8 +32,8 @@ Each entry under `sdks:` is an object:
 
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
-| `name` | yes | string | SDK name. `system` for the system SDK; `project-<NAME>` for in-project SDKs; `try-<NAME>` for try SDKs |
-| `channel` | optional | string | snap-like format `<TRACK>/<RISK>/<BRANCH>`; default `latest/stable`. Only for Store SDKs |
+| `name` | yes | string | SDK name. `system` for the system SDK; `project-<NAME>` for in-project SDKs; `try-<NAME>` for try SDKs. Length caps: 40 bare, 44 with `try-`, 48 with `project-`; `try-system`, `try-sketch`, `project-system`, `project-sketch` are rejected as reserved |
+| `channel` | optional | string | snap-like format `<TRACK>/<RISK>/<BRANCH>` — all three parts optional, at least one present; default `latest/stable`. Only for Store SDKs. **Quote values that look numeric** (`channel: "1.26"`, `"24"`) or YAML parses them as numbers and validation fails |
 | `plugs` | optional | map | Plug bindings or new plug definitions on this SDK |
 | `slots` | optional | map | New slot definitions on this SDK |
 
@@ -46,6 +46,7 @@ sdks:
       <plug-name>:
         bind: <sdk-a>:<plug-name>
 ```
+Bind constraints: the target must be a plug on a **non-system** SDK (a `system` plug can neither be bound nor be a bind target); a bound plug carries **no other attributes**; binds cannot chain (a bind target must be a real plug definition) or self-reference; a bound plug cannot also appear in `connections:`.
 
 **Plug definition** (graft a plug onto an SDK in the workshop scope):
 ```yaml
@@ -71,13 +72,15 @@ sdks:
 </sdks_entry>
 
 <connections_entry>
-Each entry under `connections:` explicitly wires a plug to a slot:
+Each entry under `connections:` explicitly *proposes* a plug↔slot pairing for auto-connect:
 ```yaml
 connections:
   - plug: <sdk-a>:<plug>
     slot: <sdk-b>:<slot>
 ```
-Both endpoints must use the same interface. The `system` SDK is implicitly available. Use this when auto-connect would not pick the right slot, or when you want a non-default wiring.
+Both endpoints must use the same interface. The `<SDK>` part of a reference may be empty to mean the system SDK (`slot: :mount`). Use this when auto-connect would not pick the right slot, or when you want a non-default wiring.
+
+**A `connections:` entry still has to satisfy the interface's auto-connection policy** — it steers auto-connect, it does not override it. Interfaces that block auto-connection outright (camera, desktop, ssh-agent, custom-device, non-loopback tunnels) yield **no** connection when listed here; they need a `workshop connect` after launch (which then persists across refresh, 0.9.5+).
 </connections_entry>
 
 <actions_entry>
@@ -101,14 +104,17 @@ actions:
 - `read-only`: boolean; default `false`.
 
 **Mount slot attributes** (provider side):
-- On regular SDKs: `workshop-source` (required) — path inside the workshop.
+- On regular SDKs: `workshop-source` (required) — path inside the workshop. **The directory must already exist when the connection is established** — unlike a plug's `workshop-target`, Workshop does not create it. (And a plug target inside an SDK's own installation tree only resolves where the SDK already ships that directory — SDK trees are mounted read-only.)
 - On the system SDK: dynamic `host-source` set by `workshop remount` (only).
 
-**Tunnel `endpoint`** format:
-- Network: `<HOST>:<PORT>/<PROTOCOL>` (e.g., `localhost:8080/tcp`, `udp`); `tcp` is default. Either side may omit the port (then both ends use the same).
+**Tunnel `endpoint`** format — `<ADDRESS>/<PROTOCOL>`, with generous shorthands:
+- `<ADDRESS>` is `<HOST>:<PORT>` and may shorten to `<HOST>` alone **or `<PORT>` alone** (`endpoint: 8080` is valid); the whole endpoint may also be just `<PROTOCOL>`. Defaults: host `localhost`, protocol `tcp`; ports 1–65535.
+- `<HOST>` is an IPv4/IPv6 address or the aliases `localhost` / `ip6-localhost` / `ip6-loopback` — **hostnames do not resolve in endpoints, including workshop `*.wp` names**.
+- IPv6 with a port must be bracketed AND quoted (a value starting with `[` needs YAML quoting): `'[::1]:8080/tcp'`.
 - Unix domain socket: absolute path (e.g., `/run/foo.sock`); `$HOME` and `$XDG_RUNTIME_DIR` expand. System-SDK plugs cannot listen outside these two directories.
 - Abstract socket: `@name`. Quote in YAML: `'@name'`.
 - Privileged ports (1–1023) are blocked for system-SDK plugs.
+- Either side may omit the port (then both ends use the same).
 
 **Camera, desktop, GPU, ssh-agent plugs:** must be named exactly `camera`, `desktop`, `gpu`, `ssh-agent` and cannot belong to the system SDK. They have no attributes.
 

@@ -11,8 +11,20 @@ regression.
 
 ## Routing eval
 
-76 cases across 12 scenario files — the prior 73-case suite plus 3 new cases
-(2026-07-22) covering the Workshop **0.9.3/0.9.4** surface and two correctness
+**81 cases across 12 scenario files** — the 2026-08-20 Workshop **0.9.5**
+round: the prior 76-case suite plus 5 new cases (sticky-disconnect
+`--forget` semantics, sticky manual connections across refresh, the SSH
+remove-and-relaunch migration caveat, the post-snap-update restore refusal,
+and the 0.9.5 `workshop init` forms), with 3 existing cases rewritten to the
+0.9.5 surface (both `ide-integration.yaml` SSH cases now assert the
+zero-setup hostname path instead of the retired sshd+tunnel ritual, and the
+`troubleshoot.yaml` strict-validation case now targets SDK YAML with the
+real `unknown SDK YAML fields:` string). **Every rate recorded below
+predates this round and needs a re-pin.**
+
+Historical context — the 76-case suite was the prior 73-case suite plus 3
+new cases (2026-07-22) covering the Workshop 0.9.3/0.9.4 surface and two
+correctness
 fixes: `purge.yaml` (orphaned workshop the user wants to KEEP — restore content
 at the same absolute path), `author-in-project-sdk.yaml` (the minimal in-project
 `sdk.yaml`: `name:` is the only required key, no `hooks:` field), and
@@ -47,8 +59,10 @@ recorded under one are not comparable with the other.
 
 | Candidate | Role | Judge | Pass rate | Notes |
 |-----------|------|-------|-----------|-------|
-| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
-| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes. The confirmation run is now `make eval-routing-subscription` (claude CLI Sonnet + local judge); its first full run seeds a new row here |
+| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **81/81 (100%)** | 0.9.5 round, 2026-08-20: full run 80/81 with 0 errors (committed as `results/2026-08-20-routing-openrouter-z-ai-glm-5.2.json`); the single failure was a blunt `not-contains "--reason"` firing on a correct answer that *negated* the flag — relaxed as assertion fix #12 below and re-run green (1/1). All 3 rewritten SSH cases and all 5 new 0.9.5 cases passed at 1.0 on the first run |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **confirmation run** | **local claude judge** | **81/81 (100%)** | first full run of the subscription pair, 2026-08-20: 79/81, 0 errors, ~17 min, $0 API spend; both misses were rubric-strictness artifacts under the new judge, relaxed as assertion fix #13 and re-run green. Committed summary: `results/2026-08-20-routing-claude-cli-claude-sonnet-4-6.json` |
+| `z-ai/glm-5.2` (OpenRouter) | historical | `gpt-5.5` (OpenRouter, floating) | 76/76 (100%) | 76-case suite, 2026-08-13, post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; predates the `e31d177` gap fixes and the 0.9.5 round |
 
 (Haiku 4.5 and Opus 4.7 diagnostic rows were retired 2026-08-20: both were
 pinned on the 59-case/0.9.2 bundle, two suite growths behind, and were never
@@ -532,6 +546,28 @@ the fix):
    the "at least one of subsystem/vendorid/productid is required" rule — which is
    irrelevant here, since the user's plug already has `subsystem`. Made that
    recitation optional in this new case's own rubric; Sonnet then passes 76/76.
+12. **`Reporting SDK health from a check-health hook (correct statuses)`**
+   (author-in-project-sdk, 2026-08-20) — the lone miss on the 0.9.5-round
+   GLM gate run (0.75). Verified against the raw output: the answer was
+   fully correct and explicitly stated *"There is no `--reason` flag and no
+   `Ready|Pending|Error` status string"* — the skill's own wording — and the
+   blunt `not-contains "--reason"` fired on that negation. Removed; the
+   case's `llm-rubric` already forbids *prescribing* the flag in a command
+   and now explicitly protects the negation (same mention-vs-prescription
+   class as fixes 2, 3, 7, 8, and 10). Re-ran green (1/1); the gate is
+   pinned 81/81.
+13. **Two local-judge strictness relaxations** (2026-08-20) — surfaced on
+   the first subscription-pair run (the local claude judge reads rubrics
+   more literally than gpt-5.5 did): the new `Bare workshop init` case's
+   rubric made a parenthetical "(try-<name> works the same way)" read as
+   required content — now explicitly optional (the user asked only about
+   their in-project SDK); and the `Narrow a custom-device plug` rubric was
+   read as demanding a recitation of "productid requires vendorid" even
+   though the answer sets both attributes, satisfying the dependency by
+   construction — recitations of schema rules are now explicitly optional
+   (extends fix #11). Both answers were verified correct against the raw
+   outputs; both cases re-ran green. Pure relaxations — the GLM gate's
+   81/81, graded under the stricter wording, stands without a re-run.
 
 ## Agentic E2E eval
 
@@ -542,32 +578,40 @@ task drives `.workshop/<name>/` authoring end-to-end). Each task spawns
 and asserts on the transcript + captured state. Run with:
 `make eval-agentic`.
 
-| Model              | Pass rate | Notes |
-|--------------------|-----------|-------|
-| `claude-sonnet-4-6` | **TBD** (was 7/7 (100%) on the prior 7-task suite) | re-baseline after rerun; expect ~16–18 min wall, ~$4 with the new task |
+| Model              | Auth | Pass rate | Notes |
+|--------------------|------|-----------|-------|
+| `claude-sonnet-4-6` | **claude CLI subscription** ($0) | **8/8 (100%)** | 0.9.5 round, 2026-08-20 — the first full run since the harness fix (the retired provider resolved skills from a nonexistent `.claude/skills` path, which had parked this suite at TBD since May). Full run 5/8 in 6.5 min; all 3 failures were eval-authoring artifacts verified against the transcripts and re-run green: two `[BASH] workshop info` marker asserts broke when the agent chained commands (`… && workshop info` — now matched with a same-line regex), and the troubleshoot rubric demanded the changes/tasks flow *before* a fix whose error surfaces synchronously in `workshop launch`'s own output (now accepted as real evidence; the post-fix verification triplet still required). Costs below are the CLI's nominal figures — nothing billed |
 
-### Per-task baseline (Sonnet 4.6)
+### Per-task baseline (Sonnet 4.6, subscription, 2026-08-20)
 
-| Task                              | Pass | Wall  | Cost   |
+| Task                              | Pass | Wall  | Cost (nominal) |
 |-----------------------------------|------|-------|--------|
-| bootstrap-project                 | ✓    | 103 s | $0.28  |
-| daily-ops                         | ✓    |  95 s | $0.09  |
-| customize-actions                 | ✓    |  37 s | $0.08  |
-| author-in-project-sdk             | ✓    |  71 s | $0.09  |
-| manage-interfaces (HTTP tunnel)   | ✓    | 645 s | $1.42  |
-| ide-integration (sshd + tunnel)   | ✓    | 573 s | $1.35  |
-| multi-workshop-projects           | ✓    |  71 s | $0.12  |
-| troubleshoot (broken-SDK recovery)| ✓    |  76 s | $0.15  |
+| bootstrap-project                 | ✓    |  72 s | $0.34  |
+| daily-ops                         | ✓    |  67 s | $0.20  |
+| customize-actions                 | ✓    |  49 s | $0.24  |
+| author-in-project-sdk             | ✓    |  69 s | $0.28  |
+| manage-interfaces (HTTP tunnel)   | ✓    | 161 s | $0.50  |
+| ide-integration (built-in SSH)¹   | ✓    |  49 s | $0.22  |
+| multi-workshop-projects           | ✓    |  67 s | $0.25  |
+| troubleshoot (broken-SDK recovery)| ✓    |  41 s | $0.19  |
+
+¹ The rewritten task verifies the 0.9.5 out-of-the-box SSH path end to
+end — launch → `workshop info` hostname → `ssh -o BatchMode=yes
+workshop@<ws>.<project>.wp true` succeeding against real LXD — in 49 s,
+where the retired sshd+tunnel ritual took 573 s. The prior 7-task suite's
+API-billed numbers (7/7, 2026-05-07) remain in
+`results/2026-05-07-agentic-claude-sonnet-4-6.json`.
 
 > `author-in-project-sdk` numbers are TBD pending the first green
 > agentic rerun against the updated skill. The renamed
 > `customize-actions` task is unchanged from `customize-actions-sketches`
 > in body — its baseline numbers carry over.
 
-Tunnel-setup tasks (`manage-interfaces` and `ide-integration`) dominate
-runtime and cost — the agent does extra refresh + verification work
-around plug/slot wiring. The other five tasks complete in 1–2 minutes
-each thanks to LXD's image cache being warm after the first launch.
+`manage-interfaces` is now the only long task — the agent does extra
+refresh + verification work around plug/slot wiring. Everything else
+(including the rewritten SSH task) completes in under ~75 s thanks to
+LXD's image cache being warm after the first launch; the full 8-task
+suite lands in ~7 minutes at concurrency 2.
 
 Coverage gaps (workflows not yet wired into the agentic suite, only
 the routing eval covers them):

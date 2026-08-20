@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-tunnel
     cleanup_workshops: ["agentic-tunnel"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/manage-interfaces
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/manage-interfaces
     timeout_ms: 900000
     task: |
       The project has a minimal `workshop.yaml` for a workshop named
@@ -28,10 +28,10 @@
       value:
         - "[BASH] workshop launch"
         - "[BASH] workshop refresh"
-    - type: contains-any
-      value:
-        - "[BASH] workshop info"
-        - "[BASH] workshop connections"
+    # Marker + command on the same [BASH] line — tolerant of the agent
+    # chaining commands ("workshop tasks <ID> && workshop info && ...").
+    - type: javascript
+      value: /\[BASH\][^\n]*workshop (info|connections)/.test(output)
     - type: contains
       value: "tunnel"
     - type: contains

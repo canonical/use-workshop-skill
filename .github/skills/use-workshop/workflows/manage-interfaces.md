@@ -29,6 +29,7 @@ workshop info                          # mount sources, tunnels, etc.
 | Share workshop-internal directory between SDKs | mount (workshop-source on regular SDK slot) | **Not** auto-connected — pair the plug with the slot via a top-level `connections:` entry |
 | Expose workshop service on the host | tunnel (slot on regular SDK, plug on `system`) | Auto-connect (system plug + matching name + non-privileged port) |
 | Reach host service from inside the workshop | tunnel (slot on `system`, plug on regular SDK) | Manual: `workshop connect ...` |
+| Expose a workshop service to other machines on the network | tunnel (slot on regular SDK, plug on `system` with `endpoint: 0.0.0.0:<port>`) | Manual (non-loopback never auto-connects); warn: no built-in auth, host firewall may need the port opened |
 | Use host GPU | gpu (plug `gpu` on regular SDK) | Auto-connect |
 | Use host display (Wayland/X11) | desktop (plug `desktop` on regular SDK) | Manual |
 | Use host camera | camera (plug `camera`) | Manual |
@@ -100,8 +101,11 @@ Both plugs share the same underlying connection (visible as `bind.N` in `worksho
 workshop connect <workshop>/<sdk>:<plug>                       # implies system:<plug>
 workshop connect <workshop>/<sdk>:<plug> :<slot>               # system slot under same workshop
 workshop connect <workshop>/<sdk-a>:<plug> <workshop>/<sdk-b>:<slot>
+workshop connect <workshop>/<sdk-a>:<plug> <workshop>/<sdk-b>  # slot chosen by the plug's interface (errors if ambiguous)
 ```
 The `manual` note appears in `workshop connections`.
+
+**Persistence (0.9.5+):** a manual connection survives `workshop refresh` for as long as its plug and slot still exist in the definition — no re-connect ritual after each refresh. What resets wiring to the definition's auto-connect defaults is `workshop restore` (drops manual connects, re-establishes manual disconnects regardless of `--forget`, resets remount sources) — or `workshop remove` + `launch`, which starts from scratch.
 
 **Step 5. Reassign a mount source.**
 ```
@@ -111,10 +115,11 @@ Atomic if the new path is empty/non-existent on the same FS; otherwise requires 
 
 **Step 6. Disconnect.**
 ```
-workshop disconnect <workshop>/<sdk>:<plug>                     # default-target
-workshop disconnect <workshop>/<sdk>:<plug> --forget            # don't auto-reconnect on next refresh
+workshop disconnect <workshop>/<sdk>:<plug>                     # sticky: stays disconnected across refresh (0.9.5+)
+workshop disconnect <workshop>/<sdk>:<plug> --forget            # temporary: auto-connect re-establishes it at next refresh
 workshop disconnect <workshop>/system:<slot>                    # detach all plugs from this slot
 ```
+(The `--forget` naming is easy to invert: it *forgets the disconnect*, so the plug comes back. `workshop restore` reconnects either way. `disconnect --forget` + `refresh` is also the recipe to reset a `remount`ed plug to its default source.)
 
 </process>
 

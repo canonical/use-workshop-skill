@@ -115,7 +115,7 @@ If the workshop is `Ready` but in a bad state and you just want to undo recent c
 ```
 workshop restore <workshop>
 ```
-This reverts the container filesystem to the last `launch`/`refresh` state and resets connections+mounts to defaults. Workshop must be `Ready` for this. Cheaper than remove+launch.
+This reverts the container filesystem to the last `launch`/`refresh` state and resets interface wiring to definition defaults — manual connections dropped, manual disconnects re-established (regardless of `--forget`), remount sources reverted (0.9.5+ semantics). Workshop must be `Ready` for this, and it is refused on a workshop not yet refreshed after a snap update. Cheaper than remove+launch.
 
 </process>
 

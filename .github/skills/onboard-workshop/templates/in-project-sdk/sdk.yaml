@@ -3,10 +3,12 @@
 # Copyright 2026 Canonical Ltd.
 #
 # In-project SDK definition. Directory name must match `name:`; the consuming
-# workshop lists it as `project-<sdk-name>`. Setup logic lives in executable
-# scripts under hooks/ (setup-base, setup-project, check-health, save-state,
-# restore-state) — there is NO `hooks:` key in sdk.yaml; a hooks key here is
-# rejected by the schema. Only sketch SDKs inline hooks in YAML.
+# workshop lists it as `project-<sdk-name>`. Setup logic lives in scripts
+# under hooks/ (setup-base, setup-project, check-health, save-state,
+# restore-state; +x by convention) — there is NO `hooks:` key in sdk.yaml; a
+# hooks key here is rejected by the runtime validator ("unknown SDK YAML
+# fields: hooks"; the published schema-sdk.json is permissive and won't catch
+# it). Only sketch SDKs inline hooks in YAML.
 
 name: <sdk-name>
 

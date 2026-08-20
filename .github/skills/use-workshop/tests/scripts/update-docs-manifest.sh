@@ -77,6 +77,7 @@ for root, dirs, files in os.walk(docs):
             continue
         paths.add(md.replace(os.sep, "/"))
 paths.add("llms.txt")
+paths.add("llms-full.txt")
 for schema in ("schema", "schema-sdk", "schema-sdkcraft"):
     paths.add(f"reference/definition-files/{schema}.json")
 

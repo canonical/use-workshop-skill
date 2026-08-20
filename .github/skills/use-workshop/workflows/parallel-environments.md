@@ -34,7 +34,9 @@ git worktree add <subdir-name>
 git worktree add <other-subdir>
 git worktree list
 ```
-This is the supported "shared sandbox" pattern. The single workshop is launched at the project root; every worktree is reachable inside the workshop at `/project/<subdir-name>/` because the whole project directory is mounted.
+This is the supported "shared sandbox" pattern — documented upstream in the AI-agents how-to (`use-workshops-with-ai-agents.md`), not in the general Git guide. The single workshop is launched at the project root; every worktree is reachable inside the workshop at `/project/<subdir-name>/` because the whole project directory is mounted.
+
+Caveat for projects that COMMIT their definition: every subdirectory worktree checkout then carries its own copy of `workshop.yaml`/`.workshop.yaml`, and per-worktree definitions and lock files interfere with each other. The upstream pattern resolves this by gitignoring the definition **and** the lock (`.workshop.yaml` + `.workshop.lock`, or `.workshop/` + `*.lock` for multi-workshop projects) so only the project root's copy exists. If the user wants the definition committed (this skill's default stance), prefer the sibling-worktree layout instead.
 
 **Step 3a. One-workshop-per-worktree path (sibling worktrees).**
 For each worktree:
@@ -44,7 +46,7 @@ workshop launch
 ```
 The worktree gets its own `.workshop.lock` and a fresh container. Variants between worktrees come from per-worktree definition edits — change `base:` or `channel:` and re-launch.
 
-`workshop list --global` will show one row per worktree's workshop, all sharing the same `name:` but with different project paths.
+`workshop list --global` will show one row per worktree's workshop, all sharing the same `name:` but with different project paths. Renaming or relocating a worktree with `git worktree move` is safe — the workshop follows the directory, and `workshop list --global` shows the new path.
 
 **Step 3b. Shared-workshop path (worktrees as subdirectories).**
 Launch ONE workshop at the project root:
@@ -57,7 +59,7 @@ Then run each parallel task inside that single workshop, scoping its working dir
 workshop run --cwd /project/<subdir-name> -- <action>          # or: workshop exec --cwd /project/<subdir-name> -- <command>
 workshop run --cwd /project/<other-subdir> -- <action>          # in a separate terminal, in parallel
 ```
-Two tasks run concurrently inside one container, isolated by which worktree they touch. This is the cheapest layout and matches the canonical worktree+workshop pattern in the docs.
+Two tasks run concurrently inside one container, isolated by which worktree they touch. This is the cheapest layout; upstream documents it in the AI-agents how-to (the general Git guide's canonical pattern is one workshop per sibling worktree — Step 3a).
 
 **Step 4. Run the parallel tasks.**
 - Each terminal/tab/agent works in one worktree.
@@ -105,8 +107,8 @@ git worktree list                  # the removed worktree should be gone
 </success_criteria>
 
 <source_docs>
-- `how-to/develop-with-workshops/use-git.md` (worktree + workshop pattern; canonical source)
-- `how-to/develop-with-workshops/use-workshops-with-ai-agents.md` (one applied example, among others)
+- `how-to/develop-with-workshops/use-git.md` (canonical source for SIBLING worktrees — one workshop per worktree — and `git worktree move`)
+- `how-to/develop-with-workshops/use-workshops-with-ai-agents.md` (canonical source for the SHARED-workshop subdirectory pattern, incl. the gitignore-the-definition requirement)
 - `how-to/customize-workshops/move-projects.md` (move/copy semantics)
 - `reference/cli/workshop.md` (launch, remove, list, exec, run sections)
 </source_docs>

@@ -6,52 +6,82 @@
     user: |
       I want to use a remote-SSH IDE workflow to edit code inside my workshop. What's the workshop-side setup?
   assert:
-    - type: contains
-      value: tunnel
     - type: contains-any
       value:
-        - sshd
-        - ssh server
+        - ".wp"
+        - hostname
+    - type: contains
+      value: workshop info
+    - type: not-contains
+      value: openssh-server
     - type: llm-rubric
       value: |
-        The response describes the workshop-side pattern: run `sshd` inside
-        the workshop, tunnel its port to a non-privileged host port, point
-        the IDE at the host address. It stays vendor-neutral on the IDE
-        side: it does NOT improvise product-specific setup or configuration
-        steps for a specific commercial IDE the user did not name (the user
-        named none). Naming products as examples of the category (e.g.
-        "works with VS Code Remote-SSH, JetBrains Gateway, etc.") is fine —
-        the skill's own routing keys use those names; what this rubric
-        guards against is diving into vendor-specific config the user did
-        not ask for. Mentioning generic OSS tools and packages such as
-        `sshd`, `openssh-server`, or `apt-get install openssh-server` is
-        fine — those are workshop-side setup, not IDE-side product config.
+        The response states that SSH access needs ZERO workshop-side setup on
+        Workshop 0.9.5+: the host carries an automatic OpenSSH client
+        configuration (a certificate authority signs host and user certs), so
+        the user reads the hostname from `workshop info` (the `hostname:`
+        line, `<workshop>.<project>.wp`) and points their remote-SSH tooling
+        at it as the `workshop` user — a plain `ssh <hostname>` works as the
+        smoke test with no host-key or password prompts. It MUST NOT
+        prescribe installing sshd inside the workshop or wiring an SSH
+        tunnel — that ritual is obsolete. Mentioning that workshops launched
+        before 0.9.5 must be removed and launched again is a plus, not a
+        requirement. It stays vendor-neutral: naming products as examples of
+        the category (e.g. "works with VS Code Remote-SSH, JetBrains
+        Gateway") is fine; diving into vendor-specific config the user did
+        not ask for is not.
 
 - description: User asks about a specific remote-IDE vendor
   vars:
     user: |
       I use VS Code Remote SSH. How do I set up my workshop so VS Code can attach to it?
   assert:
+    - type: contains-any
+      value:
+        - ".wp"
+        - hostname
     - type: contains
-      value: tunnel
-    - type: contains-any
-      value:
-        - sshd
-        - ssh server
-    - type: contains-any
-      value:
-        - workshop info
-        - "from:"
+      value: workshop info
+    - type: not-contains
+      value: openssh-server
     - type: llm-rubric
       value: |
-        The response gives the workshop-side pattern (sshd inside, tunnel to
-        a host port, find the host address via `workshop info`) and treats
-        the IDE as the destination tool. Acknowledging the user's named tool
-        ("VS Code Remote SSH") and naming the host endpoint the user should
-        point it at is fine. The response does NOT fabricate vendor-specific
-        config files (e.g., it does NOT invent VS Code `settings.json`
-        entries, extension settings, or vendor-internal commands the docs do
-        not document).
+        The response tells the user to connect VS Code Remote-SSH directly to
+        the workshop's hostname (read from `workshop info`; the form
+        `<workshop>.<project>.wp`, user `workshop`) — SSH access is built in
+        on 0.9.5+ via the automatic OpenSSH client configuration, with no
+        sshd install and no tunnel. Acknowledging the user's named tool and
+        naming the exact host the user should enter is expected. MAY note
+        that the old `vscode-remote` SDK is deprecated (0.9.5) and/or that a
+        dedicated VS Code Workshop extension is taking over server caching.
+        The response does NOT fabricate vendor-specific config files (e.g.,
+        it does NOT invent VS Code `settings.json` entries, extension
+        settings, or vendor-internal commands the docs do not document), and
+        does NOT prescribe an sshd-inside + tunnel setup.
+
+- description: SSH works for a new workshop but fails for one launched months ago
+  vars:
+    user: |
+      `ssh dev.myproj.wp` works fine for a workshop I created this week, but for the workshop I launched a couple of months ago I get a password prompt and it won't let me in. Why the difference?
+  assert:
+    - type: contains-any
+      value:
+        - remove
+        - relaunch
+        - launch it again
+        - launched again
+    - type: not-contains
+      value: openssh-server
+    - type: llm-rubric
+      value: |
+        The response identifies the version boundary: the automatic SSH
+        configuration arrived in Workshop 0.9.5, and workshops launched
+        BEFORE it must be REMOVED and LAUNCHED again to benefit — a
+        `workshop refresh` is not enough. It prescribes `workshop remove` +
+        `workshop launch` for the old workshop (a warning that remove+launch
+        rebuilds the container and drops manual wiring is a plus). It MUST
+        NOT prescribe installing sshd inside the workshop, editing
+        ~/.ssh/config by hand, or a tunnel workaround.
 
 - description: User wants ssh-agent forwarding for git inside the workshop
   vars:

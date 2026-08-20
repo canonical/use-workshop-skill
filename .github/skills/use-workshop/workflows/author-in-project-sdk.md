@@ -31,7 +31,7 @@ Walk down the hook taxonomy from `references/in-project-sdk.md`. For a tool-wrap
 | Report whether the SDK can operate (gate `Ready`) via `workshopctl set-health okay\|waiting\|error` | `check-health` |
 | Carry mutable state across a refresh that rebuilds the SDK | `save-state` + `restore-state` |
 
-There are exactly five hooks (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`) — there is no `setup-sdk`. `save-state`/`restore-state` fire during an *applied* `workshop refresh`, not on stop/start; `check-health`/`save-state`/`restore-state` run as `root`. See `references/in-project-sdk.md` for the full contract.
+There are exactly five hooks (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`) — there is no `setup-sdk`. `save-state`/`restore-state` fire during an *applied* `workshop refresh` (and during `workshop restore`, which runs the same machinery), not on stop/start; `check-health`/`save-state`/`restore-state` run as `root`. See `references/in-project-sdk.md` for the full contract.
 
 **Step 3. Write `sdk.yaml`.**
 
@@ -42,7 +42,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-Only `name` is required. Do NOT add a `hooks:` key — hooks are the script files you write in Step 4, discovered automatically by filename; strict validation rejects unknown keys with an `unknown field` error. (Inline `hooks:` maps exist only in sketch SDKs.)
+Only `name` is required. Do NOT add a `hooks:` key — hooks are the script files you write in Step 4, discovered automatically by filename; strict validation rejects it as `unknown SDK YAML fields: hooks (line N, column M)`. (Inline `hooks:` maps exist only in sketch SDKs.)
 
 **Step 4. Write each hook script under `.workshop/<NAME>/hooks/<HOOK>`.**
 
@@ -136,7 +136,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 - Writing a hook for an interpreter other than bash and relying on the shebang to select it — Workshop runs every hook with bash whatever the shebang says. (The missing `+x` bit is NOT this failure: Workshop invokes bash rather than exec'ing the file, so an in-project hook at `0644` still runs.)
 - Naming the SDK directory and the `name:` field differently — the SDK fails to load.
 - Omitting the `project-` prefix in `workshop.yaml`'s `sdks:` entry — Workshop won't find the SDK.
-- Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation with `unknown field`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
+- Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation as `unknown SDK YAML fields: hooks`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
 - Calling `workshopctl set-health` from anywhere other than a `check-health` hook — it is intended for in-hook execution context.
 - Reaching for the build-time `schema-sdk.json` to validate `sdk.yaml` — that schema describes the post-`sdkcraft` form; in-project hooks aren't a YAML field there.
 - Editing `setup-base` and expecting `workshop refresh` to re-run it — `setup-base` only runs on workshop creation. `remove` + `launch` is required.

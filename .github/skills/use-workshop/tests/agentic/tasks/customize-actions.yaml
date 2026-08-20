@@ -5,7 +5,7 @@
   vars:
     workshop_name: agentic-customize
     cleanup_workshops: ["agentic-customize"]
-    fixture: .claude/skills/use-workshop/tests/agentic/fixtures/customize-actions
+    fixture: .github/skills/use-workshop/tests/agentic/fixtures/customize-actions
     timeout_ms: 900000
     task: |
       The project has a `workshop.yaml` with one action (`hello`). Add a

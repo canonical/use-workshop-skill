@@ -174,16 +174,16 @@
       value:
         - okay
         - waiting
-    - type: not-contains
-      value: "--reason"
     - type: llm-rubric
       value: |
         The response uses `workshopctl set-health` with the real statuses:
         `okay` (healthy → Ready), `waiting` (still starting — Workshop retries),
         and/or `error`. For `waiting`/`error` it includes a short positional
         message; `okay` takes none. It does NOT use `Ready`, `Pending`, or
-        `Error` as the STATUS argument, and does NOT use a `--reason` flag (an
-        optional `--code=<code>` on error is acceptable).
+        `Error` as the STATUS argument, and does NOT prescribe a `--reason`
+        flag in a command (an optional `--code=<code>` on error is
+        acceptable). Explicitly NOTING that no `--reason` flag exists — the
+        skill itself says so — is correct and must not be penalized.
 
 - description: Persisting SDK state across a refresh (save-state / restore-state)
   vars:

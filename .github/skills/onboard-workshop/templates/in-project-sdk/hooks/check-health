@@ -1,13 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright 2026 Canonical Ltd.
 #
 # check-health: runs inside the workshop to report SDK health. Verify the
 # tool(s) this SDK sets up actually resolve, then report via workshopctl.
 #
-# This file must be executable: chmod +x .workshop/<sdk-name>/hooks/check-health
+# chmod +x is house style (keeps the file runnable by hand) — Workshop runs
+# hooks with bash regardless, so a 0644 hook still executes.
 
-set -eu
+set -euo pipefail
 
 if command -v <tool-to-verify> >/dev/null 2>&1; then
     workshopctl set-health okay

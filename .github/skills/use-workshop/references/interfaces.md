@@ -9,7 +9,7 @@ The seven interface types and how to wire them. The most important distinction a
 A workshop is a graph of capabilities wired through two named endpoints that both reference an **interface** type:
 - **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints.
 - **plug** = the consumer end (declared on the SDK that wants the capability).
-- **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default). Full model: `explanation/interfaces/plugs-and-slots.md`.
+- **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it with `workshop connect`. Persistence (0.9.5+): manual connections survive `workshop refresh` (while their plugs/slots still exist in the definition), and a manual `workshop disconnect` without `--forget` stays disconnected across refreshes; `workshop restore` resets everything to auto-connect defaults. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default; the pairing must still satisfy the interface's auto-connect policy, so manual-only interfaces cannot be wired this way). Full model: `explanation/interfaces/plugs-and-slots.md`.
 </model>
 
 <auto_vs_manual>
@@ -74,15 +74,15 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 
 **Slot:** `system:desktop` only.
 **Plug:** must be named `desktop`, cannot belong to the system SDK.
-**Connect:** manual.
+**Connect:** manual. Supported on WSL too (0.9.5+, subject to an outstanding upstream WSL bug).
 </interface>
 
 <interface name="ssh-agent">
-**Use for:** delegating SSH authentication to the host's `ssh-agent` (e.g., to clone private repos, reach remote machines).
+**Use for:** delegating SSH authentication to the host's `ssh-agent` (e.g., to clone private repos, reach remote machines). (Distinct from SSH *into* the workshop, which needs no interface at all — 0.9.5+ ships automatic OpenSSH client config; see `workflows/ide-integration.md`.)
 
 **Slot:** `system:ssh-agent` only.
 **Plug:** must be named `ssh-agent`, cannot belong to the system SDK.
-**Connect:** manual.
+**Connect:** manual — and once connected it persists across `workshop refresh` (0.9.5+); no re-connect ritual after each refresh.
 </interface>
 
 <interface name="custom-device">
@@ -121,8 +121,9 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 
 **Direction patterns:**
 - **Workshop service → host:** slot on the regular SDK (service inside the workshop), plug on the system SDK (host port). Auto-connects.
+- **Workshop service → other machines on the network:** same shape, but the system plug listens on `endpoint: 0.0.0.0:<PORT>` (or another non-loopback address). A non-loopback plug **never auto-connects** — run `workshop connect` after refresh — and carries two warnings for the user: the tunnel adds no authentication (whatever listens is exposed as-is), and the host firewall may need the port opened.
 - **Host service → workshop:** slot on the system SDK (host service), plug on the regular SDK (where the consumer in the workshop will connect). Manual connect required.
-- **Cross-workshop:** chain two tunnels through the host. Backend exposes via system plug; frontend consumes via system slot. The frontend half typically requires `workshop connect`.
+- **Cross-workshop:** chain two tunnels through the host. Backend exposes via system plug; frontend consumes via system slot. The frontend half typically requires `workshop connect`. (Same-project workshops can often skip tunnels entirely and use `*.wp` hostnames — but tunnel endpoints themselves never resolve hostnames.)
 
 **Constraints:**
 - System-SDK plugs cannot listen on privileged ports (1–1023) or on Unix sockets outside `$HOME` / `$XDG_RUNTIME_DIR`.
@@ -135,6 +136,10 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 - Add `slots: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` to the SDK that runs the service.
 - Add `plugs: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` under `system`.
 - `workshop refresh`. Auto-connects.
+
+**User wants a workshop service reachable from other machines (LAN/network):**
+- Slot on the service SDK as above; system plug with `endpoint: 0.0.0.0:<PORT>`.
+- `workshop refresh` + `workshop connect` (non-loopback never auto-connects). Warn: no built-in auth; host firewall may need opening.
 
 **User wants the workshop to reach a host service:**
 - Add `plugs: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` to the consumer SDK.
