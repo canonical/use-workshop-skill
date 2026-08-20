@@ -3,6 +3,10 @@
 
 # Eval suite for `use-workshop`
 
+(See `TESTING.md` at the repo root for the three-lane doctrine — what runs
+when and what each lane costs; shared harness code lives in
+`../../_testlib/`. This file covers suite specifics.)
+
 Two complementary [promptfoo](https://promptfoo.dev) suites that validate
 the `use-workshop` skill:
 

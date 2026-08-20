@@ -143,19 +143,25 @@ allowlist and manifest are regenerated from a Workshop checkout with
 `make update-docs-manifest` (`WORKSHOP_REPO=<path>`), so a version bump
 refreshes the ground truth in one step.
 
-**Changes are eval-gated.** The bundled `tests/` directory is a
-[promptfoo](https://promptfoo.dev) regression suite (routing +
-agentic E2E) with per-model baselines pinned in `BASELINE.md`.
-CI runs the free static checks (`make check`: CLI doc-path guard,
-source-docs manifest guard, bundle regeneration, scenario/template YAML
-parse, YAML key lint, shellcheck, REUSE lint) on every push and PR; the
-paid routing eval runs locally before merge (`make eval-routing`) or on
-demand via the `workflow_dispatch` trigger of the CI workflow. A skill
-change that drops a pinned baseline must not merge. The eval surface is
-what keeps the rest of these principles from drifting back into
-informality.
+**Changes are eval-gated.** The bundled `tests/` directories are
+[promptfoo](https://promptfoo.dev) regression suites (routing + agentic
+E2E + reconstruction) with baselines pinned per (candidate, judge) pair in
+each `BASELINE.md`. Three lanes ([`TESTING.md`](TESTING.md)): free static
+checks in CI on every push/PR; the ~$1.41 GLM-5.2 routing gate
+(`make eval-routing`, also CI `workflow_dispatch`; the repo's only paid
+eval and only secret); and a $0 subscription lane — the `claude` CLI on a
+local login — for the Sonnet confirmation runs, the onboard routing gate,
+the agentic suites, and the reconstruction harness. A skill change that
+drops a pinned baseline must not merge. The eval surface is what keeps the
+rest of these principles from drifting back into informality.
 
 ## Testing
+
+[`TESTING.md`](TESTING.md) is the doctrine: the three lanes, what runs
+when, costs, and the judge-comparability rule. Shared harness code lives in
+`.github/skills/_testlib/`. When vendoring the skills into another repo,
+the `tests/` directories may be omitted — the suites run from this repo
+only.
 
 See
 [`.github/skills/use-workshop/tests/README.md`](.github/skills/use-workshop/tests/README.md)

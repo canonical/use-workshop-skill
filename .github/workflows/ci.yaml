@@ -21,6 +21,9 @@ jobs:
         run: make -C .github/skills/use-workshop/tests check
       - name: Static checks, onboard-workshop (shared manifests, bundle regen, YAML keys, hooks)
         run: make -C .github/skills/onboard-workshop/tests check
+      - name: Syntax-check shared JS providers
+        run: |
+          for f in .github/skills/_testlib/*.js; do node --check "$f"; done
       - name: REUSE lint
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
 
@@ -46,19 +49,17 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — paid, so manual-only via workflow_dispatch. Compare the
-  # result against tests/BASELINE.md before merging skill-content changes.
+  # Routing eval — Lane 1 of the three-lane doctrine (see TESTING.md): the
+  # only paid eval, so manual-only via workflow_dispatch. Compare the result
+  # against tests/BASELINE.md before merging skill-content changes.
   #
-  # use-workshop ONLY. Since 2026-08-13 that suite runs GLM-5.2 as candidate and
-  # gpt-5.5 as the llm-rubric judge, both through OpenRouter (~$1.41/run), so
-  # OPENROUTER_API_KEY is the only secret this job needs.
+  # use-workshop ONLY. That suite's gate runs GLM-5.2 as candidate and gpt-5.5
+  # as the llm-rubric judge, both through OpenRouter (~$1.41/run), so
+  # OPENROUTER_API_KEY is the only secret this job (and this repo) needs.
   #
-  # onboard-workshop is deliberately NOT in this matrix. It stayed on Sonnet 4.6
-  # with the OpenAI-hosted judge (see that suite's BASELINE.md, "GLM-5.2
-  # diagnostic", for the measurement behind that), which would need
-  # ANTHROPIC_API_KEY + OPENAI_API_KEY as repository secrets — neither exists,
-  # and its routing eval has in practice always been run locally. Adding it back
-  # means adding those two secrets and restoring the matrix.
+  # onboard-workshop is deliberately NOT here: its routing gate is the
+  # subscription lane (local claude CLI login + local judge, $0), and a CI
+  # runner has no CLI login — Lane 2 is local-only by design.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
