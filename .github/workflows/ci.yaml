@@ -69,7 +69,9 @@ jobs:
         with:
           node-version: 22
       - name: Install promptfoo
-        run: npm install -g promptfoo@0.121.9
+        # Aligned with the locally-verified version (see TESTING.md) so CI
+        # and local runs measure with the same client.
+        run: npm install -g promptfoo@0.121.17
       - name: Routing eval (use-workshop, GLM-5.2 gate)
         run: make -C .github/skills/use-workshop/tests eval-routing
         env:
