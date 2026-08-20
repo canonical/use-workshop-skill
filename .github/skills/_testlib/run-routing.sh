@@ -339,6 +339,13 @@ set -e
 # and force a non-zero exit. (Partial runs already write to results/raw/.)
 # Use promptfoo's own stats.errors: a bare per-case `error` field also fires on
 # ordinary assertion failures, so it cannot be counted directly.
+#
+# ALSO count judge-side API failures that promptfoo records as failed
+# ASSERTIONS rather than case errors: a mid-run judge 402/429 (credits ran
+# out after the preflight passed) puts "API error: …" into the component
+# result's reason, stats.errors stays 0, and without this check the
+# judge-starved run would overwrite a canonical baseline — observed on the
+# 2026-08-20 CI dispatch (second judge-outage incident; see BASELINE.md).
 if [[ -f "${raw_json}" ]]; then
   error_count="$(python3 -c 'import json,sys
 res = json.load(open(sys.argv[1])).get("results") or {}
@@ -348,7 +355,13 @@ if e is None:
     cases = res.get("results") or []
     e = sum(1 for c in cases
             if c.get("error") and not ((c.get("gradingResult") or {}).get("componentResults")))
-print(e)' "${raw_json}" 2>/dev/null || echo -1)"
+judge_api_failures = 0
+for c in (res.get("results") or []):
+    for cr in ((c.get("gradingResult") or {}).get("componentResults") or []):
+        reason = str((cr or {}).get("reason") or "")
+        if not (cr or {}).get("pass") and reason.startswith("API error:"):
+            judge_api_failures += 1
+print((e or 0) + judge_api_failures)' "${raw_json}" 2>/dev/null || echo -1)"
 else
   error_count=-1
 fi
