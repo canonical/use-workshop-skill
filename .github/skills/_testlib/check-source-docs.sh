@@ -2,22 +2,39 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright 2026 Canonical Ltd.
 #
-# Offline guard: every upstream doc path this skill cites must still exist.
+# Offline guard: every upstream doc path a skill cites must still exist.
 #
-# Same contract as the use-workshop copy, with one difference: the manifest is
-# SHARED — this script reads ../use-workshop/tests/docs-manifest.txt so one
-# `make update-docs-manifest` run (in the sibling's tests dir) keeps both
-# skills honest. Do not add a second manifest here.
+# The skills point at the canonical Workshop docs by relative path — in each
+# file's <source_docs> block and in inline references. When upstream renames,
+# merges, or deletes a page (as when the per-tool CLI explanations were folded
+# into explanation/cli.md), those citations rot silently. This check extracts
+# every backticked `<area>/....md|.json` token (plus `llms.txt` and
+# `llms-full.txt`) from SKILL.md, references/, and workflows/, and fails if any
+# is absent from the manifest. The manifest is regenerated from a Workshop
+# checkout by `make update-docs-manifest` in use-workshop/tests and is SHARED
+# by both suites — do not add a second one. API-free and offline, so it runs
+# in the free CI gate.
+#
+# Usage: check-source-docs.sh --skill-root <abs path> --manifest <abs path>
 
 set -euo pipefail
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-tests_dir="$(cd "${script_dir}/.." && pwd)"
-skill_root="$(cd "${tests_dir}/.." && pwd)"
+skill_root=""
+manifest=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skill-root) skill_root="$2"; shift 2 ;;
+    --manifest)   manifest="$2";   shift 2 ;;
+    *) echo "error: unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+[[ -n "${skill_root}" && -n "${manifest}" ]] || {
+  echo "usage: $0 --skill-root <abs path> --manifest <abs path>" >&2
+  exit 2
+}
 
-manifest="$(cd "${skill_root}/.." && pwd)/use-workshop/tests/docs-manifest.txt"
 if [[ ! -f "${manifest}" ]]; then
-  echo "error: shared manifest ${manifest} missing — run 'make update-docs-manifest' in use-workshop/tests (needs WORKSHOP_REPO)." >&2
+  echo "error: manifest ${manifest} missing — run 'make update-docs-manifest' in use-workshop/tests (needs WORKSHOP_REPO)." >&2
   exit 2
 fi
 
@@ -60,7 +77,7 @@ for entry in files:
         for tok in re.findall(r"`([^`]+)`", line):
             for cand in expand(tok):
                 cand = cand.strip()
-                if cand == "llms.txt" or prefix.match(cand):
+                if cand in ("llms.txt", "llms-full.txt") or prefix.match(cand):
                     checked += 1
                     if cand not in valid:
                         offenders.append(f"{rel}:{lineno}:{cand}")

@@ -303,7 +303,7 @@ fi
 
 # Build a slim summary that's safe to commit. Strips full model responses /
 # raw prompts; keeps per-case verdicts, failed-assertion details, totals.
-python3 "${script_dir}/_summarize.py" \
+python3 "${script_dir}/../../../_testlib/_summarize.py" \
   --raw "${raw_json}" \
   --model "${model}" \
   --provider "${provider_meta}" \

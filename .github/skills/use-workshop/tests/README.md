@@ -45,7 +45,6 @@ the manual run summary diff.
 ```sh
 make help                       # list all targets
 make check                      # all free offline static checks (CI entry point)
-make check-doc-paths            # assert reference/cli/ paths map to the 4 combined pages (fast, no API)
 make check-source-docs          # assert every cited upstream doc path exists in docs-manifest.txt (offline)
 make check-yaml-keys            # lint skill YAML snippets/templates against the upstream schema key allowlists (offline)
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
@@ -163,13 +162,11 @@ tests/
 ├── Makefile                     # convenience targets
 ├── scripts/
 │   ├── regenerate-bundle.sh
-│   ├── check-doc-paths.sh       # CLI 4-page guard
-│   ├── check-source-docs.sh     # cited-doc-path guard (vs docs-manifest.txt)
-│   ├── check-yaml-keys.py       # YAML key lint (vs allowed-keys.json)
 │   ├── update-docs-manifest.sh  # regenerate the two generated files (maintainer-only)
 │   ├── run-routing.sh
-│   ├── run-agentic.sh
-│   └── _summarize.py            # raw -> slim summary post-processor
+│   └── run-agentic.sh
+│   # check-source-docs.sh, check-yaml-keys.py, and _summarize.py live in the
+│   # shared ../../_testlib/ (see its README)
 ├── scenarios/                   # routing test cases (12 files)
 ├── agentic/                     # agentic E2E suite (see its README)
 └── results/
@@ -183,9 +180,10 @@ When you change SKILL.md or a workflow file, re-run the affected
 suite(s) to confirm nothing regressed:
 
 0. `make check` — instant, no API. The free offline gate CI runs: the
-   `reference/cli/` four-page guard (`check-doc-paths`), the cited-doc-path
-   guard (`check-source-docs`, every backticked `<area>/….md|.json` path
-   must be in `docs-manifest.txt`), bundle regeneration, scenario/template
+   cited-doc-path guard (`check-source-docs`, every backticked
+   `<area>/….md|.json` path must be in `docs-manifest.txt` — since the
+   manifest carries only the 4 combined CLI pages, this also subsumes the
+   retired `check-doc-paths`), bundle regeneration, scenario/template
    YAML parse, the YAML key lint (`check-yaml-keys`, every snippet's
    top-level keys must be in the upstream schema allowlists), and
    shellcheck. Run this before any paid eval.

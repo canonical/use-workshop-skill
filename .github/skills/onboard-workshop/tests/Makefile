@@ -13,12 +13,14 @@
 
 SHELL := /usr/bin/env bash
 
+TESTLIB           := ../../_testlib
 ROUTING_SH        := scripts/run-routing.sh
 BUNDLE_SH         := scripts/regenerate-bundle.sh
-SOURCE_DOCS_SH    := scripts/check-source-docs.sh
-YAML_KEYS_PY      := scripts/check-yaml-keys.py
+SOURCE_DOCS_SH    := $(TESTLIB)/check-source-docs.sh
+YAML_KEYS_PY      := $(TESTLIB)/check-yaml-keys.py
 CATALOG_SH        := scripts/update-sdk-catalog.sh
 RECONSTRUCTION_SH := reconstruction/run-reconstruction.sh
+SIBLING_TESTS     := ../../use-workshop/tests
 
 .PHONY: help check check-yaml check-yaml-keys check-shell check-source-docs \
         check-catalog-stamp check-hooks-exec eval-bundle eval-routing \
@@ -53,13 +55,13 @@ files = sorted(glob.glob('scenarios/*.yaml') + glob.glob('../templates/**/*.yaml
 print('ok: %d YAML file(s) parsed' % len(files))"
 
 check-yaml-keys:
-	python3 $(YAML_KEYS_PY)
+	python3 $(YAML_KEYS_PY) --skill-root $(CURDIR)/.. --allowed-keys $(CURDIR)/$(SIBLING_TESTS)/allowed-keys.json --templates-recursive --classify-sdk-template
 
 check-shell:
-	shellcheck scripts/*.sh reconstruction/*.sh
+	shellcheck scripts/*.sh reconstruction/*.sh $(TESTLIB)/*.sh
 
 check-source-docs:
-	bash $(SOURCE_DOCS_SH)
+	bash $(SOURCE_DOCS_SH) --skill-root $(CURDIR)/.. --manifest $(CURDIR)/$(SIBLING_TESTS)/docs-manifest.txt
 
 # The catalog table is curated; this guards its machine-readable envelope.
 check-catalog-stamp:
