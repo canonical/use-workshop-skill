@@ -218,7 +218,8 @@ Manual, pre-release only.
 | onboard-mini-node | **PASS** ($0.87, 5.7 min, clean teardown) | 2026-07-23 | live-verified node@24/stable, verdict before generation, `.workshop/agentic-onboard.yaml`, actions exercised via `workshop run`. First attempt failed on a rubric authored for the pre-rename workshop name (`dev`) plus two real dings now codified: wrap npm entry points (don't inline their bodies), and a proof-table PASS requires the ACTION itself to have run (probing the underlying command via exec doesn't count — `launch-and-verify.md` now says so) |
 | honesty-gate | **PASS** | 2026-07-23 | macOS/Xcode fixture → INFEASIBLE verdict, ZERO files generated, no workshop lifecycle touched |
 
-> Harness note (2026-07-23): the agentic `promptfooconfig.yaml` `repo_root`
-> must be FIVE levels up from `agentic/` (`../../../../..`); the sibling's
-> `../../../..` works there only because its `run-agentic.sh` wrapper exports
-> `AGENTIC_REPO_ROOT`. First suite invocation errored instantly on this.
+> Harness note (2026-07-23, resolved 2026-08-20): the original per-suite
+> providers took a `repo_root` config that had to be FIVE levels up from this
+> suite's `agentic/` but four from the sibling's — the first suite invocation
+> errored instantly on the mismatch. The shared `_testlib/provider-agentic.js`
+> now resolves skills from its own location and the hack is gone.

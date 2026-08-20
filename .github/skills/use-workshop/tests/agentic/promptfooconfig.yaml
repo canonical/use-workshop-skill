@@ -15,14 +15,17 @@ prompts:
   - "{{task}}"
 
 providers:
-  - id: file://provider-claude-cli.js
+  # Shared provider (see .github/skills/_testlib/). Skills resolve from the
+  # provider's own location, so no repo_root plumbing is needed; auth defaults
+  # to the claude CLI subscription login (EVAL_AUTH=api opts into --bare +
+  # ANTHROPIC_API_KEY, where max_budget_usd is the spend rail).
+  - id: file://../../../_testlib/provider-agentic.js
     config:
+      skills: [use-workshop]
       model: claude-sonnet-4-6
-      # Resolved at run time by run-agentic.sh; this default lets the
-      # config also work when invoked directly from the agentic/ dir.
-      repo_root: ../../../..
       agent_timeout_ms: 900000
       max_budget_usd: 3
+      sandbox_prefix: agentic-eval-
 
 defaultTest:
   options:
