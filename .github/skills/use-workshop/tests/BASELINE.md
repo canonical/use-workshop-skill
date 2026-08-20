@@ -60,8 +60,9 @@ recorded under one are not comparable with the other.
 | Candidate | Role | Judge | Pass rate | Notes |
 |-----------|------|-------|-----------|-------|
 | `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **81/81 (100%)** | 0.9.5 round, 2026-08-20: full run 80/81 with 0 errors (committed as `results/2026-08-20-routing-openrouter-z-ai-glm-5.2.json`); the single failure was a blunt `not-contains "--reason"` firing on a correct answer that *negated* the flag — relaxed as assertion fix #12 below and re-run green (1/1). All 3 rewritten SSH cases and all 5 new 0.9.5 cases passed at 1.0 on the first run |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **confirmation run** | **local claude judge** | **81/81 (100%)** | first full run of the subscription pair, 2026-08-20: 79/81, 0 errors, ~17 min, $0 API spend; both misses were rubric-strictness artifacts under the new judge, relaxed as assertion fix #13 and re-run green. Committed summary: `results/2026-08-20-routing-claude-cli-claude-sonnet-4-6.json` |
 | `z-ai/glm-5.2` (OpenRouter) | historical | `gpt-5.5` (OpenRouter, floating) | 76/76 (100%) | 76-case suite, 2026-08-13, post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
-| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; predates the `e31d177` gap fixes and the 0.9.5 round. The confirmation run is now `make eval-routing-subscription` (claude CLI Sonnet + local judge); its first full run seeds a new row here |
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; predates the `e31d177` gap fixes and the 0.9.5 round |
 
 (Haiku 4.5 and Opus 4.7 diagnostic rows were retired 2026-08-20: both were
 pinned on the 59-case/0.9.2 bundle, two suite growths behind, and were never
@@ -555,6 +556,18 @@ the fix):
    and now explicitly protects the negation (same mention-vs-prescription
    class as fixes 2, 3, 7, 8, and 10). Re-ran green (1/1); the gate is
    pinned 81/81.
+13. **Two local-judge strictness relaxations** (2026-08-20) — surfaced on
+   the first subscription-pair run (the local claude judge reads rubrics
+   more literally than gpt-5.5 did): the new `Bare workshop init` case's
+   rubric made a parenthetical "(try-<name> works the same way)" read as
+   required content — now explicitly optional (the user asked only about
+   their in-project SDK); and the `Narrow a custom-device plug` rubric was
+   read as demanding a recitation of "productid requires vendorid" even
+   though the answer sets both attributes, satisfying the dependency by
+   construction — recitations of schema rules are now explicitly optional
+   (extends fix #11). Both answers were verified correct against the raw
+   outputs; both cases re-ran green. Pure relaxations — the GLM gate's
+   81/81, graded under the stricter wording, stands without a re-run.
 
 ## Agentic E2E eval
 

@@ -164,9 +164,12 @@
         `workshop refresh` and (since custom-device never auto-connects)
         `workshop connect`. It does NOT invent attributes like `vendor`,
         `product`, or `serial`, and does NOT route the request to a different
-        interface. (Restating the "at least one of subsystem/vendorid/productid
-        is required" rule is optional — the user's plug already has
-        `subsystem`, so it isn't at issue here.)
+        interface. (Reciting the schema rules is optional, not required: the
+        "at least one of subsystem/vendorid/productid" rule isn't at issue —
+        the plug already has `subsystem` — and the "productid requires
+        vendorid" dependency is satisfied by construction since the answer
+        sets both; do not penalize an otherwise-correct answer for not
+        restating either rule.)
 
 - description: Sticky disconnect — keep an auto-connected plug off across refreshes
   vars:
