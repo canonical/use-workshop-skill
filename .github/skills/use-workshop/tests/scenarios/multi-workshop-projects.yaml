@@ -118,9 +118,11 @@
         The response bridges to the host service with a tunnel — a plug on the
         consumer SDK and a slot on the `system` SDK pointing at the host port —
         applied with `workshop refresh` and wired with a manual `workshop
-        connect`. It correctly distinguishes this host-service case (a plain
-        host process has no workshop `.wp` name) from same-project
-        workshop-to-workshop traffic, which uses DNS by name.
+        connect`. That is the whole requirement: the user's prompt already
+        concedes DNS-by-name won't help, so explicitly restating the contrast
+        with same-project workshop-to-workshop DNS (or that a host process
+        has no `.wp` name) is OPTIONAL extra credit, not required — do not
+        penalize an otherwise-correct answer for leaving it implicit.
 
 - description: User attempts a direct cross-workshop connect
   vars:

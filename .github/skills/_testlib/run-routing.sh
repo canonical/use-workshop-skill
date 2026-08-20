@@ -349,7 +349,17 @@ set -e
 # - EMPTY candidate answers: a degraded OpenRouter backend can burn the
 #   whole completion as hidden reasoning and return zero visible text —
 #   an empty answer is backend garbage, never skill signal.
-# Either would otherwise overwrite a canonical baseline with a broken run.
+# - DEGENERATE COLLAPSE: the same degraded backends also produce answers
+#   that loop a phrase, or emit varied token soup, to the token ceiling.
+#   Detected conservatively: the completion sits at/near the ceiling AND
+#   the text's 60-char shingle diversity is below 0.98 — measured on
+#   2026-08-20: every healthy answer across 300+ cases scores >= 0.99,
+#   every observed collapse <= 0.96 (exact loops score near 0). A
+#   legitimate long answer that merely truncates keeps full diversity and
+#   is NOT flagged (the 2026-08-13 migration verified truncated-but-valid
+#   answers exist).
+# Any of these would otherwise overwrite a canonical baseline with a
+# broken run.
 if [[ -f "${raw_json}" ]]; then
   error_count="$(python3 -c 'import json,sys
 res = json.load(open(sys.argv[1])).get("results") or {}
@@ -359,10 +369,24 @@ if e is None:
     cases = res.get("results") or []
     e = sum(1 for c in cases
             if c.get("error") and not ((c.get("gradingResult") or {}).get("componentResults")))
+
+def degenerate(text):
+    if len(text) < 400:
+        return False
+    shingles = [text[i:i+60] for i in range(0, len(text) - 60, 30)]
+    if not shingles:
+        return False
+    return len(set(shingles)) / len(shingles) < 0.98
+
 extra = 0
 for c in (res.get("results") or []):
-    out = ((c.get("response") or {}).get("output"))
+    resp = c.get("response") or {}
+    out = resp.get("output")
     if out is not None and not str(out).strip():
+        extra += 1
+        continue
+    completion = ((resp.get("tokenUsage") or {}).get("completion")) or 0
+    if completion >= 2900 and degenerate(str(out or "")):
         extra += 1
         continue
     for cr in ((c.get("gradingResult") or {}).get("componentResults") or []):
