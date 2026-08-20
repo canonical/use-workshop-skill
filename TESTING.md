@@ -65,8 +65,8 @@ column, and a judge change means seeding a new row, not editing an old one.
   update-docs-manifest` regenerates the shared `docs-manifest.txt` +
   `allowed-keys.json`; `make -C .github/skills/onboard-workshop/tests
   update-sdk-catalog` re-stamps the SDK catalog.
-- Versions: CI pins promptfoo 0.121.9 for the gate; Lane 2 is verified on
-  0.121.17 with claude CLI 2.1.236 (whose binary carries the
+- Versions: promptfoo 0.121.17 everywhere (CI pins it for the gate; Lane 2
+  is verified on it too) with claude CLI 2.1.236 (whose binary carries the
   `--system-prompt-file` flag the routing candidate depends on — see
   `_testlib/provider-routing-cli.js`).
 
