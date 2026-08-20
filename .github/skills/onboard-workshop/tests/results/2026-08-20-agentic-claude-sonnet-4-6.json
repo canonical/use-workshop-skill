@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "generated_at": "2026-08-20T01:49:00+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 2,
+    "passed": 2,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 370,
+      "completion": 16060,
+      "cached": 1983919
+    },
+    "cost_usd": 1.2916
+  },
+  "cases": [
+    {
+      "description": "onboard-mini-node \u2014 full onboarding of a tiny Node repo (real LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 302175,
+      "cost": 1.047499
+    },
+    {
+      "description": "honesty-gate \u2014 out-of-envelope repo yields INFEASIBLE and no files",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 58089,
+      "cost": 0.244103
+    }
+  ]
+}

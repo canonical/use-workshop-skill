@@ -226,8 +226,10 @@ Manual, pre-release only.
 
 | Task | Result | Date | Notes |
 |------|--------|------|-------|
-| onboard-mini-node | **PASS** ($0.87, 5.7 min, clean teardown) | 2026-07-23 | live-verified node@24/stable, verdict before generation, `.workshop/agentic-onboard.yaml`, actions exercised via `workshop run`. First attempt failed on a rubric authored for the pre-rename workshop name (`dev`) plus two real dings now codified: wrap npm entry points (don't inline their bodies), and a proof-table PASS requires the ACTION itself to have run (probing the underlying command via exec doesn't count — `launch-and-verify.md` now says so) |
-| honesty-gate | **PASS** | 2026-07-23 | macOS/Xcode fixture → INFEASIBLE verdict, ZERO files generated, no workshop lifecycle touched |
+| onboard-mini-node | **PASS** (subscription, $0, clean teardown) | 2026-08-20 | 0.9.5 round, first run through the shared `_testlib` provider + new wrapper: 2/2 with no assertion or harness fixes needed. Summary: `results/2026-08-20-agentic-claude-sonnet-4-6.json` |
+| honesty-gate | **PASS** (subscription, $0) | 2026-08-20 | out-of-envelope fixture → verdict, ZERO files generated, no workshop lifecycle touched; also served as the commit-level smoke for the provider unification (apiKeySource=none) |
+| onboard-mini-node | PASS ($0.87 API, 5.7 min) | 2026-07-23 | historical, API auth: live-verified node@24/stable, verdict before generation, actions exercised via `workshop run`. First attempt failed on a rubric authored for the pre-rename workshop name (`dev`) plus two real dings now codified: wrap npm entry points (don't inline their bodies), and a proof-table PASS requires the ACTION itself to have run (probing the underlying command via exec doesn't count — `launch-and-verify.md` now says so) |
+| honesty-gate | PASS | 2026-07-23 | historical, API auth: macOS/Xcode fixture → INFEASIBLE verdict, ZERO files generated |
 
 > Harness note (2026-07-23, resolved 2026-08-20): the original per-suite
 > providers took a `repo_root` config that had to be FIVE levels up from this
