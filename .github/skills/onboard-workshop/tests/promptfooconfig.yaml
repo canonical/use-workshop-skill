@@ -12,33 +12,34 @@ description: |
   overrides vars.skill with skill-selection-context.md (both skills'
   frontmatter only) to test cross-skill routing.
 
+  This suite's gate runs on the SUBSCRIPTION lane: Sonnet via the local
+  claude CLI login as the candidate, the local claude judge for llm-rubric
+  grading — $0, no API keys. The Anthropic HTTP tiers and the OpenAI judge
+  were retired 2026-08-20 (the API path cost ~$4/run and two keys); the
+  2026-08-13 GLM-5.2 diagnostic measured 50/53, so an OpenRouter migration
+  was rejected and Sonnet fidelity kept — see BASELINE.md.
+
 prompts:
   - file://prompt.json
 
 providers:
-  # Primary baseline. Listed first so scripts/run-routing.sh defaults to it.
-  - id: anthropic:messages:claude-sonnet-4-6
+  # Local claude CLI candidate (see _testlib/provider-routing-cli.js for the
+  # delivery mechanics: system prompt via --system-prompt-file, user message
+  # on stdin, tool-less scratch cwd).
+  - id: file://../../_testlib/provider-routing-cli.js
+    label: claude-cli:claude-sonnet-4-6
     config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Clarity diagnostic — Haiku failures on a well-written skill usually
-  # indicate ambiguity in the skill rather than model weakness.
-  - id: anthropic:messages:claude-haiku-4-5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Headroom check — Opus failures usually indicate a missing/wrong skill
-  # fact, not a model capability gap.
-  - id: anthropic:messages:claude-opus-4-7
-    config:
-      max_tokens: 1024
-      temperature: 0.0
+      model: claude-sonnet-4-6
+      timeout_ms: 240000
 
 defaultTest:
-  # Same pinned llm-rubric judge as the sibling suite (see the rationale
-  # there); requires OPENAI_API_KEY.
   options:
-    provider: openai:gpt-5.5-2026-04-23
+    # Local claude judge — grading also runs on the subscription login. The
+    # driver additionally passes --grader with the same file, belt and braces.
+    # Scores from this judge are NOT comparable with the retired
+    # openai:gpt-5.5-2026-04-23 judge's: baselines are per (candidate, judge)
+    # pair.
+    provider: file://../../_testlib/provider-judge-cli.js
   vars:
     # The bundle simulates the mid-conversation state where the skill is
     # loaded AND its required_reading (incl. borrowed sibling files) has been

@@ -3,6 +3,10 @@
 
 # Eval suite for `use-workshop`
 
+(See `TESTING.md` at the repo root for the three-lane doctrine — what runs
+when and what each lane costs; shared harness code lives in
+`../../_testlib/`. This file covers suite specifics.)
+
 Two complementary [promptfoo](https://promptfoo.dev) suites that validate
 the `use-workshop` skill:
 
@@ -31,10 +35,10 @@ the manual run summary diff.
   per case, but is only ~23% of run cost ($0.32 of a measured $1.41) since
   grading responses are short — on large sweeps it is still the first thing to
   hit rate limits.
-- `ANTHROPIC_API_KEY` exported — only for the Anthropic routing runs
-  (`make eval-routing-anthropic`, `eval-routing-all-models`) and the
-  agentic suite. `scripts/run-routing.sh` and `scripts/run-agentic.sh`
-  also accept the same value as `ANTHROPIC_API_TOKEN` and bridge it.
+- No Anthropic key: the Anthropic HTTP routing tiers were retired 2026-08-20.
+  The Sonnet confirmation and the agentic suite run on the claude CLI
+  subscription login instead ($0; `EVAL_AUTH=api` + `ANTHROPIC_API_KEY` is the
+  opt-in escape hatch).
 - `OPENAI_API_KEY` — no longer required here. The judge model is unchanged
   (`gpt-5.5`) but is now reached through OpenRouter.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
@@ -45,16 +49,13 @@ the manual run summary diff.
 ```sh
 make help                       # list all targets
 make check                      # all free offline static checks (CI entry point)
-make check-doc-paths            # assert reference/cli/ paths map to the 4 combined pages (fast, no API)
 make check-source-docs          # assert every cited upstream doc path exists in docs-manifest.txt (offline)
 make check-yaml-keys            # lint skill YAML snippets/templates against the upstream schema key allowlists (offline)
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
 make eval-routing               # routing eval, GLM-5.2 via OpenRouter — the pinned gate
-make eval-routing-anthropic     # routing eval, Sonnet 4.6 (former baseline; needs ANTHROPIC_API_KEY)
-make eval-routing-all-models    # routing eval against Sonnet 4.6, Haiku 4.5, Opus 4.7
-make eval-routing-openrouter        # routing eval, GLM-5.1 via OpenRouter (needs OPENROUTER_API_KEY)
-make eval-routing-openrouter-all    # routing eval, GLM-4.7-flash + GLM-5.1 + GLM-5.2 via OpenRouter
-make eval-agentic               # agentic E2E suite, Sonnet 4.6 only (slow, real LXD)
+make eval-routing-subscription  # routing eval, Sonnet 4.6 via the claude CLI subscription lane ($0)
+make eval-routing-sweep         # diagnostics: GLM 4.7-flash + 5.1 + 5.2, MiniMax-M2.7 (runner-up)
+make eval-agentic               # agentic E2E suite (slow, real LXD)
 make eval-bundle                # regenerate skill-bundle.md from current sources
 make eval-clean                 # drop generated bundle and raw outputs
 ```
@@ -64,7 +65,6 @@ Or invoke the underlying scripts directly:
 ```sh
 bash scripts/run-routing.sh                   # full routing run (GLM-5.2 via OpenRouter)
 bash scripts/run-routing.sh --filter-pattern bootstrap   # one scenario
-bash scripts/run-routing.sh --model claude-haiku-4-5     # one Anthropic tier
 bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1   # any declared provider
 
 bash scripts/run-agentic.sh                   # full agentic suite
@@ -86,17 +86,16 @@ needs **`OPENROUTER_API_KEY` and nothing else** (a measured ~$1.41/run, down
 from ~$10.43 when the candidate billed to Anthropic and the judge to OpenAI —
 see `BASELINE.md` for the derivation).
 
-The Anthropic tiers stay declared and selectable — they are the occasional
-confirmation run on the model family the skill is actually written for.
-The agentic suite is unaffected; it drives the `claude` CLI directly and
-cannot use OpenRouter.
+The Anthropic HTTP tiers were retired 2026-08-20. The confirmation run on the
+model family the skill is actually written for is `make
+eval-routing-subscription`: the same 76 cases through the `claude` CLI on the
+local subscription login, at $0. The agentic suite likewise drives the
+`claude` CLI directly and cannot use OpenRouter.
 
 ```sh
 export OPENROUTER_API_KEY=...
 make eval-routing                       # GLM-5.2 — the pinned gate
-make eval-routing-anthropic             # Sonnet 4.6 — needs ANTHROPIC_API_KEY
-make eval-routing-openrouter            # GLM-5.1, the mid GLM tier
-make eval-routing-openrouter-all        # GLM-4.7-flash + GLM-5.1 + GLM-5.2
+make eval-routing-sweep                 # GLM family + MiniMax-M2.7 runner-up
 bash scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1
 ```
 
@@ -106,11 +105,11 @@ Rules of the road:
   `promptfooconfig.yaml`; an unknown id is a hard error (it would
   otherwise silently match zero providers and overwrite a baseline with
   an empty summary). To try a new model, add a 3-line provider block with
-  `config: {max_tokens: 1024, temperature: 0.0}` — exactly like adding an
-  Anthropic tier. Confirm the slug against <https://openrouter.ai/models>.
-- **One provider per run.** `make eval-routing` runs only the GLM-5.2 gate,
-  and `eval-routing-all-models` only the Anthropic tiers — neither sweeps
-  everything declared. `--model` and `--provider` are mutually exclusive.
+  `config: {max_tokens: 1024, temperature: 0.0}`. Confirm the slug against
+  <https://openrouter.ai/models>.
+- **One provider per run.** `make eval-routing` runs only the GLM-5.2 gate;
+  `eval-routing-sweep` iterates the declared diagnostics one at a time via
+  `run-sweep.sh`.
 - **Determinism preserved.** Selection is by `--filter-providers`, which
   keeps the provider's `temperature: 0` config block. The gate row goes
   further and pins OpenRouter's *backend* routing (`allow_fallbacks: false`,
@@ -167,17 +166,13 @@ tests/
 ├── Makefile                     # convenience targets
 ├── scripts/
 │   ├── regenerate-bundle.sh
-│   ├── check-doc-paths.sh       # CLI 4-page guard
-│   ├── check-source-docs.sh     # cited-doc-path guard (vs docs-manifest.txt)
-│   ├── check-yaml-keys.py       # YAML key lint (vs allowed-keys.json)
 │   ├── update-docs-manifest.sh  # regenerate the two generated files (maintainer-only)
 │   ├── run-routing.sh
-│   ├── run-agentic.sh
-│   └── _summarize.py            # raw -> slim summary post-processor
+│   └── run-agentic.sh
+│   # check-source-docs.sh, check-yaml-keys.py, and _summarize.py live in the
+│   # shared ../../_testlib/ (see its README)
 ├── scenarios/                   # routing test cases (12 files)
 ├── agentic/                     # agentic E2E suite (see its README)
-├── fixtures/
-│   └── prompts.txt              # flat corpus of routing prompts, for review
 └── results/
     ├── *.json                   # slim per-run summaries (committed)
     └── raw/*.json               # full promptfoo output (gitignored)
@@ -189,22 +184,22 @@ When you change SKILL.md or a workflow file, re-run the affected
 suite(s) to confirm nothing regressed:
 
 0. `make check` — instant, no API. The free offline gate CI runs: the
-   `reference/cli/` four-page guard (`check-doc-paths`), the cited-doc-path
-   guard (`check-source-docs`, every backticked `<area>/….md|.json` path
-   must be in `docs-manifest.txt`), bundle regeneration, scenario/template
+   cited-doc-path guard (`check-source-docs`, every backticked
+   `<area>/….md|.json` path must be in `docs-manifest.txt` — since the
+   manifest carries only the 4 combined CLI pages, this also subsumes the
+   retired `check-doc-paths`), bundle regeneration, scenario/template
    YAML parse, the YAML key lint (`check-yaml-keys`, every snippet's
    top-level keys must be in the upstream schema allowlists), and
    shellcheck. Run this before any paid eval.
 1. `make eval-routing` — fast, deterministic; the canonical regression
    gate. If pass rate drops below the BASELINE.md value for GLM-5.2,
    investigate before merging.
-2. (Optional) `make eval-routing-anthropic` — the confirmation run on the
-   model family the skill is written for. Worth doing before shipping a
-   substantial content change, since the gate is a proxy.
-3. (Optional) `make eval-routing-all-models` — Haiku and Opus give
-   useful diagnostic signal: a Haiku regression where Sonnet still
-   passes usually means the skill text grew ambiguous; an Opus
-   regression usually means a fact is missing or wrong.
+2. (Optional) `make eval-routing-subscription` — the $0 confirmation run on
+   the model family the skill is written for, via the claude CLI
+   subscription lane. Worth doing before shipping a substantial content
+   change, since the gate is a proxy.
+3. (Optional) `make eval-routing-sweep` — open-weight portability
+   diagnostics (GLM tiers + the MiniMax runner-up).
 4. (Optional, slow) `make eval-agentic` — the end-to-end check that
    matters for behaviour, not text. Run before shipping changes that
    touch workflow procedures.

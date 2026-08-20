@@ -4,22 +4,29 @@
 # Eval baselines for `onboard-workshop`
 
 Same contract as the sibling suite: PRs that change skill content must not
-merge below a pinned cell without investigation. Cells marked _pending_ are
-blocked on API credits at the time of the 2026-07-23 development round and
-must be recorded before release.
+merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
 53 cases across 8 scenario files (incl. 8 cross-skill selection cases).
-Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 
-| Model | Pass rate | Date | Notes |
-|-------|-----------|------|-------|
-| `claude-sonnet-4-6` | **53/53 (100%)** | 2026-08-13 | canonical baseline; 48→53 in the gap-fix round below |
-| `claude-sonnet-4-6` | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
-| `claude-haiku-4-5` | _pending_ | — | clarity diagnostic |
-| `claude-opus-4-7` | _pending_ | — | headroom check |
-| `z-ai/glm-5.2` (OpenRouter) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
+Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
+the local claude CLI login as candidate, the local claude judge for
+llm-rubric grading — $0, no API keys. Baselines are per **(candidate,
+judge) pair**; the rows below were recorded under the retired
+`openai:gpt-5.5-2026-04-23` API judge and are not comparable with
+local-judge rates. The first full subscription-lane run seeds the new pair's
+row.
+
+| Candidate | Judge | Pass rate | Date | Notes |
+|-----------|-------|-----------|------|-------|
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | `gpt-5.5-2026-04-23` (OpenAI, retired path) | **53/53 (100%)** | 2026-08-13 | canonical under the retired pair; 48→53 in the gap-fix round below |
+| `claude-sonnet-4-6` (Anthropic HTTP) | `gpt-5.5-2026-04-23` (OpenAI) | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
+| `z-ai/glm-5.2` (OpenRouter) | `gpt-5.5-2026-04-23` (OpenAI) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
+
+(The Haiku 4.5 and Opus 4.7 diagnostic rows sat at _pending_ since 2026-07-23
+and were retired 2026-08-20 rather than re-run — a permanently pending cell is
+not a baseline.)
 
 > ### GLM-5.2 diagnostic — why this suite stays on Sonnet
 >
@@ -46,9 +53,9 @@ Judge: `openai:gpt-5.5-2026-04-23`, pinned in `promptfooconfig.yaml`.
 > ~$0.98/run) did not justify that. The sibling had no such cost: it ported
 > at 100%.
 >
-> The provider plumbing in `scripts/run-routing.sh` is shared with the sibling
-> and handles either vendor, so revisiting this is a one-line change to the
-> default branch plus a GLM provider block in `promptfooconfig.yaml`.
+> The routing driver is shared with the sibling (`_testlib/run-routing.sh`),
+> so revisiting this would mean re-adding an HTTP lane to this suite's
+> wrapper plus a GLM provider block — deliberately not kept on standby.
 
 > **2026-07-23 development round.** The first canonical run landed 40/46
 > ($3.70). Of the 6 failures: 4 were over-strict rubrics (mention-vs-
@@ -208,7 +215,7 @@ Manual, pre-release only.
 
 | Guinea pig | Ready | Actions proven | Date | Notes |
 |------------|-------|----------------|------|-------|
-| workshop-akcano | ✓ ("status: ready confirmed — workshop stable throughout the proof loop") | scorecard PASS after tunnel-check fix; `lint-shell` honestly UNVERIFIED (git archive sandbox has no `.git` — sandbox artifact, not a skill defect) | 2026-07-23 | agent remapped the host tunnel port 8000→8001 because the real akcano dev workshop holds 8000 — correct adaptation that exposed a scorer bug (host-side remap now allowed; workshop-side slot must still match) |
+| workshop-akcano | ✓ ("status: ready confirmed — workshop stable throughout the proof loop") | scorecard PASS after tunnel-check fix; `lint-shell` honestly UNVERIFIED (the staged sandbox is copied without `.git` — sandbox artifact, not a skill defect) | 2026-07-23 | agent remapped the host tunnel port 8000→8001 because the real akcano dev workshop holds 8000 — correct adaptation that exposed a scorer bug (host-side remap now allowed; workshop-side slot must still match) |
 | vscode-workshop | **PASS (overall_pass: true, 0 failures; all asserts green)** | ✓ Ready; proof table all-PASS: check-types, lint, build, `xvfb-run -a npm test` (108 tests green in-container), package; clean teardown ($1.12, 7.5 min) | 2026-07-23 | the four runs before the clean pass tell the story: (1) omitted the desktop plug → `toolchain-signals.md` now prescribes it for Electron-family hosts; (2) declared it, hit a launch conflict, STRIPPED it to get green → `launch-and-verify.md` now forbids removing proposed constructs (UNVERIFIED instead); (3) with that fix: kept the plug, marked everything UNVERIFIED with the reason, passed scorecard+rubric — the discipline rule demonstrably working; (4) credit-killed mid-run on a degraded path (inline `hooks:` in a stray `.workshop/deps.yaml`) → scorer now prefers the def with `base:`, and `generate-definition.md` hardens the no-inline-hooks rule + root/non-root hook contract |
 
 ## Agentic suite (`make eval-agentic`)
@@ -218,7 +225,8 @@ Manual, pre-release only.
 | onboard-mini-node | **PASS** ($0.87, 5.7 min, clean teardown) | 2026-07-23 | live-verified node@24/stable, verdict before generation, `.workshop/agentic-onboard.yaml`, actions exercised via `workshop run`. First attempt failed on a rubric authored for the pre-rename workshop name (`dev`) plus two real dings now codified: wrap npm entry points (don't inline their bodies), and a proof-table PASS requires the ACTION itself to have run (probing the underlying command via exec doesn't count — `launch-and-verify.md` now says so) |
 | honesty-gate | **PASS** | 2026-07-23 | macOS/Xcode fixture → INFEASIBLE verdict, ZERO files generated, no workshop lifecycle touched |
 
-> Harness note (2026-07-23): the agentic `promptfooconfig.yaml` `repo_root`
-> must be FIVE levels up from `agentic/` (`../../../../..`); the sibling's
-> `../../../..` works there only because its `run-agentic.sh` wrapper exports
-> `AGENTIC_REPO_ROOT`. First suite invocation errored instantly on this.
+> Harness note (2026-07-23, resolved 2026-08-20): the original per-suite
+> providers took a `repo_root` config that had to be FIVE levels up from this
+> suite's `agentic/` but four from the sibling's — the first suite invocation
+> errored instantly on the mismatch. The shared `_testlib/provider-agentic.js`
+> now resolves skills from its own location and the hack is gone.

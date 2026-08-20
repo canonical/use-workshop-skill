@@ -16,19 +16,26 @@ prompts:
   - "{{task}}"
 
 providers:
-  - id: file://provider-claude-cli.js
+  # Shared provider (see .github/skills/_testlib/). Skills resolve from the
+  # provider's own location — this retires the five-levels repo_root hack the
+  # first suite invocation tripped over. Auth defaults to the claude CLI
+  # subscription login (EVAL_AUTH=api opts into --bare + ANTHROPIC_API_KEY,
+  # where max_budget_usd is the spend rail).
+  - id: file://../../../_testlib/provider-agentic.js
     config:
+      skills: [onboard-workshop, use-workshop]
       model: claude-sonnet-4-6
-      # Resolved relative to the agentic/ dir promptfoo runs from (via
-      # `make eval-agentic`): five levels up to the repo root. Override with
-      # AGENTIC_REPO_ROOT when invoking from anywhere else.
-      repo_root: ../../../../..
       agent_timeout_ms: 900000
       max_budget_usd: 3
+      capture_generated_files: true
+      sandbox_prefix: onboard-agentic-
 
 defaultTest:
   options:
     cache: false
+    # Pin llm-rubric grading to the local claude CLI judge (see the sibling
+    # config's comment for why an unpinned grader is a problem).
+    provider: file://../../../_testlib/provider-judge-cli.js
 
 tests:
   - file://tasks/onboard-mini-node.yaml

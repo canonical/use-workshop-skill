@@ -27,7 +27,8 @@ actually finish the job?".
 
 - `--permission-mode acceptEdits` so file edits inside the sandbox don't
   prompt.
-- `--allowedTools` whitelist (see `provider-claude-cli.js`) covers the
+- `--allowedTools` whitelist (see the shared
+  `../../../_testlib/provider-agentic.js`) covers the
   specific patterns each workflow needs (`workshop *`, `sdk *`,
   `lxc list*`, `lxc info*`, plus standard read/edit). Anything outside
   the whitelist halts the run. This is intentional — the eval stays
@@ -38,21 +39,22 @@ actually finish the job?".
 
 ```
 agentic/
-├── promptfooconfig.yaml        # entry point — references provider + tasks
-├── provider-claude-cli.js      # custom JS provider that shells `claude -p`
+├── promptfooconfig.yaml        # entry point — references the shared provider + tasks
 ├── tasks/                      # one file per skill workflow
 │   └── bootstrap-project.yaml
 └── README.md                   # this file
 ```
 
-The `provider-claude-cli.js` does the work:
+The shared `../../../_testlib/provider-agentic.js` does the work:
 
 1. Creates a fresh tmp sandbox dir.
 2. Copies the task's fixture (if any) into the sandbox.
-3. Copies `.claude/skills/use-workshop/` into the sandbox (so `claude --bare`
-   auto-loads the skill from there and ONLY that skill).
-4. Spawns `claude -p` with `--bare --output-format stream-json --verbose`,
-   the per-task prompt, and the permission posture above.
+3. Copies the configured skill(s) from `.github/skills/` into the sandbox's
+   `.claude/skills/` (so the CLI auto-loads them and ONLY them).
+4. Spawns `claude -p` with `--output-format stream-json --verbose`, the
+   per-task prompt, and the permission posture above — on the local
+   subscription login by default (`EVAL_AUTH=api` opts into
+   `--bare` + `ANTHROPIC_API_KEY`).
 5. Captures the streaming transcript; flattens it to a readable form
    with `[ASSISTANT TEXT]`, `[BASH] ...`, `[TOOL_RESULT] ...`,
    `[RESULT ...]`, `[FINAL TEXT]` markers so assertions can look for

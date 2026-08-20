@@ -17,34 +17,22 @@ prompts:
 providers:
   # NOTE: the default target of `scripts/run-routing.sh` is NOT the first entry
   # here — the script names it explicitly. Since 2026-08-13 that default is
-  # `openrouter:z-ai/glm-5.2` (see the GLM block below); the Anthropic tiers
-  # are an opt-in confirmation run (`--model`, or `make eval-routing-anthropic`).
+  # `openrouter:z-ai/glm-5.2` (see the GLM block below).
   #
-  # Former baseline, kept selectable. Still the reference for how the skill
-  # behaves on the model family it is written for.
-  - id: anthropic:messages:claude-sonnet-4-6
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Clarity diagnostic — Haiku failures on a well-written skill usually
-  # indicate ambiguity in the skill rather than model weakness.
-  - id: anthropic:messages:claude-haiku-4-5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Headroom check — Opus failures usually indicate a missing/wrong skill
-  # fact, not a model capability gap.
-  - id: anthropic:messages:claude-opus-4-7
-    config:
-      max_tokens: 1024
-      temperature: 0.0
+  # This config is the HTTP lane only. The Anthropic HTTP tiers were retired
+  # 2026-08-20: the Sonnet confirmation run now goes through the claude CLI
+  # subscription lane instead ($0, no API key) — see
+  # promptfooconfig-subscription.yaml and `make eval-routing-subscription`.
+  # The 2026-06 multi-family open-weight matrix (Kimi, DeepSeek, MiMo, gpt-oss,
+  # Nemotron, Gemma, Llama, Mistral, Qwen3) was retired at the same time; the
+  # measured rates live in BASELINE.md and the provider blocks in git history.
 
   # --- OpenRouter (open-weight) providers ----------------------------------
   # GLM (Zhipu) family split across tiers, mirroring the Haiku/Sonnet/Opus
   # roles above. `glm-5.2` is the DEFAULT target of `make eval-routing` and the
   # pinned CI gate (2026-08-13); the other tiers stay diagnostic-only and run
   # when selected explicitly via `scripts/run-routing.sh --provider
-  # openrouter:<slug>` (or the `make eval-routing-openrouter[-all]` targets).
+  # openrouter:<slug>` (or the `make eval-routing-sweep` target).
   # Every row here requires OPENROUTER_API_KEY.
   #
   # Slugs must be confirmed against https://openrouter.ai/models (they drift).
@@ -109,172 +97,12 @@ providers:
         quantizations:
           - fp8
 
-  # --- MiniMax (open-weight) providers --------------------------------------
-  # A second open-weight family for the same portability question, split across
-  # tiers like the GLM block above. EXCLUDED from the default sweep and from
-  # `eval-routing-all-models`; they only run when selected explicitly via
-  # `scripts/run-routing.sh --provider openrouter:minimax/<slug>` (or the
-  # `make eval-routing-minimax[-all]` targets). Requires OPENROUTER_API_KEY.
-  # Slugs confirmed against https://openrouter.ai/models (they drift).
-  # Refreshed 2026-07-23 to the current m2.x/m3 line; the earlier m1/m2
-  # generation is superseded (results stay in BASELINE.md as a record).
-  # The budget is kept at 1024 for cross-row parity.
-  #
-  # Clarity diagnostic (≈ Haiku role) — cheapest current-gen tier.
-  - id: openrouter:minimax/minimax-m2.5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Baseline / default target (≈ Sonnet role) — newest m2-series.
+  # --- MiniMax runner-up ------------------------------------------------------
+  # The documented fallback candidate: if the GLM family is ever deprecated or
+  # its backends degrade, minimax-m2.7 is the measured next-best open-weight
+  # router (see BASELINE.md). Diagnostic-only; part of `make eval-routing-sweep`.
+  # Requires OPENROUTER_API_KEY. Budget kept at 1024 for cross-row parity.
   - id: openrouter:minimax/minimax-m2.7
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  # Headroom check (≈ Opus role) — newest flagship (1M context).
-  - id: openrouter:minimax/minimax-m3
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # --- Qwen3 (open-weight) providers — DECLARED FOR PARITY, not run ---------
-  # The initial open-weight trial (see BASELINE.md "Prior comparison: Qwen3").
-  # Re-declared so the family stays selectable, but it is NOT part of any active
-  # sweep and has no Make target — GLM superseded it. Results in BASELINE are the
-  # 2026-06-04 / -08 runs.
-  - id: openrouter:qwen/qwen3-14b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:qwen/qwen3-32b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:qwen/qwen3-235b-a22b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # ====================================================================
-  # Expanded open-weight matrix (8 families, small/mid/large tiers).
-  # Each family has a `make eval-routing-<family>-all` sweep target.
-  # Slugs confirmed against https://openrouter.ai/<vendor> (they drift).
-  # NOTE on "open-weight": all eight families publish open weights by license
-  # (Kimi K2 Modified-MIT, DeepSeek MIT, MiMo MIT, gpt-oss/Gemma/Mistral
-  # Apache-2.0, Llama community license, Nemotron open). OpenRouter's per-model
-  # "open weights" badge is inconsistent for first-party-served models (it flags
-  # some Kimi/MiMo/DeepSeek endpoints "closed"); we track the license, not the
-  # badge. Mistral medium/large/magistral/devstral ARE proprietary and excluded.
-  # Reasoning tiers (all Nemotron, DeepSeek-r1, Kimi-k2-thinking) may hit the
-  # 1024-token ceiling — read `finishReason: length` as a budget artifact.
-  # ====================================================================
-
-  # Kimi (Moonshot) — refreshed 2026-07-23 to k2.6 / k2.7-code / k3.
-  # kimi-k3 is the current top-of-line (1M context); k2.7-code is the newest
-  # k2-series (coding-tuned); k2.6 is the small tier. The earlier
-  # k2.5/k2-thinking results stay in BASELINE.md as a record.
-  - id: openrouter:moonshotai/kimi-k2.6
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:moonshotai/kimi-k2.7-code
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:moonshotai/kimi-k3
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # DeepSeek.
-  - id: openrouter:deepseek/deepseek-v4-flash
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:deepseek/deepseek-v3.2
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:deepseek/deepseek-r1
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # MiMo (Xiaomi).
-  - id: openrouter:xiaomi/mimo-v2-flash
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:xiaomi/mimo-v2.5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:xiaomi/mimo-v2.5-pro
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # gpt-oss (OpenAI open-weight) — 2 tiers.
-  - id: openrouter:openai/gpt-oss-20b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:openai/gpt-oss-120b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # Nemotron (Nvidia) — all reasoning models (truncation risk at 1024).
-  - id: openrouter:nvidia/nemotron-nano-9b-v2
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:nvidia/llama-3.3-nemotron-super-49b-v1.5
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:nvidia/nemotron-3-super-120b-a12b
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # Gemma (Google) — Gemma 3 trio (non-reasoning).
-  - id: openrouter:google/gemma-3-4b-it
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:google/gemma-3-12b-it
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:google/gemma-3-27b-it
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # Llama (Meta).
-  - id: openrouter:meta-llama/llama-3.1-8b-instruct
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:meta-llama/llama-3.3-70b-instruct
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:meta-llama/llama-4-maverick
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-
-  # Mistral — Apache-2.0 open models only (medium/large are proprietary).
-  - id: openrouter:mistralai/ministral-3b-2512
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:mistralai/ministral-8b-2512
-    config:
-      max_tokens: 1024
-      temperature: 0.0
-  - id: openrouter:mistralai/mistral-small-3.2-24b-instruct
     config:
       max_tokens: 1024
       temperature: 0.0

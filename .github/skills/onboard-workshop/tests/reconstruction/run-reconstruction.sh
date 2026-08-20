@@ -7,9 +7,10 @@
 #
 # For each repo in GUINEA_REPOS — either a local checkout path or a pinned
 # remote `owner/repo@<sha>` (also accepts a full github.com URL):
-#   1. Clean-room copy: `git archive <rev>` into .work/<run>/<dir>/repo (no
-#      .git, so the commit history that added the definition never reaches the
-#      sandbox either).
+#   1. Clean-room copy: a detached `git worktree` checkout of <rev>, tar-copied
+#      into .work/<run>/<dir>/repo without `.git` (NOT `git archive` — archive
+#      honours `export-ignore`, which silently drops build evidence; see the
+#      staging step below). No commit history reaches the sandbox.
 #   2. Hide the ground truth: park the definition artifacts (.workshop/*.yaml
 #      and .workshop/<sdk>/ dirs, root workshop.yaml/.workshop.yaml) at
 #      .work/<run>/<dir>/ground-truth/; relocate any NON-definition files that
@@ -30,14 +31,16 @@
 #     the name is forced to recon-<dir> so teardown-by-prefix is safe.
 #
 # Auth (RECON_AUTH):
-#   api (default)  — `claude --bare` + ANTHROPIC_API_KEY; billed per token.
-#   subscription   — drops --bare (its auth is strictly ANTHROPIC_API_KEY;
-#                    OAuth and keychain are never read) and unsets the API
-#                    key/token so the local CLI login is used instead.
+#   subscription (default) — drops --bare (its auth is strictly
+#                    ANTHROPIC_API_KEY; OAuth and keychain are never read)
+#                    and unsets the API key/token so the local CLI login is
+#                    used instead. $0 API spend.
+#   api            — `claude --bare` + ANTHROPIC_API_KEY; billed per token.
 #
 # Judge (RECON_JUDGE):
-#   openai (default) — the pinned gpt-5.5 rubric judge; needs OPENAI_API_KEY.
-#   local            — provider-judge-cli.js, the same local CLI as the agent.
+#   local (default) — the shared _testlib/provider-judge-cli.js, the same
+#                     local CLI as the agent. $0.
+#   openai          — the pinned gpt-5.5 rubric judge; needs OPENAI_API_KEY.
 #
 # Requires: promptfoo, python3+yaml, claude CLI, git.
 
@@ -69,12 +72,12 @@ if [[ "${tier}" != "offline" && "${tier}" != "full" ]]; then
   exit 1
 fi
 
-auth="${RECON_AUTH:-api}"
+auth="${RECON_AUTH:-subscription}"
 if [[ "${auth}" != "api" && "${auth}" != "subscription" ]]; then
   echo "error: RECON_AUTH must be 'api' or 'subscription'" >&2
   exit 1
 fi
-judge="${RECON_JUDGE:-openai}"
+judge="${RECON_JUDGE:-local}"
 if [[ "${judge}" != "openai" && "${judge}" != "local" ]]; then
   echo "error: RECON_JUDGE must be 'openai' or 'local'" >&2
   exit 1
@@ -86,7 +89,10 @@ else
   concurrency="${RECON_CONCURRENCY:-4}"
 fi
 
-default_repos="${HOME}/Documents/workshop-akcano ${HOME}/Documents/vscode-workshop"
+# The four SHA-pinned public guinea pigs (each has a calibrated
+# reconstruction/expectations/<repo>.json) — reproducible on any machine.
+# Local checkouts remain usable via GUINEA_REPOS="<path> [<path>...]".
+default_repos="canonical/mir@5ce58e5f285d635439baed882fc77f1e3f3c50fe canonical/subiquity@2ef6b41ec8ad07a96cd4a2c581f4ae412e2be71d locnnil/formally-verify-rust-neetcode-with-creusot@4a36c4c1ae9e918b5b3c14ff84be4a10cc62ebc5 canonical/store-workshop@f29dee3a66bdac4ed430375f8974060002410f74"
 read -r -a repos <<< "${GUINEA_REPOS:-${default_repos}}"
 
 for cmd in promptfoo python3 claude git; do
@@ -342,7 +348,12 @@ raw_json="${script_dir}/../results/raw/${date_tag}-reconstruction-${tier}-${mode
 promptfoo_args=(eval -c promptfooconfig.yaml --no-cache
                 --output "${raw_json}" --max-concurrency "${concurrency}")
 if [[ "${judge}" == "local" ]]; then
-  promptfoo_args+=(--grader "file://${script_dir}/provider-judge-cli.js")
+  # Belt and braces: the config also pins this judge.
+  promptfoo_args+=(--grader "file://${script_dir}/../../../_testlib/provider-judge-cli.js")
+else
+  # The config pins the local judge by default, so the API judge must be
+  # selected explicitly here.
+  promptfoo_args+=(--grader "openai:gpt-5.5-2026-04-23")
 fi
 
 set +e

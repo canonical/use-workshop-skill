@@ -3,8 +3,9 @@
 # Copyright 2026 Canonical Ltd.
 #
 # Thin wrapper: run this suite's agentic E2E tasks via the shared driver in
-# ../../_testlib/. Suite-specific configuration lives in
-# agentic/promptfooconfig.yaml; the driver logic lives there.
+# ../../_testlib/. Fixes the historical gap where this suite had no wrapper
+# at all (`make eval-agentic` ran promptfoo raw, which is why its config
+# needed a five-levels repo_root hack).
 
 set -euo pipefail
 

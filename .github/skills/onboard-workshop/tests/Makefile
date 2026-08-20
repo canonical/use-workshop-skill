@@ -13,17 +13,19 @@
 
 SHELL := /usr/bin/env bash
 
+TESTLIB           := ../../_testlib
 ROUTING_SH        := scripts/run-routing.sh
 BUNDLE_SH         := scripts/regenerate-bundle.sh
-SOURCE_DOCS_SH    := scripts/check-source-docs.sh
-YAML_KEYS_PY      := scripts/check-yaml-keys.py
+SOURCE_DOCS_SH    := $(TESTLIB)/check-source-docs.sh
+YAML_KEYS_PY      := $(TESTLIB)/check-yaml-keys.py
 CATALOG_SH        := scripts/update-sdk-catalog.sh
 RECONSTRUCTION_SH := reconstruction/run-reconstruction.sh
+SIBLING_TESTS     := ../../use-workshop/tests
 
 .PHONY: help check check-yaml check-yaml-keys check-shell check-source-docs \
         check-catalog-stamp check-hooks-exec eval-bundle eval-routing \
         eval-agentic eval-reconstruction eval-reconstruction-full \
-        update-sdk-catalog eval-clean
+        update-sdk-catalog eval-clean eval-clean-all
 
 help:
 	@echo "onboard-workshop eval targets:"
@@ -31,14 +33,15 @@ help:
 	@echo "  check-source-docs         cited doc paths exist in the SHARED docs-manifest.txt (offline)"
 	@echo "  check-yaml-keys           YAML snippets/templates against the SHARED schema allowlists (offline)"
 	@echo "  check-catalog-stamp       sdk-catalog.md markers + generation stamp intact (offline)"
-	@echo "  check-hooks-exec          template hook stubs carry the executable bit (offline)"
+	@echo "  check-hooks-exec          advisory: warn if template hook stubs lack the executable bit (offline)"
 	@echo "  eval-bundle               regenerate skill-bundle.md + skill-selection-context.md"
-	@echo "  eval-routing              routing eval vs Sonnet 4.6 (paid; needs ANTHROPIC_API_KEY + OPENAI_API_KEY judge)"
-	@echo "  eval-agentic              agentic E2E tasks (slow, real LXD, paid)"
-	@echo "  eval-reconstruction       guinea-pig reconstruction, offline tier (paid ~\$$1-2/repo; needs sibling checkouts)"
+	@echo "  eval-routing              routing eval vs Sonnet 4.6 via the local claude CLI login + local judge (\$$0, no keys; slow)"
+	@echo "  eval-agentic              agentic E2E tasks (slow, real LXD; \$$0 on the claude CLI subscription login)"
+	@echo "  eval-reconstruction       guinea-pig reconstruction, offline tier (\$$0 on the subscription login; 4 pinned public repos)"
 	@echo "  eval-reconstruction-full  reconstruction incl. LXD launch + action proof (slow, manual)"
 	@echo "  update-sdk-catalog        maintainer-only: refresh references/sdk-catalog.md stamp + show sources"
 	@echo "  eval-clean                remove generated bundles and raw outputs"
+	@echo "  eval-clean-all            eval-clean + reconstruction .cache/ and .work/ (~150 MB+; re-clones on next run)"
 
 # All free static checks in one entry point, shared by CI and local runs.
 check: check-source-docs eval-bundle check-yaml check-yaml-keys check-shell \
@@ -53,13 +56,13 @@ files = sorted(glob.glob('scenarios/*.yaml') + glob.glob('../templates/**/*.yaml
 print('ok: %d YAML file(s) parsed' % len(files))"
 
 check-yaml-keys:
-	python3 $(YAML_KEYS_PY)
+	python3 $(YAML_KEYS_PY) --skill-root $(CURDIR)/.. --allowed-keys $(CURDIR)/$(SIBLING_TESTS)/allowed-keys.json --templates-recursive --classify-sdk-template
 
 check-shell:
-	shellcheck scripts/*.sh reconstruction/*.sh
+	shellcheck scripts/*.sh reconstruction/*.sh $(TESTLIB)/*.sh
 
 check-source-docs:
-	bash $(SOURCE_DOCS_SH)
+	bash $(SOURCE_DOCS_SH) --skill-root $(CURDIR)/.. --manifest $(CURDIR)/$(SIBLING_TESTS)/docs-manifest.txt
 
 # The catalog table is curated; this guards its machine-readable envelope.
 check-catalog-stamp:
@@ -69,12 +72,16 @@ check-catalog-stamp:
 	 || { echo "error: sdk-catalog.md markers or stamp line missing" >&2; exit 1; }
 	@echo "ok: sdk-catalog.md markers and stamp intact"
 
-# Hooks that lose their executable bit fail at launch time, confusingly.
+# ADVISORY since 2026-08-20: the exec bit is house style, not a runtime
+# requirement — Workshop invokes hooks with bash, so a 0644 hook still runs
+# (verified in the 2026-08-13 gap-fix round; 3 of 4 upstream guinea-pig repos
+# ship hooks at 0644). This warns so a dropped bit is noticed, but cannot
+# fail `check`.
 check-hooks-exec:
-	@bad=0; for f in ../templates/in-project-sdk/hooks/*; do \
-	  [ -x "$$f" ] || { echo "error: $$f is not executable" >&2; bad=1; }; \
-	done; [ $$bad -eq 0 ]
-	@echo "ok: template hook stubs are executable"
+	@for f in ../templates/in-project-sdk/hooks/*; do \
+	  [ -x "$$f" ] || echo "warning: $$f is not executable (house style is +x; Workshop runs it either way)" >&2; \
+	done
+	@echo "ok: template hook exec bits inspected (advisory)"
 
 eval-bundle:
 	bash $(BUNDLE_SH)
@@ -83,7 +90,7 @@ eval-routing:
 	bash $(ROUTING_SH)
 
 eval-agentic:
-	cd agentic && promptfoo eval --no-cache
+	bash scripts/run-agentic.sh
 
 eval-reconstruction:
 	bash $(RECONSTRUCTION_SH)
@@ -98,3 +105,8 @@ update-sdk-catalog:
 eval-clean:
 	rm -f skill-bundle.md skill-selection-context.md
 	rm -rf results/raw
+
+# Full scratch reclaim: also drops the reconstruction repo clone cache and
+# work dirs (the biggest disk consumers; safe — everything regenerates).
+eval-clean-all: eval-clean
+	rm -rf reconstruction/.cache reconstruction/.work
