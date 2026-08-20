@@ -55,7 +55,7 @@ Define an in-project SDK at `.workshop/<sdk-name>/sdk.yaml`. Reference from each
 workshop info backend                                   # read hostname:, e.g. backend.myproj.wp
 workshop exec frontend -- curl -sf http://backend.myproj.wp:8080/health
 ```
-This is plain DNS over the workshop network, not an interface connection — the rule that direct cross-workshop plug↔slot connections are rejected still holds.
+This is plain DNS over the workshop network, not an interface connection — the rule that direct cross-workshop plug↔slot connections are rejected still holds. The **host** also resolves `*.wp` names (0.9.4+) — `curl http://backend.myproj.wp:8080` works from a host terminal for services listening on the workshop network, and SSH from the host is automatic (0.9.5+; see `ide-integration.md`). Tunnels remain the mechanism for publishing a service on a *host* port.
 
 **When you still need a tunnel** — to bridge a workshop to a *host* service (a plain host process has no workshop `.wp` name, so DNS-by-name doesn't apply) — bridge through the host instead:
 

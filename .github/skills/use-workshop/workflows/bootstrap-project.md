@@ -44,11 +44,11 @@ If the tool isn't in the Store, or the user wants a project-specific install rec
 **Step 3. Create the definition.**
 Two first-class paths — pick by what the definition needs:
 
-*Path A — `workshop init` (base + SDKs only).* Scaffold a named definition straight from the command line:
+*Path A — `workshop init` (base + SDK list).* Scaffold a named definition straight from the command line:
 ```
-workshop init <name> --sdks <sdk1>,<sdk2>/<channel> --base <base>
+workshop init <name> [--sdks <sdk1>,<sdk2>/<channel>] [--base <base>]
 ```
-This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). Each `--sdks` entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`). Fast when the workshop is just a base plus Store SDKs. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or in-project SDKs — add those by editing the generated file, or use Path B.
+This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). `--sdks` is optional (0.9.5+; bare `workshop init <name>` gives a base-only definition) and each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`) or reference an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). `--base` defaults to `ubuntu@24.04`. Fast when the workshop is a base plus an SDK list. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or an in-project SDK's *directory* — add those by editing the generated file (or authoring `.workshop/<NAME>/`), or use Path B.
 
 *Path B — copy a template (when you need more).* Copy `templates/workshop-minimal.yaml` (single SDK) or `templates/workshop-multi-sdk.yaml` (more); reach for `templates/workshop-with-actions.yaml` or `templates/workshop-with-connections.yaml` when the definition needs those. Save it as a root `workshop.yaml` (single-file layout) or `.workshop/<name>.yaml` (named layout), then replace placeholders.
 

@@ -15,7 +15,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 
 3. **Refresh is non-destructive; prefer it to remove+launch.** If `workshop refresh` errors, rerun with `--wait-on-error` to pause in `Waiting`, investigate via `workshop shell`, then `--continue` (after fixing) or `--abort` (to revert). Constraint: `--wait-on-error` is single-workshop only.
 
-4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch/refresh. If the user wants those, schedule the `connect` step.
+4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch. If the user wants those, schedule the `connect` step — once, not per refresh: manual connections persist across `workshop refresh` (0.9.5+) and are re-wired only after `workshop restore` or remove+launch.
 
 5. **The project directory is mounted at `/project/`.** Any path that needs to be visible to the workshop must be reachable under `/project/`. Working directories passed via `workshop exec --cwd` or `workshop run --cwd` use workshop paths.
 </essential_principles>
@@ -24,7 +24,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 Authoritative readable docs:
 - Base URL: `https://ubuntu.com/workshop/docs/`
   Per-file `<source_docs>` blocks list paths RELATIVE to this base, with `.md` suffixes (e.g. `reference/cli/workshop.md`). Fetch by concatenating `<base>` + relative path → `https://ubuntu.com/workshop/docs/reference/cli/workshop.md`. The CLI reference is four combined pages — `workshop.md`, `sdk.md`, `sdkcraft.md`, `workshopctl.md` — each holding every subcommand of that tool as a section; there are no per-subcommand pages.
-- Whole-tree fallback: `<base>/llms.txt` — `https://ubuntu.com/workshop/docs/llms.txt`. Load this when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree).
+- Whole-tree fallback: `<base>/llms.txt` (index) and `<base>/llms-full.txt` (the full docs tree concatenated). Load one when a specific relative page isn't enough (e.g., the user asks something the skill doesn't directly cover and you want to scan the full docs tree). The docs are also served through the Context7 MCP server for agents that have it.
 
 The base URL may change. It is recorded HERE only — every other file lists relative paths so a single edit re-points the whole skill. Do not embed local `docs/` paths in any file under this skill; the docs site is the source of truth.
 </docs>
@@ -55,9 +55,9 @@ Then read the matching workflow under `workflows/` and follow it.
 | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-base", "check-health", "save-state", "restore-state", "set-health", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
 | "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
 | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
-| "VS Code", "JetBrains", "remote IDE", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
+| "VS Code", "JetBrains", "remote IDE", "SSH into the workshop", "ssh the workshop", "remote-SSH", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown field", "field not found", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon" | `workflows/troubleshoot.md` |
+| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update" | `workflows/troubleshoot.md` |
 | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 </routing>
 

@@ -42,14 +42,17 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Multi-SDK conflict | Comment out SDKs one at a time, refresh, find the offending one |
 | Plug conflict (mount target already in use) | Bind one plug to the other (`bind: <SDK>:<PLUG>`) — see `manage-interfaces.md` |
 | Port already taken (tunnel) | Free the port on the host or change `endpoint:` to another port |
-| YAML error: `unknown field` / `field not found` (with a line/column) | A typo'd or misplaced key in `workshop.yaml` / `sdk.yaml` (strict validation, 0.9.2+). Fix the named key; don't retry the same file unchanged |
+| SDK YAML error: `unknown SDK YAML fields: <name> (line N, column M)` (sketch wording: `sketch SDK YAML contains unknown fields: …`) | A typo'd or misplaced key in an in-project `sdk.yaml` or a sketch SDK (strict validation, 0.9.2+; SDK YAML **only**). Fix the named key; don't retry the same file unchanged |
+| A `workshop.yaml` key seems ignored — an SDK not installed, a connection never proposed, an action missing | `workshop.yaml` gets **no** unknown-field validation: a typo'd top-level key there is silently ignored. Diff the file against `reference/definition-files/workshop-definition.md` (or lint against `schema.json`); there is no error string to hunt for |
+| `workshop restore` / `launch --continue` / `refresh --continue` refused right after a Workshop snap update | Back-compat guard (0.9.5+): the updated daemon won't run those ops on an old-format workshop. Run `workshop refresh <name>` once — that migrates it. No forward compat: never downgrade the snap to "fix" this (downgrade = snap remove + reinstall, which deletes every workshop and SDK) |
+| `ssh <workshop>.<project>.wp` fails (host-key prompt, password prompt, or no resolution) | Automatic SSH needs 0.9.5+ AND a workshop launched under 0.9.5+ — pre-existing workshops must be **removed and launched again** (refresh is not enough). Also check the distro supports `/etc/ssh/ssh_config.d/` and the drop-in `70-workshop-cert-authority.conf` exists there |
 | `cannot continue: no refresh in progress` (or `abort` / `launch`) | Nothing is paused — there is no `Waiting` change to resume. Re-check `workshop info` / `workshop changes`; you likely didn't run `--wait-on-error`, or it already resolved |
 | `… : <kind> change is in progress` (e.g. `launch change is in progress`) | Ordinary change-conflict — another change is still running. Wait for it or inspect `workshop changes`. NOT the stuck-`Doing` signature in Step 7; do **not** restart the daemon for this |
 | GPU device missing/inaccessible (e.g. `/dev/kfd`) on a workshop created before 0.9.2 | `workshop refresh` to apply the 0.9.2 device-group fix (adds the `workshop` user to groups like `render`) |
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |
-| `workshop` reports LXD missing, outdated, or unreachable | Follow the actionable error (0.9.3+): install/refresh/restart LXD. `workshopd` sits in a degraded state and recovers on its own once LXD is available — no daemon restart needed |
+| `workshop` reports LXD missing, outdated, or unreachable | Follow the actionable error (0.9.3+): install/refresh/restart LXD — minimum LXD **6.8**, remedy `sudo snap refresh --channel=6/stable lxd` (install: `sudo snap install --channel=6/stable lxd`). `workshopd` sits in a degraded state and recovers on its own once LXD is available — no daemon restart needed |
 | Every command fails with `other changes in progress`; a change is stuck in `Doing` | Daemon-level stall, not a task failure — see Step 7 |
 
 **Step 4. Use `--wait-on-error` for live debugging.**
@@ -75,7 +78,7 @@ workshop okay              # acknowledge what was just listed
 
 **Step 6. `No space left on device` — the LXD storage pool is full.**
 
-This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL) that LXD sizes at ~20% of free disk when it is first created, clamped to 5–30 GiB, and **never grows on its own**. So the pool can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation. Since 0.9.3 the daemon monitors the pool and proactively enters a degraded state with an actionable message *before* writes start failing — treat that message the same way: grow the pool.
+This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL). Workshop only enforces a 5 GiB *minimum* when the pool is first created — otherwise LXD's own default of ~20% of free disk applies — and the pool **never grows on its own**. So it can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation. Since 0.9.3 the daemon monitors the pool and, at **90% usage**, proactively enters a degraded state with an actionable message *before* writes start failing — treat that message the same way: grow the pool. One caveat: the daemon's message suggests `lxc storage volume set workshop size=…`, a *volume*-level command at the wrong layer; the pool-level command below is the right one.
 
 Diagnose (confirm it's the pool, not the host):
 ```
@@ -107,7 +110,7 @@ Reach this step ONLY on this exact signature: a change sits in `Doing` indefinit
    snap restart workshop
    ```
    (no sudo needed; preferred over the equivalent `sudo systemctl restart snap.workshop.workshopd.service`).
-3. Recreate, don't trust: if the workshop went Off uncontrolled, the post-restart state is unreliable even if `workshop info` reports `Ready`. Run `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring.
+3. Recreate, don't trust: if the workshop went Off uncontrolled, the post-restart state is unreliable even if `workshop info` reports `Ready`. Run `workshop remove <name>` then `workshop launch <name>`, and re-apply any manual `connect`/`remount` wiring — *remove* drops those records (an ordinary refresh preserves them, 0.9.5+).
 4. Run the verification loop as usual.
 
 Do NOT use this step for an ordinary failed refresh (change reached `Error`, other commands still work) — that's Steps 1–4.
@@ -161,5 +164,5 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 - `how-to/fix-workshops/fix-installation.md`
 - `explanation/workshops/changes-tasks.md`
 - `reference/cli/workshop.md` (changes, tasks, launch, refresh, warnings, okay sections)
-- `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing and how to resize)
+- `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing and how to resize; the backward-compatibility policy behind the post-update refusals)
 </source_docs>
