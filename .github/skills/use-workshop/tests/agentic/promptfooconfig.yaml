@@ -32,6 +32,11 @@ defaultTest:
     # Each agentic task is an end-to-end LXD-backed run, so the prompt-cache
     # window relevance is small. promptfoo defaults are fine.
     cache: false
+    # Pin llm-rubric grading to the local claude CLI judge. Without a pin,
+    # promptfoo falls back to a default grader chosen by whatever API key is
+    # in the environment — an unpinned instrument and unplanned spend
+    # (observed grading through the ambient key on 2026-08-20).
+    provider: file://../../../_testlib/provider-judge-cli.js
 
 tests:
   - file://tasks/bootstrap-project.yaml

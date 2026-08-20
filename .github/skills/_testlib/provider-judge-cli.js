@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright 2026 Canonical Ltd.
 //
-// Promptfoo GRADING provider backed by the local `claude` CLI, so a
-// reconstruction run can be graded on a Claude subscription instead of the
-// pinned gpt-5.5 API judge. Selected by run-reconstruction.sh when
-// RECON_JUDGE=local:
-//
-//   promptfoo eval --grader file://provider-judge-cli.js
+// Promptfoo GRADING provider backed by the local `claude` CLI, so llm-rubric
+// grading runs on a Claude subscription instead of an API judge. Serves the
+// reconstruction harness (RECON_JUDGE=local), both routing subscription
+// lanes, and both agentic suites (pinned via defaultTest.options.provider
+// and/or `promptfoo eval --grader file://.../provider-judge-cli.js`).
 //
 // Contract: promptfoo hands us the rendered rubric prompt and expects JSON
 // {reason, pass, score} back. We ask the CLI for exactly that shape via
@@ -77,14 +76,19 @@ class LocalClaudeJudge {
 
   async callApi(prompt, _context, _params) {
     const model =
-      process.env.RECON_JUDGE_MODEL || this.config.model || 'claude-sonnet-4-6';
-    const timeoutMs = Number(process.env.RECON_JUDGE_TIMEOUT_MS || this.config.timeout_ms || 600_000);
+      process.env.EVAL_JUDGE_MODEL || process.env.RECON_JUDGE_MODEL ||
+      this.config.model || 'claude-sonnet-4-6';
+    const timeoutMs = Number(
+      process.env.EVAL_JUDGE_TIMEOUT_MS || process.env.RECON_JUDGE_TIMEOUT_MS ||
+      this.config.timeout_ms || 600_000,
+    );
 
     // Grade from a scratch directory: no project skills, no CLAUDE.md, and
     // nothing the agent under test wrote.
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'recon-judge-'));
     const env = { ...process.env };
-    if (String(process.env.RECON_AUTH || 'api') === 'subscription') {
+    const mode = String(process.env.EVAL_AUTH || process.env.RECON_AUTH || 'subscription');
+    if (mode === 'subscription') {
       delete env.ANTHROPIC_API_KEY;
       delete env.ANTHROPIC_API_TOKEN;
     }

@@ -33,6 +33,9 @@ providers:
 defaultTest:
   options:
     cache: false
+    # Pin llm-rubric grading to the local claude CLI judge (see the sibling
+    # config's comment for why an unpinned grader is a problem).
+    provider: file://../../../_testlib/provider-judge-cli.js
 
 tests:
   - file://tasks/onboard-mini-node.yaml

@@ -38,7 +38,8 @@
 #
 # Judge (RECON_JUDGE):
 #   openai (default) — the pinned gpt-5.5 rubric judge; needs OPENAI_API_KEY.
-#   local            — provider-judge-cli.js, the same local CLI as the agent.
+#   local            — the shared _testlib/provider-judge-cli.js, the same
+#                      local CLI as the agent.
 #
 # Requires: promptfoo, python3+yaml, claude CLI, git.
 
@@ -343,7 +344,7 @@ raw_json="${script_dir}/../results/raw/${date_tag}-reconstruction-${tier}-${mode
 promptfoo_args=(eval -c promptfooconfig.yaml --no-cache
                 --output "${raw_json}" --max-concurrency "${concurrency}")
 if [[ "${judge}" == "local" ]]; then
-  promptfoo_args+=(--grader "file://${script_dir}/provider-judge-cli.js")
+  promptfoo_args+=(--grader "file://${script_dir}/../../../_testlib/provider-judge-cli.js")
 fi
 
 set +e

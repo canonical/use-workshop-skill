@@ -72,7 +72,7 @@ returns `overall_pass: null` and the promptfoo assert fails.
 | Env | Values | Effect |
 |-----|--------|--------|
 | `RECON_AUTH` | `api` (default) / `subscription` | `api` runs `claude --bare` on `ANTHROPIC_API_KEY`. `subscription` runs on the local CLI login — `--bare` cannot (its auth is *strictly* the API key; OAuth and keychain are never read), so it is dropped and the isolation it gave is replaced with `--setting-sources project --strict-mcp-config --mcp-config '{"mcpServers":{}}'` plus a sandbox `.claude/settings.json`. `--safe-mode` is not an option: it disables skills. |
-| `RECON_JUDGE` | `openai` (default) / `local` | `openai` uses the pinned gpt-5.5 rubric judge (`OPENAI_API_KEY`). `local` uses `provider-judge-cli.js`, the same local CLI, graded tool-less from a scratch cwd. |
+| `RECON_JUDGE` | `openai` (default) / `local` | `openai` uses the pinned gpt-5.5 rubric judge (`OPENAI_API_KEY`). `local` uses the shared `../../../_testlib/provider-judge-cli.js`, the same local CLI, graded tool-less from a scratch cwd. |
 | `RECON_CONCURRENCY` | int | promptfoo `--max-concurrency`; defaults to 1 under `subscription` (one account, one rate limit) and 4 otherwise. |
 | `RECON_MODEL_OVERRIDE` | model id | Model for the agent under test; also tags the raw results filename so model passes stay separable. |
 
