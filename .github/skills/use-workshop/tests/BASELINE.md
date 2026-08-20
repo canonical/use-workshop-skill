@@ -59,8 +59,9 @@ recorded under one are not comparable with the other.
 
 | Candidate | Role | Judge | Pass rate | Notes |
 |-----------|------|-------|-----------|-------|
-| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **76/76 (100%)** | full run 2026-08-13 against the post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
-| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; **stale** — predates the `e31d177` gap fixes. The confirmation run is now `make eval-routing-subscription` (claude CLI Sonnet + local judge); its first full run seeds a new row here |
+| `z-ai/glm-5.2` (OpenRouter) | **pinned gate** | `gpt-5.5` (OpenRouter, floating) | **81/81 (100%)** | 0.9.5 round, 2026-08-20: full run 80/81 with 0 errors (committed as `results/2026-08-20-routing-openrouter-z-ai-glm-5.2.json`); the single failure was a blunt `not-contains "--reason"` firing on a correct answer that *negated* the flag — relaxed as assertion fix #12 below and re-run green (1/1). All 3 rewritten SSH cases and all 5 new 0.9.5 cases passed at 1.0 on the first run |
+| `z-ai/glm-5.2` (OpenRouter) | historical | `gpt-5.5` (OpenRouter, floating) | 76/76 (100%) | 76-case suite, 2026-08-13, post-`e31d177` bundle; 0 errors, 0 truncations, lowest case score 0.983 |
+| `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | historical confirmation | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 76/76 (100%) | last full run 2026-07-23; predates the `e31d177` gap fixes and the 0.9.5 round. The confirmation run is now `make eval-routing-subscription` (claude CLI Sonnet + local judge); its first full run seeds a new row here |
 
 (Haiku 4.5 and Opus 4.7 diagnostic rows were retired 2026-08-20: both were
 pinned on the 59-case/0.9.2 bundle, two suite growths behind, and were never
@@ -544,6 +545,16 @@ the fix):
    the "at least one of subsystem/vendorid/productid is required" rule — which is
    irrelevant here, since the user's plug already has `subsystem`. Made that
    recitation optional in this new case's own rubric; Sonnet then passes 76/76.
+12. **`Reporting SDK health from a check-health hook (correct statuses)`**
+   (author-in-project-sdk, 2026-08-20) — the lone miss on the 0.9.5-round
+   GLM gate run (0.75). Verified against the raw output: the answer was
+   fully correct and explicitly stated *"There is no `--reason` flag and no
+   `Ready|Pending|Error` status string"* — the skill's own wording — and the
+   blunt `not-contains "--reason"` fired on that negation. Removed; the
+   case's `llm-rubric` already forbids *prescribing* the flag in a command
+   and now explicitly protects the negation (same mention-vs-prescription
+   class as fixes 2, 3, 7, 8, and 10). Re-ran green (1/1); the gate is
+   pinned 81/81.
 
 ## Agentic E2E eval
 
