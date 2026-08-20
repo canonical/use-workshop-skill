@@ -120,6 +120,22 @@ Update expectations when a guinea pig's ground truth changes.
 ¹ Under the corrected `anywhere_token_groups` expectation; the original literal
 `install_deps` token failed a decomposition that is functionally equivalent.
 
+### 0.9.5 round (2026-08-20, same four pinned guinea pigs — now the harness default)
+
+Sonnet 4.6 on the subscription lane (now the default: `RECON_AUTH=subscription`,
+`RECON_JUDGE=local`), against the 0.9.5 skill content: **3/4 full passes
+(scorecard + rubric), 0 errors, 36 min, $0 API spend** — up from 2/4 full on
+2026-08-13. `mir`, `subiquity`, and notably `creusot` (Sonnet's rubric FAIL
+last round) all pass. The one failure is the **known-open G2**: on
+store-workshop, Sonnet still drops the `.workshop.lock` line from the
+generated `.gitignore` (`overall_pass: false`, sole scorecard failure) —
+same finding as 2026-08-13, not a regression, still next-round material.
+One expectation-drift note for future rounds: the 0.9.5 skill deprecates
+`vscode-remote`, so reconstructions of pre-0.9.5 ground truths now
+systematically omit it (store-workshop `sdk_recall` 0.67 this round —
+within threshold, but the expectations file counts a deprecated SDK).
+Raw: `results/raw/2026-08-20-014930-reconstruction-offline-claude-sonnet-4-6.json`.
+
 ### After the gap fixes (2026-08-13, same four guinea pigs)
 
 | Guinea pig | Sonnet 4.6 | Opus 5 | Change vs the pre-fix round |
