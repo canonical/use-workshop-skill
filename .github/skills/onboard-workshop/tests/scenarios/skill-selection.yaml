@@ -2,9 +2,11 @@
 # Copyright 2026 Canonical Ltd.
 
 # Cross-skill routing: vars.skill is OVERRIDDEN with
-# skill-selection-context.md, which holds only the two skills' frontmatter.
+# skill-selection-context.md, which holds every installed skill's
+# frontmatter (auto-discovered — three skills since design-sdk landed).
 # These cases are the automated guard on the description boundary between
-# use-workshop (operate) and onboard-workshop (analyze + bootstrap).
+# use-workshop (operate), onboard-workshop (analyze + bootstrap), and
+# design-sdk (publisher-side Store SDKs).
 
 - description: Repo-analysis onboarding ask picks onboard-workshop
   vars:
@@ -85,3 +87,32 @@
       value: use-workshop
     - type: not-contains
       value: onboard-workshop
+
+- description: Packaging software as a Store SDK picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Package ollama as a Workshop SDK and publish it to the Store.
+  assert:
+    - type: contains
+      value: design-sdk
+    - type: not-contains
+      value: onboard-workshop
+
+- description: Near miss — onboarding an SDK repo picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Onboard my SDK repo: version branches, renovate, and the upload workflow.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: Promoting an in-project SDK to the Store picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Publish this repo's in-project SDK to the SDK Store so other teams can install it.
+  assert:
+    - type: contains
+      value: design-sdk

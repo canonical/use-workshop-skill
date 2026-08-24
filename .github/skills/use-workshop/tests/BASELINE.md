@@ -11,7 +11,12 @@ regression.
 
 ## Routing eval
 
-**81 cases across 12 scenario files** — the 2026-08-20 Workshop **0.9.5**
+**84 cases across 13 scenario files** — the 2026-08-24 design-sdk round:
+the 81-case 0.9.5 suite plus `dispatch.yaml` (3 cases for the new
+`$ARGUMENTS` verb-dispatch intake), with the two Store-publishing
+out-of-scope cases rerouted to expect a `design-sdk` handoff instead of
+docs pointers (the sdkcraft territory now has an owning sibling skill).
+Before that, the 2026-08-20 Workshop **0.9.5**
 round: the prior 76-case suite plus 5 new cases (sticky-disconnect
 `--forget` semantics, sticky manual connections across refresh, the SSH
 remove-and-relaunch migration caveat, the post-snap-update restore refusal,

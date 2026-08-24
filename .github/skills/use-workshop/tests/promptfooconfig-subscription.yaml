@@ -2,7 +2,7 @@
 # Copyright 2026 Canonical Ltd.
 
 description: |
-  Subscription-lane routing eval for the use-workshop skill: the same 76
+  Subscription-lane routing eval for the use-workshop skill: the same 84
   cases as promptfooconfig.yaml, but the candidate is Sonnet via the local
   claude CLI login (tool-less, single-turn) and the llm-rubric judge is the
   local claude judge — $0, no API keys. This is the confirmation run on the
@@ -36,6 +36,7 @@ defaultTest:
     skill: file://skill-bundle.md
 
 tests:
+  - file://scenarios/dispatch.yaml
   - file://scenarios/bootstrap.yaml
   - file://scenarios/daily-ops.yaml
   - file://scenarios/interfaces.yaml

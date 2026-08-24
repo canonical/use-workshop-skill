@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Verb dispatch: the skill is invoked with $ARGUMENTS and must route
+# directly to the matching path without re-opening the intake menu. The
+# user message simulates the raw argument string as typed.
+
+- description: analyze verb stops at the verdict without asking which path
+  vars:
+    user: |
+      analyze ./services/api
+  assert:
+    - type: llm-rubric
+      value: |
+        The response treats this as the analyze subcommand: it commits to
+        the read-only toolchain analysis of ./services/api ending at the
+        feasibility verdict and proposal, without generating files and
+        without asking the user which of the intake paths they meant.
+
+- description: onboard verb commits to the full chain
+  vars:
+    user: |
+      onboard .
+  assert:
+    - type: llm-rubric
+      value: |
+        The response treats this as the onboard subcommand: the full
+        four-workflow chain (analyze → propose → generate → verify) on
+        the current repo, starting with the read-only analysis and the
+        existing-definition check. It does not re-open the intake menu;
+        interview questions later in the flow are fine.
+
+- description: verify verb goes straight to launch-and-verify
+  vars:
+    user: |
+      verify
+  assert:
+    - type: contains-any
+      value:
+        - launch
+        - proof
+    - type: llm-rubric
+      value: |
+        The response goes straight to verification of the freshly
+        generated definition: launch, the verification triplet, and the
+        action proof loop — not a new analysis or proposal pass.

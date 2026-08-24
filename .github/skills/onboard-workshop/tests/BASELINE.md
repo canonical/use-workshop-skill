@@ -8,10 +8,15 @@ merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
-**54 cases across 8 scenario files** (incl. 8 cross-skill selection cases)
-since the 2026-08-20 Workshop 0.9.5 round, which added a JVM-repo SDK
-selection case (openjdk/maven per the new catalog rows) and updated the
-`generate.yaml` init rubric for the 0.9.5 `--sdks project-<name>` unlock.
+**60 cases across 9 scenario files** (incl. 11 cross-skill selection
+cases) since the 2026-08-24 design-sdk round, which added `dispatch.yaml`
+(the `$ARGUMENTS` verb-dispatch intake), three design-sdk near-miss
+selection cases against the now 3-skill auto-discovered selection context,
+and rerouted the sdkcraft out-of-scope case to a `design-sdk` handoff.
+Previously 54 cases across 8 files since the 2026-08-20 Workshop 0.9.5
+round, which added a JVM-repo SDK selection case (openjdk/maven per the new
+catalog rows) and updated the `generate.yaml` init rubric for the 0.9.5
+`--sdks project-<name>` unlock.
 
 Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
 the local claude CLI login as candidate, the local claude judge for

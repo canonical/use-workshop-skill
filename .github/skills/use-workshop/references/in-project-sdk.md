@@ -8,7 +8,7 @@ Two artifacts make up an in-project SDK:
 1. `.workshop/<NAME>/sdk.yaml` — the SDK manifest.
 2. `.workshop/<NAME>/hooks/<HOOK-NAME>` — bash scripts, discovered automatically by filename (one per hook).
 
-There is NO build step (that is `sdkcraft`'s job, out of scope here). Workshop reads the manifest and runs the hook scripts directly.
+There is NO build step (that is `sdkcraft`'s job — the sibling `design-sdk` skill). Workshop reads the manifest and runs the hook scripts directly.
 </overview>
 
 <sdk_yaml_schema>

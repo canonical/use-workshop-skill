@@ -7,33 +7,17 @@
       I want to publish my own SDK to the SDK Store so others can use it. How do I do that?
   assert:
     - type: contains
-      value: sdkcraft
-    - type: contains-any
-      value:
-        - "out of scope"
-        - "outside"
-        - "this skill does not"
-        - "not covered"
-        - "doesn't cover"
-        - "does not cover"
-        - "separate domain"
-        - "different tool"
-        - "see the docs"
-        - "refer to"
-    - type: contains-any
-      value:
-        - tutorial
-        - reference
-        - docs
+      value: design-sdk
     - type: llm-rubric
       value: |
-        The response defers SDK authoring/publishing to the docs and does
-        not improvise concrete `sdkcraft` invocations. Pointing the user to
-        documentation pages is required. The response MAY also offer help
-        on legitimately in-scope adjacent topics (e.g., authoring an
-        in-project SDK at `.workshop/<name>/` for tooling that doesn't
-        need to live in the Store) as long as such offers are clearly
-        distinct from the out-of-scope publishing topic.
+        The response hands SDK authoring/publishing to the design-sdk
+        sibling skill (which owns sdkcraft.yaml design, packed-SDK hooks,
+        and Store publishing) and does not improvise concrete `sdkcraft`
+        invocations here. The response MAY also offer help on legitimately
+        in-scope adjacent topics (e.g., authoring an in-project SDK at
+        `.workshop/<name>/` for tooling that doesn't need to live in the
+        Store) as long as such offers are clearly distinct from the
+        handed-off publishing topic.
 
 - description: User asks about workshopctl
   vars:
@@ -76,6 +60,7 @@
         - sdkcraft is for
         - "publishing"
         - "authoring"
+        - design-sdk
     - type: contains
       value: workshop launch
     - type: not-contains
