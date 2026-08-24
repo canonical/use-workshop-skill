@@ -1,6 +1,6 @@
 {
   "name": "use-workshop",
-  "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees. Also onboard arbitrary repos: analyze their build/test toolchain and bootstrap a tailored workshop definition.",
+  "description": "Operate the Workshop CLI: launch and refresh workshops, run commands inside, wire interfaces, debug failed changes, and orchestrate parallel environments via git worktrees. Also onboard arbitrary repos: analyze their build/test toolchain and bootstrap a tailored workshop definition. Also design, build, and publish Store SDKs with sdkcraft: sdkcraft.yaml, hooks, spread tests, and SDK-repo onboarding (version branches, CI, renovate).",
   "author": {
     "name": "Canonical Ltd."
   },
