@@ -1,0 +1,170 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Generation invariants: adopt-info + VERSION, the hook contract, schema
+# hard-rejects, pack-time linters, and renovate wiring.
+
+- description: Generated definitions use adopt-info plus VERSION
+  vars:
+    user: |
+      Write the version handling for the approved rye SDK. Upstream is at 0.44.0 today.
+  assert:
+    - type: contains
+      value: adopt-info
+    - type: contains
+      value: VERSION
+    - type: llm-rubric
+      value: |
+        The response wires the version through a VERSION file read in the
+        part (override-pull reading $CRAFT_PROJECT_DIR/VERSION and calling
+        craftctl set version) with adopt-info naming that part — NOT a
+        hardcoded version: field, which would break the renovate release
+        loop that bumps VERSION.
+
+- description: Daemon generation follows the systemd user-unit pattern
+  vars:
+    user: |
+      Generate the service wiring for the daemon SDK we designed: the unit file and whichever hook installs it.
+  assert:
+    - type: contains
+      value: systemctl --user
+    - type: contains-any
+      value:
+        - dump
+        - setup-project
+    - type: llm-rubric
+      value: |
+        The response ships the unit file via a dump part and installs it
+        from setup-project (running as the workshop user): install -D into
+        ~/.config/systemd/user, daemon-reload, then
+        `systemctl --user enable --now`. It does not exec the daemon
+        directly from a hook and does not invent an apps:/services: key.
+
+- description: stage-packages is refused with the setup-base alternative
+  vars:
+    user: |
+      Add stage-packages: [libssl-dev] to the main part so the library is in the SDK.
+  assert:
+    - type: contains
+      value: setup-base
+    - type: llm-rubric
+      value: |
+        The response refuses to add stage-packages — SDKcraft hard-rejects
+        stage-packages/stage-snaps at load time — and moves the apt
+        installation into the setup-base hook instead, which keeps the
+        package on the image's apt cache and security-update path.
+
+- description: Version-only SDKs keep the hook set minimal
+  vars:
+    user: |
+      Which hooks does my SDK need? It just pins a tool version and sets two environment variables — no daemon, no state.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response picks a minimal hook set — setup-base (or
+        setup-project) for the env vars and a check-health that probes the
+        tool — rather than ritually generating all five hooks.
+        save-state/restore-state are explicitly unnecessary here (no
+        refresh-crossing state outside a mount).
+
+- description: Cross-SDK ordering is the definition listing order
+  vars:
+    user: |
+      My SDK's setup-project needs the uv SDK's setup-base to have finished first. How do I declare that dependency?
+  assert:
+    - type: contains-any
+      value:
+        - order
+        - listed
+        - listing
+  # The judge checks the substance: no dependency-resolution mechanism exists.
+    - type: llm-rubric
+      value: |
+        The response says there is NO dependency resolution between SDKs:
+        hooks run system SDK first, then user-listed SDKs in the order
+        they appear in the workshop definition, then sketch — so the fix
+        is to list this SDK AFTER uv in the consumer's definition (and say
+        so in the README). Inventing a depends/requires key is the failure
+        mode.
+
+- description: State hooks run as root with SDK_STATE_DIR
+  vars:
+    user: |
+      Write a save-state hook that captures the workshop user's go env changes across a refresh.
+  assert:
+    - type: contains
+      value: SDK_STATE_DIR
+    - type: llm-rubric
+      value: |
+        The response writes save-state for ROOT execution context: state
+        goes under $SDK_STATE_DIR, and commands that need the workshop
+        user's environment are wrapped (sudo -u workshop --login or
+        equivalent). Copies use a glob-safe form (cp -a "$SRC/." "$DEST/"
+        or equivalent) rather than a bare * glob.
+
+- description: Mount path under SDK must exist in prime
+  vars:
+    user: |
+      sdkcraft pack fails: the interface linter says my venv slot's workshop-source under $SDK doesn't exist. What's the fix?
+  assert:
+    - type: contains-any
+      value:
+        - override-prime
+        - prime
+        - mkdir
+    - type: llm-rubric
+      value: |
+        The response explains the pack-time interface linter: a mount
+        path under $SDK must exist in the primed SDK, so the fix is to
+        create it at build time (override-prime: mkdir -p ... on the
+        part), then repack. Moving the directory creation to launch-time
+        hooks alone does not satisfy the linter for $SDK-rooted paths.
+
+- description: v-prefixed tags get extractVersionTemplate
+  vars:
+    user: |
+      Upstream cuts GitHub releases tagged like v2.7.1. Write the renovate custom manager for the VERSION file.
+  assert:
+    - type: contains-any
+      value:
+        - github-releases
+        - extractVersionTemplate
+    - type: llm-rubric
+      value: |
+        The response uses the custom regex manager on the VERSION file
+        with the github-releases datasource and strips the v prefix via
+        extractVersionTemplate (so VERSION stays bare like 2.7.1). The
+        VERSION file content and the sdkcraft version must not carry the
+        v prefix.
+
+- description: Reserved SDK names are rejected
+  vars:
+    user: |
+      Name the SDK "sketch" — it's for sketching diagrams.
+  assert:
+    - type: contains-any
+      value:
+        - reserved
+        - rename
+        - different name
+    - type: llm-rubric
+      value: |
+        The response refuses the name: `sketch` is reserved (along with
+        system, agent, and the try-/project- prefixes) and the validator
+        rejects it. It proposes an unreserved alternative instead of
+        generating a definition that cannot pack.
+
+- description: Numeric-looking versions are quoted
+  vars:
+    user: |
+      Is version: 1.0 fine in the yaml, or do I need quotes?
+  assert:
+    - type: contains
+      value: "\"1.0\""
+    - type: llm-rubric
+      value: |
+        The response says to quote it — YAML parses 1.0 as a number, so
+        numeric-looking versions (and channels like 24/stable in YAML
+        contexts) are written as strings: version: "1.0". Also noting
+        that a generated SDK normally uses adopt-info + VERSION instead
+        of a literal version: is a plus, not required.

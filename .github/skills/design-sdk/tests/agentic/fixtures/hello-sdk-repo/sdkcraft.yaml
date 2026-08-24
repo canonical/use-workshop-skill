@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+name: hello-tool
+adopt-info: hello-tool
+base: ubuntu@24.04
+summary: Friendly greeting utility for workshops
+description: |
+  This SDK provides the hello-tool CLI. The binary is downloaded from the
+  upstream GitHub release matching the pinned VERSION.
+license: MIT
+platforms:
+  amd64:
+  arm64:
+
+parts:
+  hello-tool:
+    plugin: nil
+    build-packages:
+      - curl
+      - ca-certificates
+    override-pull: |
+      VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
+      craftctl set version="$VERSION"
+      curl -fsSL -o "$CRAFT_PART_SRC/hello-tool" \
+        "https://github.com/example/hello-tool/releases/download/${VERSION}/hello-tool-linux-${CRAFT_ARCH_BUILD_FOR}"
+    override-build: |
+      install -Dm755 "$CRAFT_PART_SRC/hello-tool" "$CRAFT_PRIME/bin/hello-tool"

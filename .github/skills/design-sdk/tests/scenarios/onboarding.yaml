@@ -1,0 +1,108 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# SDK-repo onboarding: the template branching model, what lives on which
+# branch, renovate anatomy, thin CI workflows, and the git sequence's
+# confirmation discipline.
+
+- description: The branching model splits template main from track branches
+  vars:
+    user: |
+      Set up my SDK repo for automated releases. One track is fine for now.
+  assert:
+    - type: contains
+      value: VERSION
+    - type: contains-any
+      value:
+        - renovate
+        - track
+    - type: llm-rubric
+      value: |
+        The response lays out the template model: main is the template
+        branch (renovate.json plus the renovate workflows, NO VERSION
+        file), and one long-lived track branch (e.g. latest) carries
+        VERSION plus the build/upload workflows without the renovate
+        workflows. Renovate bumps VERSION via PRs against the track
+        branch; merging triggers the upload.
+
+- description: Renovate workflows live on main only
+  vars:
+    user: |
+      Should renovate.yml and renovate-check.yml also be on the 1.25 branch?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response says no — the renovate workflows run from main only;
+        track branches carry VERSION plus build.yml/upload.yml and have
+        the renovate workflows removed (that removal is part of the
+        onboarding git sequence). Duplicating renovate onto track
+        branches is the failure mode.
+
+- description: Multi-track renovate pins per-track allowed versions
+  vars:
+    user: |
+      My tool keeps three supported minors, like Go. Write the renovate strategy for tracks 1.24, 1.25 and 1.26.
+  assert:
+    - type: contains
+      value: baseBranchPatterns
+    - type: contains-any
+      value:
+        - allowedVersions
+        - packageRules
+    - type: llm-rubric
+      value: |
+        The response uses baseBranchPatterns naming the three track
+        branches and one packageRules entry per track pinning
+        allowedVersions to that minor (e.g. /^1\.24\./ on 1.24), so each
+        branch only ever receives its own minor's bumps via the custom
+        regex manager on VERSION.
+
+- description: The git sequence is confirmed per mutation, and push is the gate
+  vars:
+    user: |
+      Run the branch surgery on my SDK repo now — set up main and the 1.0 track.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response follows the onboarding git sequence (commit all with
+        VERSION; git rm VERSION on main; branch the track from the commit
+        that still has VERSION; remove the renovate workflows on the
+        track branch) and treats it as a sequence of confirmed steps —
+        asking or explicitly confirming before executing git mutations,
+        with pushing called out as the outward-facing step. Blind-running
+        the whole sequence including push without any confirmation is
+        the failure mode.
+
+- description: CI workflow files delegate to sdkcraft-actions
+  vars:
+    user: |
+      Write the build workflow for pull requests into my SDK repo's track branches.
+  assert:
+    - type: contains
+      value: sdkcraft-actions
+    - type: llm-rubric
+      value: |
+        The response writes a THIN workflow: a pull_request trigger on the
+        track-branch pattern and a job that `uses:`
+        canonical/sdkcraft-actions' reusable build workflow — not a
+        hand-rolled build script. The branch pattern matches the track
+        style (e.g. "latest" or a quoted numeric pattern).
+
+- description: Store credentials default to staging
+  vars:
+    user: |
+      Wire the Store credentials into the upload workflow.
+  assert:
+    - type: contains-any
+      value:
+        - STAGING
+        - staging
+    - type: contains
+      value: SDKCRAFT_STORE_CREDENTIALS
+    - type: llm-rubric
+      value: |
+        The response points the upload workflow's secret at the STAGING
+        credentials by default and treats the flip to the production
+        secret (SDKCRAFT_STORE_CREDENTIALS_PROD) as an explicit,
+        user-confirmed go-live decision — never wired to production from
+        day one.

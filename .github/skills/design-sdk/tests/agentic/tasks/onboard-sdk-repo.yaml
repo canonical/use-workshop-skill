@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: onboard-sdk-repo — repo automation for a working SDK (no LXD)
+  vars:
+    workshop_name: design-onboard-unused
+    cleanup_workshops: ["design-onboard-unused"]
+    fixture: .github/skills/design-sdk/tests/agentic/fixtures/hello-sdk-repo
+    timeout_ms: 900000
+    # The onboarding git sequence is local-only: init/commit/branch are
+    # allowed so the version-branch layout can actually be built and
+    # verified; push and gh stay off the whitelist.
+    extra_allowed_tools:
+      - "Bash(git init*)"
+      - "Bash(git add*)"
+      - "Bash(git commit*)"
+      - "Bash(git checkout*)"
+      - "Bash(git rm*)"
+      - "Bash(git branch*)"
+      - "Bash(git config user.*)"
+      - "Bash(git ls-tree*)"
+      - "Bash(git show*)"
+    task: |
+      This repository holds a working Workshop SDK (sdkcraft.yaml + hooks)
+      for the hello-tool utility, released by its upstream on GitHub at
+      example/hello-tool with plain semver tags. It has no release
+      automation yet. Onboard the repo: VERSION, renovate, CI workflows,
+      and the version-branch layout, tracking only the latest upstream
+      series. Make your recommendations and proceed with them — assume I
+      accept every recommendation. The repo is local-only: do NOT push,
+      create remotes, or call gh. Do not launch any workshop and do not
+      run sdkcraft.
+  assert:
+    # The onboarding artifacts were generated (captured independently).
+    - type: contains
+      value: "### renovate.json"
+    - type: contains
+      value: "### .github/workflows/build.yml"
+    - type: contains
+      value: "### .github/workflows/upload.yml"
+    # The renovate config tracks the fixture's stated upstream.
+    - type: contains
+      value: "example/hello-tool"
+    - type: contains
+      value: "github-releases"
+    # VERSION exists on the version branch; the captured tree is whatever
+    # branch is checked out at the end — accept either, but the transcript
+    # must show VERSION being created.
+    - type: contains
+      value: "VERSION"
+    # Repo-local only; nothing launched, nothing pushed, no credentials.
+    - type: not-contains
+      value: "[BASH] workshop launch"
+    - type: not-contains
+      value: "[BASH] git push"
+    - type: not-contains
+      value: "[BASH] gh "
+    - type: not-contains
+      value: "SDKCRAFT_STORE_CREDENTIALS="
+    - type: llm-rubric
+      value: |
+        Looking at the transcript and GENERATED FILES: the agent (a) checked
+        the SDK was onboarding-ready (adopt-info wired to a VERSION read)
+        before automating; (b) generated a renovate.json with a custom regex
+        manager over the VERSION file, the github-releases datasource for
+        example/hello-tool, and a baseBranchPatterns entry for the single
+        track; (c) generated the four thin CI workflow files delegating to
+        canonical/sdkcraft-actions (build on PRs into the version branch,
+        upload on push to it, renovate + renovate-check on main); (d) laid
+        out or precisely described the branch split — main as the template
+        branch WITHOUT the VERSION file, one version branch carrying VERSION
+        without the renovate workflows; (e) recommended the staging Store
+        secret by default and named the production flip as a separate
+        decision; (f) never pushed, never invented credentials, and never
+        started a workshop. Building the branches locally with git or
+        printing the exact command sequence for the user both count as (d);
+        silently skipping the branch model does not.

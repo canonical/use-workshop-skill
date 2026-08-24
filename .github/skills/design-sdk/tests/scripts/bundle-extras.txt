@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Sibling files appended to skill-bundle.md by regenerate-bundle.sh, relative
+# to the design-sdk skill root. These are the use-workshop references the
+# design-sdk workflows cite as required reading (in-project-sdk.md is
+# deliberately NOT borrowed — its consumer-side framing conflicts with this
+# skill's publisher framing inside one bundle).
+../use-workshop/references/interfaces.md
+../use-workshop/references/command-cheatsheet.md
+../use-workshop/references/async-and-recovery.md
+../use-workshop/references/definition-file.md
+../use-workshop/references/sdk-types.md

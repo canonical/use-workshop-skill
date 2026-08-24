@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# The try-refresh loop: build into the try area, consume as try-<NAME>,
+# fail fast, respect setup-base snapshot semantics, graduate to spread.
+
+- description: Testing a built SDK goes through the try area
+  vars:
+    user: |
+      The SDK builds clean now. How do I test it in a real workshop before publishing anything?
+  assert:
+    - type: contains
+      value: sdkcraft try
+    - type: contains
+      value: "try-"
+    - type: llm-rubric
+      value: |
+        The response drives the try loop: sdkcraft try packs into the try
+        area, a test workshop consumes the SDK as try-<NAME> in its sdks:
+        list, and the first launch runs with --verbose --wait-on-error to
+        fail fast. Verification via workshop changes/tasks/info follows.
+        Publishing before a healthy try run is the failure mode.
+
+- description: setup-base edits need remove plus launch, not refresh
+  vars:
+    user: |
+      I fixed my setup-base hook, ran sdkcraft try again and workshop refresh — but the fix didn't apply. Why?
+  assert:
+    - type: contains-any
+      value:
+        - snapshot
+        - remove
+    - type: llm-rubric
+      value: |
+        The response explains that an applied refresh reuses the
+        post-setup-base snapshot instead of re-running the hook, so after
+        editing setup-base the workshop must be recreated (workshop
+        remove, then launch) — the one legitimate remove+launch case in
+        the loop.
+
+- description: Failed refresh is diagnosed with the change and task record
+  vars:
+    user: |
+      workshop refresh failed while applying my try SDK. Walk me through finding out which hook broke.
+  assert:
+    - type: contains
+      value: workshop changes
+    - type: contains-any
+      value:
+        - workshop tasks
+        - --wait-on-error
+    - type: llm-rubric
+      value: |
+        The response diagnoses from the recorded change: workshop changes
+        to find the change ID, workshop tasks <ID> to locate the failing
+        hook task, rerunning with --wait-on-error to pause in Waiting and
+        shell in, then fixing the SDK SOURCE and rebuilding via
+        sdkcraft clean && sdkcraft try (releasing the paused workshop
+        with --abort). Guessing the cause without the task record is the
+        failure mode.
+
+- description: Snapshot invalidation cascades to later SDKs
+  vars:
+    user: |
+      If my try SDK changes, do the other SDKs in the test workshop redo their setup?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response states the cascade rule: a change to an SDK
+        invalidates the post-setup-base snapshot for that SDK and every
+        SDK listed BELOW it in the definition (those re-run setup-base on
+        the next refresh); SDKs listed above it keep their snapshots.
+
+- description: sketch-sdk is acknowledged but not driven
+  vars:
+    user: |
+      Wouldn't workshop sketch-sdk be faster for iterating on my SDK?
+  assert:
+    - type: contains-any
+      value:
+        - interactive
+        - $EDITOR
+        - EDITOR
+    - type: llm-rubric
+      value: |
+        The response acknowledges sketch-sdk as the human rapid-iteration
+        tool but explains it needs an interactive $EDITOR session an agent
+        cannot drive; the agent-drivable equivalent is editing the SDK
+        source and going through the try loop (optionally prototyping a
+        command via workshop exec first). It does not enumerate a
+        step-by-step sketch-sdk session.
+
+- description: A healthy SDK graduates to spread tests
+  vars:
+    user: |
+      The try workshop comes up Ready and the SDK reports okay twice in a row. What's next before I call it done?
+  assert:
+    - type: contains
+      value: spread
+    - type: llm-rubric
+      value: |
+        The response graduates the manual checks into spread smoke tests
+        (tests/spread.yaml plus per-job task.yaml, run via sdkcraft test)
+        and treats the README as part of done — rather than declaring the
+        SDK finished on a single healthy launch.

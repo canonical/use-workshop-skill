@@ -197,6 +197,36 @@ function dumpTree(root, rootFiles, wsRel = '.workshop') {
   return out.length ? out.join('\n\n') : '(none)';
 }
 
+// Dump an explicit list of files and/or directories (recursively, sorted)
+// in the same fenced format as dumpTree. Used by suites whose generated
+// artifacts are not workshop-shaped (the design-sdk suite captures
+// sdkcraft.yaml, VERSION, renovate.json, hooks/, services/, tests/,
+// .github/workflows/). Dot-directories other than .github are skipped so a
+// sandbox's .claude/skills install never floods the capture.
+function dumpPaths(root, relPaths) {
+  const out = [];
+  const pushFile = (rel) => {
+    const p = path.join(root, rel);
+    if (fs.existsSync(p) && fs.statSync(p).isFile()) {
+      const mode = fs.statSync(p).mode & 0o111 ? ' (executable)' : '';
+      out.push('### ' + rel + mode + '\n```\n' + readSafe(p, 8_000) + '\n```');
+    }
+  };
+  const walk = (rel) => {
+    const p = path.join(root, rel);
+    if (!fs.existsSync(p)) return;
+    const st = fs.statSync(p);
+    if (st.isFile()) { pushFile(rel); return; }
+    if (!st.isDirectory()) return;
+    for (const entry of fs.readdirSync(p).sort()) {
+      if (entry === '.git' || (entry.startsWith('.') && entry !== '.github')) continue;
+      walk(path.join(rel, entry));
+    }
+  };
+  for (const rel of relPaths) walk(rel);
+  return out.length ? out.join('\n\n') : '(none)';
+}
+
 // --------------------------------------------------------------------------
 // Transcript flattening
 // --------------------------------------------------------------------------
@@ -381,6 +411,7 @@ module.exports = {
   readSafe,
   copyDir,
   dumpTree,
+  dumpPaths,
   flattenStream,
   parseListVar,
   captureWorkshopState,

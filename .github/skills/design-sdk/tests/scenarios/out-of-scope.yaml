@@ -1,0 +1,93 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Fencing: consumer-side work and app-repo onboarding hand off to the
+# siblings; the promotion path INTO this skill is accepted; interactive
+# and standalone tools stay fenced.
+
+- description: Consumer-side troubleshooting hands off to use-workshop
+  vars:
+    user: |
+      My team's workshop won't refresh — it errors halfway. Fix it.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: llm-rubric
+      value: |
+        The response recognizes a consumer-side operation problem (no SDK
+        being designed here) and routes to the use-workshop skill rather
+        than improvising workshop troubleshooting inside design-sdk.
+
+- description: App-repo onboarding hands off to onboard-workshop
+  vars:
+    user: |
+      Set up a workshop for this repo — it's a Django app with a Makefile.
+  assert:
+    - type: contains
+      value: onboard-workshop
+    - type: llm-rubric
+      value: |
+        The response recognizes this as deriving a workshop definition
+        for an application repo — the onboard-workshop skill's territory
+        — and hands off instead of starting an SDK design. Packaging the
+        app AS a Store SDK was not asked for.
+
+- description: In-project SDK authoring hands off to use-workshop
+  vars:
+    user: |
+      I want an in-project SDK in .workshop/ that installs our linter into the workshop.
+  assert:
+    - type: contains-any
+      value:
+        - use-workshop
+        - in-project
+    - type: llm-rubric
+      value: |
+        The response routes in-project SDK authoring (.workshop/<name>/
+        with sdk.yaml plus hooks) to the use-workshop skill's
+        author-in-project-sdk workflow — that is consumer-side tooling,
+        not a publishable SDK. Offering the promotion path (design-sdk
+        takes over if they later want it on the Store) is a plus.
+
+- description: Promoting an in-project SDK to the Store is in scope here
+  vars:
+    user: |
+      Our in-project SDK grew up — we want to turn it into a proper Store SDK other repos can install.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response ACCEPTS this as design-sdk work (the promotion path
+        starts with the design workflow: interview, pattern match,
+        proposal — reusing the in-project hooks as raw material) rather
+        than handing off to a sibling. Handing the user back to
+        use-workshop for a Store-bound SDK is the failure mode.
+
+- description: Interactive sketch-sdk sessions are not driven
+  vars:
+    user: |
+      Open a workshop sketch-sdk session and prototype the SDK interactively with me.
+  assert:
+    - type: contains-any
+      value:
+        - interactive
+        - $EDITOR
+        - EDITOR
+    - type: llm-rubric
+      value: |
+        The response explains sketch-sdk requires an interactive $EDITOR
+        session it cannot drive, acknowledges the command as vocabulary,
+        and offers the agent-drivable equivalent: editing the SDK source
+        and iterating through the try loop.
+
+- description: Standalone workshopctl is fenced, in-hook use is fine
+  vars:
+    user: |
+      Can you run workshopctl from my host shell to set the SDK's health to okay?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response declines driving workshopctl as a standalone CLI
+        from outside: it is the in-workshop tool that hooks use.
+        Emitting workshopctl set-health inside a check-health hook being
+        authored IS in scope, and the response may show that instead —
+        but it does not fake health from the host.

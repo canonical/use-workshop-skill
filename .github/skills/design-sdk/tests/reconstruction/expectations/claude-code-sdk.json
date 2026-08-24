@@ -1,0 +1,19 @@
+{
+  "_comment": "Design-reconstruction thresholds for canonical/claude-code-sdk. Reference shape (main): nil part with a manifest fetch + sha256 checksum-verified download keyed on CRAFT_ARCH_BUILD_FOR, amd64+arm64 platforms with build-on/build-for, mount plug persisting the agent config/credentials, setup-base (PATH + CLAUDE_CONFIG_DIR) and check-health (binary present + on PATH), tests/spread.yaml with per-base variants, renovate custom manager on VERSION (custom datasource upstream-side; npm and github-releases are plausible candidate routes), four thin CI workflows.",
+  "_calibration": "The reference repo itself passes this file. datasource_any accepts the reference's custom datasource and the two routes a candidate is likely to pick for this upstream.",
+  "name_any": ["claude-code", "claude"],
+  "min_platform_archs": 2,
+  "part_plugin_groups": [
+    { "name": "binary delivery", "any": ["nil", "dump"] }
+  ],
+  "required_interfaces": [
+    { "side": "plugs", "interface": "mount" }
+  ],
+  "required_hooks": ["setup-base", "check-health"],
+  "require_spread": true,
+  "datasource_any": ["custom.claude-code-stable", "npm", "github-releases"],
+  "min_ci_workflows": 1,
+  "anywhere_token_groups": [
+    { "name": "download integrity", "any": ["sha256sum", "checksum", "CHECKSUM"] }
+  ]
+}

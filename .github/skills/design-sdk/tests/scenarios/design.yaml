@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Design doctrine: parts-vs-hooks, platform layouts, need→interface
+# mapping, pattern matching, recommendations on every question, and the
+# read-only stop at the Design Proposal.
+
+- description: Apt dependencies go to setup-base, pinned binaries to parts
+  vars:
+    user: |
+      My SDK needs postgresql-client (whatever the archive ships) and sqlfluff pinned at exactly 3.1.1. Where does each one go?
+  assert:
+    - type: contains
+      value: setup-base
+    - type: llm-rubric
+      value: |
+        The response splits the two correctly: postgresql-client is
+        apt-installable and belongs in the setup-base hook (apt cache,
+        security updates keep flowing), while the pinned sqlfluff 3.1.1
+        is a version-pinned artifact that belongs in a part (or an
+        explicitly pinned install step) — pinning is the reason parts
+        exist. It does NOT put stage-packages in a part.
+
+- description: Host-reachable daemon maps to tunnel slot plus systemd unit
+  vars:
+    user: |
+      Design an SDK for a local LLM server. Host tools must be able to reach its HTTP API on port 8080.
+  assert:
+    - type: contains
+      value: tunnel
+    - type: contains-any
+      value:
+        - systemd
+        - service unit
+        - user unit
+    - type: llm-rubric
+      value: |
+        The response maps the need to a tunnel SLOT (endpoint 8080) so the
+        host can reach the service, and runs the daemon as a systemd user
+        unit shipped via a dump part and enabled in setup-project — NOT an
+        apps:/services: key (which does not exist in sdkcraft.yaml) and
+        NOT a process exec'd directly from a hook.
+
+- description: Data that must survive updates maps to a mount plug
+  vars:
+    user: |
+      Users' downloaded models must survive workshop updates. How does the SDK design express that?
+  assert:
+    - type: contains
+      value: mount
+    - type: llm-rubric
+      value: |
+        The response proposes a mount plug with a workshop-target at the
+        models directory (e.g. under /home/workshop), explaining that
+        mount-backed data persists across workshop refreshes/updates. It
+        does not misuse save-state/restore-state for data a mount can
+        carry.
+
+- description: GPU need maps to the singleton gpu plug
+  vars:
+    user: |
+      The tool should use the GPU when one is available. What interface wiring does that take?
+  assert:
+    - type: contains
+      value: gpu
+    - type: llm-rubric
+      value: |
+        The response proposes a gpu plug named `gpu` (the singleton naming
+        rule) and notes it auto-connects to the system SDK's slot, so no
+        manual connection step is needed. Degrading gracefully when no GPU
+        is present is a plus.
+
+- description: Two bases select the multi-base platform layout
+  vars:
+    user: |
+      The SDK must work on Ubuntu 22.04 and 24.04 workshops, amd64 only. How do I express the platforms?
+  assert:
+    - type: contains-any
+      value:
+        - "ubuntu@22.04:amd64"
+        - multi-base
+        - "ubuntu@22.04"
+    - type: llm-rubric
+      value: |
+        The response picks the multi-base platform layout — platform keys
+        of the form ubuntu@22.04:amd64 / ubuntu@24.04:amd64 rather than a
+        single top-level base with plain arch keys — matching the
+        documented layouts. Mentioning that CI's upload matrix then uses
+        --platform is a plus.
+
+- description: Open design question carries a recommendation
+  vars:
+    user: |
+      Design an SDK for the "mold" linker. I have no opinion on release tracks.
+  assert:
+    - type: contains-any
+      value:
+        - "Recommendation:"
+        - recommend
+    - type: llm-rubric
+      value: |
+        Where the response asks about (or settles) the track model, it
+        attaches an explicit recommendation with a reason (e.g. a single
+        `latest` track for a tool users always want current, or
+        major-version tracks if upstream maintains parallel majors) —
+        never an open question with no stance.
+
+- description: Design stops at the proposal when asked not to write
+  vars:
+    user: |
+      What would an SDK for zoxide look like? Don't write any files yet.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response delivers (or commits to delivering) a design — parts
+        strategy, interfaces, hooks, platforms — and STOPS at the proposal
+        stage without generating files, honoring "don't write any files
+        yet". Offering to generate after approval is fine; emitting the
+        full file tree now is the failure mode.
+
+- description: Python tool with shared caches matches the uv pattern
+  vars:
+    user: |
+      Design an SDK for a Python package manager that keeps a global download cache and can share virtualenvs with other SDKs.
+  assert:
+    - type: contains-any
+      value:
+        - uv
+        - cache
+    - type: contains-any
+      value:
+        - slot
+        - connections
+    - type: llm-rubric
+      value: |
+        The response matches the design to the uv reference pattern: a
+        mount plug for the persistent cache, and a mount SLOT exposing the
+        venv/env directory so other SDKs can plug into it — noting the
+        consumer wires slot-to-plug pairs with a connections: entry in the
+        workshop definition (regular-SDK slots are not auto-connected).
