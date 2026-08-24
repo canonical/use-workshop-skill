@@ -1,0 +1,20 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# check-health: runs as root after every SDK's setup-project (launch) or
+# restore-state (refresh/restore). Test the real feature, not mere
+# installation, and report within five seconds. `waiting` is retried after
+# one second, at most ten times, then the SDK goes to Error. Wrap
+# user-context probes in `sudo -u workshop --login` so PATH/profile.d apply.
+
+set -euo pipefail
+
+# Replace TODO_PROBE with a command that exercises the real feature, e.g.
+# `ollama list` for a served daemon or `go version` for a toolchain.
+if ! output=$(sudo -u workshop --login TODO_PROBE 2>&1); then
+  # Still starting (daemons) → waiting, with the real output as the message.
+  workshopctl set-health waiting "$output"
+  exit
+fi
+workshopctl set-health okay

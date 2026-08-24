@@ -1,0 +1,28 @@
+# tests/spread.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Spread suite manifest, required by `sdkcraft test`. BASE variants let one
+# job run against several bases; sdkcraft test drops variants whose base
+# wasn't packed. EXPECTED_VERSION shows the host-side capture trick for
+# asserting the exact packed version.
+
+project: <name>
+
+path: /home/ubuntu/project
+
+backends:
+  lxd:
+    systems:
+      - ubuntu-24.04:
+          username: ubuntu
+          vm: true
+
+suites:
+  main/:
+    summary: Test the <name> SDK inside workshops
+    environment:
+      BASE/noble: ubuntu@24.04
+      # Add one variant per base declared in sdkcraft.yaml platforms:
+      # BASE/jammy: ubuntu@22.04
+      # EXPECTED_VERSION: '$(HOST: cat "`git rev-parse --show-toplevel`/VERSION")'

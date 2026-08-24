@@ -1,0 +1,23 @@
+# tests/main/launch/task.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# The always-present smoke job: launch a workshop consuming the tried SDK
+# and verify the primary feature. Add one sibling job directory per
+# advertised capability (service probe, persistence round-trip).
+
+summary: Launch a workshop with the <name> SDK and verify setup
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- bash -lc '<name> --version' | MATCH "<version-regex>"
+  workshop info | MATCH 'status:\s+okay'
+
+debug: |
+  workshop exec -- bash -lc 'echo PATH=$PATH' || true

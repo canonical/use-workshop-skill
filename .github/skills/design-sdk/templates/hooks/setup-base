@@ -1,0 +1,27 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# setup-base: runs as root, before the project directory is mounted and
+# before ANY plug or slot is connected. Its result is captured in the base
+# snapshot, so refreshes start warm — put slow, stable work here (apt
+# installs, global env). $SDK points at the SDK's install path.
+#
+# Packed-SDK hooks MUST be executable and ShellCheck-clean: sdkcraft lints
+# every hook at pack time and a ShellCheck error blocks the pack.
+
+set -euo pipefail
+
+# System-wide PATH via profile.d. Escape the self-reference (\$PATH) so it
+# expands at login, not while writing the file. Replace TODO_NAME with the
+# SDK name.
+cat <<EOF >/etc/profile.d/TODO_NAME.sh
+export PATH="$SDK/bin:\$PATH"
+EOF
+
+# Debian packages belong HERE, never in parts (stage-packages is rejected):
+# apt-get update
+# eatmydata apt-get install <packages>
+
+# A mount SLOT's source directory is never auto-created — pre-create it:
+# sudo -u workshop mkdir -p <workshop-source-path>

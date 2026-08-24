@@ -1,0 +1,26 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# setup-project: runs as the workshop user in /project/, after the project
+# mount and after auto-connect — so auto-connected interfaces (gpu, system
+# mounts, qualifying tunnels) are usable here. Not captured in snapshots;
+# runs on every launch/refresh/restore. $HOME, $XDG_RUNTIME_DIR, and
+# $DBUS_SESSION_BUS_ADDRESS are in scope.
+
+set -euo pipefail
+
+# User-specific environment goes to ~/.profile (never .bashrc/.bash_profile
+# — Workshop supports multiple shells). Explain non-obvious values:
+# cat <<EOF >>~/.profile
+#
+# # <why this value is needed>
+# export <NAME>_<VAR>=<value>
+# EOF
+
+# Background service: install and enable the user-level systemd unit shipped
+# by the services part. User units tie their lifetime to the workshop user's
+# session and need no sudo.
+# install -D --mode=644 --target-directory ~/.config/systemd/user "$SDK/<name>.service"
+# systemctl --user daemon-reload
+# systemctl --user enable --now <name>

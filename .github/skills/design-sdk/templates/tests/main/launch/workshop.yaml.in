@@ -1,0 +1,11 @@
+# tests/main/launch/workshop.yaml.in
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Rendered by the task's prepare step (envsubst substitutes ${BASE}). The
+# try- prefix consumes the artifact sdkcraft test staged into the try area.
+
+name: test-<name>
+base: ${BASE}
+sdks:
+  - name: try-<name>

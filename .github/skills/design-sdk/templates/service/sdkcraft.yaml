@@ -1,0 +1,51 @@
+# <name>/sdkcraft.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Background-service SDK: the binary part plus a `services` dump part
+# carrying the systemd user unit; a tunnel slot exposes the served port to
+# the host, a gpu plug picks up acceleration when present, and a mount plug
+# persists the service's data. setup-project installs and enables the unit;
+# check-health polls the real service. ollama is the reference SDK with
+# this shape.
+
+name: <name>
+adopt-info: <name>
+summary: <one line, at most 78 characters>
+description: |
+  This SDK provides <service> as a persistent service.
+  <Data> is persisted on the host across workshop updates.
+license: <SPDX-or-terms-of-what-the-SDK-installs>
+# Multi-base: no base/build-base; platform keys carry the base. CI uploads
+# then need platform-flag "--platform" (see templates/github-workflows/).
+platforms:
+  ubuntu@22.04:amd64:
+  ubuntu@24.04:amd64:
+
+plugs:
+  # Delete if the service has no GPU use. The plug MUST be named gpu.
+  gpu:
+    interface: gpu
+  data:
+    interface: mount
+    workshop-target: /home/workshop/.<name>
+
+slots:
+  <name>-server:
+    interface: tunnel
+    endpoint: <port>
+
+parts:
+  <name>:
+    plugin: dump
+    source: .
+    override-pull: |
+      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      craftctl set version="$VERSION"
+      curl -fLO "https://<upstream>/releases/download/v${VERSION}/<name>-linux-amd64.tar.gz"
+      tar -xzf "<name>-linux-amd64.tar.gz" -C "$CRAFT_PART_SRC"
+      rm "<name>-linux-amd64.tar.gz"
+  services:
+    plugin: dump
+    source: services
+    source-type: local

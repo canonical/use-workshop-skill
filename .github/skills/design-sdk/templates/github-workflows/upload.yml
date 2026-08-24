@@ -1,0 +1,40 @@
+# .github/workflows/upload.yml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# TODO: adjust the branch pattern, platforms, and platform-flag:
+#   Branch pattern: "latest", "[0-9]+", or "[0-9]+.[0-9]+" — match build.yml.
+#   Single-base SDK: platforms is a JSON array of architectures
+#     ('["amd64","arm64"]') with the default platform-flag --build-for.
+#   Multi-base SDK: platforms lists BASE:ARCH pairs
+#     ('["ubuntu@22.04:amd64","ubuntu@24.04:amd64"]') with
+#     platform-flag: "--platform".
+# The staging secret is deliberate: a fresh SDK must not publish to the
+# production Store. Flip to SDKCRAFT_STORE_CREDENTIALS_PROD when ready.
+
+name: Build and Upload SDK
+
+on:
+  push:
+    branches:
+      - "[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch name (e.g., 1.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-upload:
+    uses: canonical/sdkcraft-actions/.github/workflows/upload.yml@main
+    with:
+      platforms: '["amd64"]'
+      platform-flag: "--build-for"
+      risk: "stable"
+    secrets:
+      SDKCRAFT_STORE_CREDENTIALS: ${{ secrets.SDKCRAFT_STORE_CREDENTIALS_STAGING }}

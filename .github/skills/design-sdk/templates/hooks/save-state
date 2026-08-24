@@ -1,0 +1,17 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# save-state: runs as ROOT (not the workshop user) on the OLD revision,
+# before a refresh/restore destroys the old workshop. Copy refresh-crossing
+# state into $SDK_STATE_DIR. Only for data a mount plug can't carry — mounts
+# persist host-side without any hook code. Wrap user-context commands in
+# `sudo -iu workshop`.
+
+set -euo pipefail
+
+# Directory copy, glob-safe (a bare "$SRC"/* breaks on empty dirs):
+# cp -a "<state-source>/." "$SDK_STATE_DIR/"
+
+# Or harvest tool settings, e.g.:
+# sudo -iu workshop <name> config list > "$SDK_STATE_DIR"/settings

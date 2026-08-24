@@ -1,0 +1,43 @@
+# <name>/sdkcraft.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Binary-payload SDK: a dump part downloads the upstream release named by
+# VERSION and ships it under bin/; a mount plug persists the tool's cache.
+# go and ollama are the reference SDKs with this shape; when upstream
+# publishes checksums, verify them (see the claude-code pattern in
+# references/reference-sdk-patterns.md).
+
+name: <name>
+adopt-info: <name>
+summary: <one line, at most 78 characters>
+description: |
+  This SDK provides <tool> for <purpose>.
+  <Caches> are persisted on the host to speed up <operations>
+  across workshop updates.
+license: <SPDX-or-terms-of-what-the-SDK-installs>
+build-base: ubuntu@24.04
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+  arm64:
+    build-on: [amd64]
+    build-for: [arm64]
+
+parts:
+  <name>:
+    plugin: dump
+    source: .
+    override-pull: |
+      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      craftctl set version="$VERSION"
+      curl -fLO "https://<upstream>/releases/download/v${VERSION}/<name>-linux-${CRAFT_ARCH_BUILD_FOR}.tar.gz"
+      mkdir -p "$CRAFT_PART_SRC/bin"
+      tar -xzf "<name>-linux-${CRAFT_ARCH_BUILD_FOR}.tar.gz" -C "$CRAFT_PART_SRC/bin"
+      rm "<name>-linux-${CRAFT_ARCH_BUILD_FOR}.tar.gz"
+
+plugs:
+  cache:
+    interface: mount
+    workshop-target: /home/workshop/.cache/<name>
