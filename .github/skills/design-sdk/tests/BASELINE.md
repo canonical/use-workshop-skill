@@ -18,13 +18,13 @@ the same pair as the sibling gates.
 
 | Candidate | Judge | Pass rate | Date | Notes |
 |-----------|-------|-----------|------|-------|
-| `claude-sonnet-4-6` (claude CLI, subscription) | local claude judge | _pending first full run_ | — | seeds the pinned gate pair |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | **60/60 (100%)** | 2026-08-24 | **the pinned gate pair**, seeded over four full runs while the suite and two fencing rules converged. First run 52/60: two content gaps fixed (the closed 25-plugin list replacing a vague "full craft-parts set" line; direct file requests with bounded knobs proceed with recommended defaults), interview preamble now states brief-pinned constructs before questions, one case gained the daemon facts it claimed but omitted, rest were rubric artifacts. The sibling-verb leak took three escalations to fence (explicit sibling-verb list in the intake exception; the routing hand-off row now pre-empts "the cheatsheet is loaded"; rubric calibrated to the sibling one-or-two-pointer standard) and its mirror-image emerged — the fencing over-rotated onto the skill's OWN iterate territory — fixed with the try-SDK carve-out in the same intake rule. Final full run 59/60, 0 errors, ~18 min; the single miss was this suite's rubric conflating the waiting retry interval (1 s, ×10) with the 5 s per-attempt reporting budget — the candidate was right, the rubric fixed, case re-run 2/2 (`results/raw/` 151950 partial). Committed summary: `results/2026-08-24-routing-claude-cli-claude-sonnet-4-6.json` |
 
 ## Agentic eval (`make eval-agentic`)
 
 | Candidate | Judge | Pass rate | Date | Notes |
 |-----------|-------|-----------|------|-------|
-| `claude-sonnet-4-6` (claude CLI, subscription) | local claude judge | _pending first full run_ | — | 3 tasks; run order = fail-fast order (onboard-sdk-repo → design-pack-mini → try-verify) |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | **3/3 tasks (100%)** | 2026-08-24 | first full run 9/11 graded cases, 0 errors, ~20 min on real LXD; both misses were assertion-authoring artifacts re-run green 1/1 each (`results/raw/` 150842 + 151324 partials): a transcript-wide `not-contains stage-packages` firing on the skill bundle's own prohibition text (mention vs prescription — rescoped to the captured-files dump, colon-matched), and `contains "[BASH] sdkcraft try"` missing the loop's canonical compound form `sdkcraft clean && sdkcraft try` (now a regex on the line, not a prefix). try-verify proved the full loop: mount-prime defect diagnosed from the linter error, `override-prime` fix, pack → try → `design-try` Ready → in-workshop verification. Committed summary: `results/2026-08-24-agentic-claude-sonnet-4-6.json` |
 
 ## One-off Sonnet 5 SDK-reconstruction round (`make eval-reconstruction`)
 
