@@ -1,0 +1,15 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# restore-state: runs as ROOT on the NEW revision, after every SDK's
+# setup-project has finished, reading back from $SDK_STATE_DIR. Guard on
+# existence — a first launch has no saved state.
+
+set -euo pipefail
+
+# if [[ -f "$SDK_STATE_DIR"/settings ]]; then
+#   while IFS='=' read -r key value; do
+#     sudo -iu workshop <name> config set "$key=$value"
+#   done <"$SDK_STATE_DIR"/settings
+# fi

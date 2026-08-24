@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Deliberate defect (do not "fix" in the fixture — the eval's agent must):
+# the data plug targets $SDK/data, but no part primes a data/ directory, so
+# the interface linter fails the pack.
+name: echoer
+adopt-info: echoer
+base: ubuntu@24.04
+summary: Echo utility that persists its scratch data
+description: |
+  This SDK provides the echoer CLI and keeps its scratch directory on the
+  host so echoes survive workshop updates.
+license: MIT
+platforms:
+  amd64:
+  arm64:
+
+parts:
+  echoer:
+    plugin: dump
+    source: .
+    organize:
+      bin/echoer: bin/echoer
+    prime:
+      - bin/echoer
+    override-pull: |
+      VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
+      craftctl set version="$VERSION"
+      craftctl default
+
+plugs:
+  data:
+    interface: mount
+    workshop-target: $SDK/data

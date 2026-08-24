@@ -1,0 +1,19 @@
+# services/<name>.service
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# systemd user unit installed by hooks/setup-project. ExecStart goes through
+# a login shell so the service sees the profile.d environment the SDK set up
+# in setup-base. Rename this file to <name>.service.
+
+[Unit]
+Description=<Name> Service
+After=network.target
+
+[Service]
+ExecStart=/bin/bash -lc "<name> serve"
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

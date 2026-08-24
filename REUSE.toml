@@ -8,3 +8,11 @@ path = ["**.json"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Canonical Ltd."
 SPDX-License-Identifier = "GPL-3.0-only"
+
+# Agentic-fixture VERSION files are bare version strings read verbatim by
+# sdkcraft.yaml adopt-info wiring — a comment line would change the data.
+[[annotations]]
+path = ["**/tests/agentic/fixtures/*/VERSION"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Canonical Ltd."
+SPDX-License-Identifier = "GPL-3.0-only"

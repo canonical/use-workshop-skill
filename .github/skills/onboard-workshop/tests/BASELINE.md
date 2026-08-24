@@ -8,10 +8,15 @@ merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
-**54 cases across 8 scenario files** (incl. 8 cross-skill selection cases)
-since the 2026-08-20 Workshop 0.9.5 round, which added a JVM-repo SDK
-selection case (openjdk/maven per the new catalog rows) and updated the
-`generate.yaml` init rubric for the 0.9.5 `--sdks project-<name>` unlock.
+**60 cases across 9 scenario files** (incl. 11 cross-skill selection
+cases) since the 2026-08-24 design-sdk round, which added `dispatch.yaml`
+(the `$ARGUMENTS` verb-dispatch intake), three design-sdk near-miss
+selection cases against the now 3-skill auto-discovered selection context,
+and rerouted the sdkcraft out-of-scope case to a `design-sdk` handoff.
+Previously 54 cases across 8 files since the 2026-08-20 Workshop 0.9.5
+round, which added a JVM-repo SDK selection case (openjdk/maven per the new
+catalog rows) and updated the `generate.yaml` init rubric for the 0.9.5
+`--sdks project-<name>` unlock.
 
 Since 2026-08-20 this suite's gate is the **subscription lane**: Sonnet via
 the local claude CLI login as candidate, the local claude judge for
@@ -23,7 +28,8 @@ row.
 
 | Candidate | Judge | Pass rate | Date | Notes |
 |-----------|-------|-----------|------|-------|
-| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | **54/54 (100%)** | 2026-08-20 | **the pinned gate pair** — first full run under the subscription lane on the 0.9.5 suite: 52/54, 0 errors, ~13 min, $0 API spend; both failures were assertion-authoring artifacts verified against raw outputs and re-run green (a brittle `contains-any` missing the phrasing variants "existing-workshop check"/"definition already present" on a fully correct evidence-first answer, and a blunt `not-contains "silently ignored"` firing on the correct negation "will NOT be … silently ignored" — mention-vs-prescription, per the sibling's fix-#12 class). Committed summary: `results/2026-08-20-routing-claude-cli-claude-sonnet-4-6.json` |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | **60/60 (100%)** | 2026-08-24 | **the pinned gate pair** — design-sdk round on the 60-case suite (verb dispatch + 3-way selection): full run 54/60, 0 errors, ~14 min, $0; all six failures were rubric/assertion-authoring artifacts verified against raw outputs and re-run green — three dispatch rubrics assumed tool access a tool-less routing candidate lacks (asking for repo evidence before committing is correct behavior), the recommendation-discipline case hit two successive `contains-any` token gaps on distinct correct zero-question answers (list dropped with a comment, rubric rescoped to questions actually posed), and two sdk-selection rubrics were over-strict (a catalog-listed SDK may also mention `sdk info`; a reasoned mvnw-wrapper omission of maven with the tradeoff stated is acceptable). Targeted-green proof under `results/raw/` (134303/134542/134656 partials). Committed summary: `results/2026-08-24-routing-claude-cli-claude-sonnet-4-6.json` |
+| `claude-sonnet-4-6` (claude CLI, subscription) | **local claude judge** | 54/54 (100%) | 2026-08-20 | historical (54-case suite) — first full run under the subscription lane on the 0.9.5 suite: 52/54, 0 errors, ~13 min, $0 API spend; both failures were assertion-authoring artifacts verified against raw outputs and re-run green (a brittle `contains-any` missing the phrasing variants "existing-workshop check"/"definition already present" on a fully correct evidence-first answer, and a blunt `not-contains "silently ignored"` firing on the correct negation "will NOT be … silently ignored" — mention-vs-prescription, per the sibling's fix-#12 class). Committed summary: `results/2026-08-20-routing-claude-cli-claude-sonnet-4-6.json` |
 | `claude-sonnet-4-6` (Anthropic HTTP, retired tier) | `gpt-5.5-2026-04-23` (OpenAI, retired path) | 53/53 (100%) | 2026-08-13 | historical canonical under the retired pair; 48→53 in the gap-fix round below |
 | `claude-sonnet-4-6` (Anthropic HTTP) | `gpt-5.5-2026-04-23` (OpenAI) | 48/48 (100%) | 2026-07-23 | superseded — prior 48-case suite |
 | `z-ai/glm-5.2` (OpenRouter) | `gpt-5.5-2026-04-23` (OpenAI) | 50/53 (94.3%) | 2026-08-13 | diagnostic only — see below; this suite did NOT move to OpenRouter |
@@ -119,6 +125,16 @@ Update expectations when a guinea pig's ground truth changes.
 
 ¹ Under the corrected `anywhere_token_groups` expectation; the original literal
 `install_deps` token failed a decomposition that is functionally equivalent.
+
+### design-sdk round (2026-08-24, same four pinned guinea pigs)
+
+Re-run on the three-skill content (verb-dispatch retrofit + design-sdk
+fencing): **3/4 full passes, 0 errors, 37 min, $0** — identical outcome to
+the 0.9.5 round. `mir`, `subiquity`, `creusot` pass; the one failure is
+still the **known-open G2** (store-workshop's generated `.gitignore` misses
+the `.workshop.lock` line — the sole scorecard failure). No regression from
+this PR's changes; G2 remains next-round material.
+Raw: `results/raw/2026-08-24-152025-reconstruction-offline-claude-sonnet-4-6.json`.
 
 ### 0.9.5 round (2026-08-20, same four pinned guinea pigs — now the harness default)
 
@@ -242,8 +258,10 @@ Manual, pre-release only.
 
 | Task | Result | Date | Notes |
 |------|--------|------|-------|
-| onboard-mini-node | **PASS** (subscription, $0, clean teardown) | 2026-08-20 | 0.9.5 round, first run through the shared `_testlib` provider + new wrapper: 2/2 with no assertion or harness fixes needed. Summary: `results/2026-08-20-agentic-claude-sonnet-4-6.json` |
-| honesty-gate | **PASS** (subscription, $0) | 2026-08-20 | out-of-envelope fixture → verdict, ZERO files generated, no workshop lifecycle touched; also served as the commit-level smoke for the provider unification (apiKeySource=none) |
+| onboard-mini-node | **PASS** (subscription, $0, clean teardown) | 2026-08-24 | design-sdk round re-pin: the first run FAILED honestly — the agent probed the `serve` action's underlying command via `workshop exec` and reported PASS instead of proving it with `workshop run` or marking it UNVERIFIED, exactly what `launch-and-verify.md` forbids; the rubric held, no content or assertion changed, and the re-run passed clean 1/1 (`results/raw/` 143123 partial) — recorded as model variance against unambiguous instructions, worth watching if it recurs. Summary: `results/2026-08-24-agentic-claude-sonnet-4-6.json` |
+| onboard-mini-node | PASS (subscription, $0, clean teardown) | 2026-08-20 | 0.9.5 round, first run through the shared `_testlib` provider + new wrapper: 2/2 with no assertion or harness fixes needed. Summary: `results/2026-08-20-agentic-claude-sonnet-4-6.json` |
+| honesty-gate | **PASS** (subscription, $0) | 2026-08-24 | design-sdk round re-pin: clean pass on the verb-dispatch retrofit content, no changes needed. Summary: `results/2026-08-24-agentic-claude-sonnet-4-6.json` |
+| honesty-gate | PASS (subscription, $0) | 2026-08-20 | out-of-envelope fixture → verdict, ZERO files generated, no workshop lifecycle touched; also served as the commit-level smoke for the provider unification (apiKeySource=none) |
 | onboard-mini-node | PASS ($0.87 API, 5.7 min) | 2026-07-23 | historical, API auth: live-verified node@24/stable, verdict before generation, actions exercised via `workshop run`. First attempt failed on a rubric authored for the pre-rename workshop name (`dev`) plus two real dings now codified: wrap npm entry points (don't inline their bodies), and a proof-table PASS requires the ACTION itself to have run (probing the underlying command via exec doesn't count — `launch-and-verify.md` now says so) |
 | honesty-gate | PASS | 2026-07-23 | historical, API auth: macOS/Xcode fixture → INFEASIBLE verdict, ZERO files generated |
 

@@ -17,10 +17,22 @@ by update-docs-manifest.sh in use-workshop/tests and SHARED by both suites):
   workshop  - a full workshop definition. Signalled by a path comment ending in
               `workshop.yaml` or `.workshop/<name>.yaml`, or by being a
               templates/ YAML file. Allowlist: the workshop schema's keys.
+  sdkcraft  - a publisher-side sdkcraft.yaml (design-sdk suite only). Signalled
+              (with --classify-sdkcraft-template) by a path comment or template
+              basename `sdkcraft.yaml`. Allowlist: the sdkcraft schema's keys.
+  ci/spread - GitHub Actions workflow or spread files shown by design-sdk
+              (path comments under `.github/workflows/`, or basenames
+              `spread.yaml`/`task.yaml`). Neither has an upstream Workshop
+              schema, so these are parse-checked but NOT key-checked — a
+              deliberate, flag-gated policy widening; only the design-sdk
+              suite passes --classify-sdkcraft-template, so the sibling suites
+              keep the tight fragment allowlist.
   fragment  - anything else: a partial snippet rooted at a workshop-definition
               section (`sdks:`, `connections:`, `actions:`) or an interface
               `plugs:`/`slots:` block. Allowlist: the workshop keys plus
-              `plugs`/`slots`.
+              `plugs`/`slots` (plus the sdkcraft keys when
+              --classify-sdkcraft-template is set, since design-sdk references
+              legitimately show snippets rooted at `parts:`/`platforms:`).
 
 Only TOP-LEVEL keys are checked; placeholders like <NAME> only ever appear as
 values, so snippets parse cleanly. A snippet that fails to parse is also an
@@ -30,11 +42,14 @@ offline — part of the free CI gate.
 Usage:
   check-yaml-keys.py --skill-root <abs> --allowed-keys <abs>
                      [--templates-recursive] [--classify-sdk-template]
+                     [--classify-sdkcraft-template]
 
 --templates-recursive globs templates/**/*.yaml instead of templates/*.yaml;
 --classify-sdk-template classifies a template basename `sdk.yaml` under the
 sdk allowlist. Both are used by the onboard-workshop suite, which ships an
 in-project SDK template tree the sibling does not.
+--classify-sdkcraft-template (design-sdk suite) enables the sdkcraft
+classification and the ci/spread parse-only kinds described above.
 """
 
 import argparse
@@ -51,6 +66,7 @@ parser.add_argument("--skill-root", required=True)
 parser.add_argument("--allowed-keys", required=True)
 parser.add_argument("--templates-recursive", action="store_true")
 parser.add_argument("--classify-sdk-template", action="store_true")
+parser.add_argument("--classify-sdkcraft-template", action="store_true")
 args = parser.parse_args()
 
 skill_root = os.path.abspath(args.skill_root)
@@ -67,18 +83,35 @@ with open(keys_path) as fh:
 
 WORKSHOP_KEYS = set(allowed["workshop"])
 SDK_KEYS = set(allowed["sdk"])
+SDKCRAFT_KEYS = set(allowed.get("sdkcraft", ()))
 FRAGMENT_KEYS = WORKSHOP_KEYS | {"plugs", "slots"}
+if args.classify_sdkcraft_template:
+    if not SDKCRAFT_KEYS:
+        sys.exit(
+            "error: --classify-sdkcraft-template needs an 'sdkcraft' list in "
+            f"{keys_path} — regenerate it in use-workshop/tests."
+        )
+    FRAGMENT_KEYS |= SDKCRAFT_KEYS
 
 FENCE_OPEN = re.compile(r"^(\s*)```ya?ml\s*$")
 FENCE_CLOSE = re.compile(r"^\s*```\s*$")
-PATH_COMMENT = re.compile(r"^#\s*(\S+\.yaml)\b")
+PATH_COMMENT = re.compile(r"^#\s*(\S+\.ya?ml(?:\.in)?)\b")
+
+# Kinds with no upstream Workshop schema: parse-checked, never key-checked.
+PARSE_ONLY_BASENAMES = {"spread.yaml": "spread", "task.yaml": "spread"}
 
 
 def classify(block_lines, source_file):
-    """Return (kind, allowlist) for a YAML block."""
+    """Return (kind, allowlist) for a YAML block; allowlist None = parse-only."""
     if source_file.endswith(".yaml"):  # a templates/ YAML file
-        if args.classify_sdk_template and os.path.basename(source_file) == "sdk.yaml":
+        basename = os.path.basename(source_file)
+        if args.classify_sdk_template and basename == "sdk.yaml":
             return "sdk", SDK_KEYS
+        if args.classify_sdkcraft_template:
+            if basename == "sdkcraft.yaml":
+                return "sdkcraft", SDKCRAFT_KEYS
+            if basename in PARSE_ONLY_BASENAMES:
+                return PARSE_ONLY_BASENAMES[basename], None
         return "workshop", WORKSHOP_KEYS
     for line in block_lines:
         stripped = line.strip()
@@ -87,6 +120,13 @@ def classify(block_lines, source_file):
         m = PATH_COMMENT.match(stripped)
         if m:
             path = m.group(1)
+            if args.classify_sdkcraft_template:
+                if path.endswith("sdkcraft.yaml"):
+                    return "sdkcraft", SDKCRAFT_KEYS
+                if ".github/workflows/" in path:
+                    return "ci", None
+                if os.path.basename(path) in PARSE_ONLY_BASENAMES:
+                    return PARSE_ONLY_BASENAMES[os.path.basename(path)], None
             if path.endswith("sdk.yaml"):
                 return "sdk", SDK_KEYS
             if path.endswith("workshop.yaml") or re.search(r"\.workshop/[^/]+\.yaml$", path):
@@ -129,6 +169,9 @@ def check_file(rel, offenders):
             data = yaml.safe_load(text)
         except yaml.YAMLError as exc:
             offenders.append(f"{rel}:{lineno}: YAML snippet ({kind}) failed to parse: {exc}")
+            continue
+        if allowlist is None:
+            # Parse-only kind (ci/spread): no Workshop-side schema to check.
             continue
         if not isinstance(data, dict):
             # A bare list/scalar has no top-level keys to police.

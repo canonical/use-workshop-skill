@@ -1,0 +1,495 @@
+{
+  "meta": {
+    "generated_at": "2026-08-24T12:58:41+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "claude-cli",
+    "total_cases": 60,
+    "passed": 54,
+    "failed": 6,
+    "errors": 0,
+    "pass_rate": 0.9,
+    "tokens": {
+      "total": 1903820,
+      "prompt": 1856006,
+      "completion": 47814,
+      "cached": 1838371
+    },
+    "cost_usd": 1.4087
+  },
+  "cases": [
+    {
+      "description": "analyze verb stops at the verdict without asking which path",
+      "passed": false,
+      "score": 0.4,
+      "latency_ms": 23938,
+      "cost": 0.028846,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response treats this as the analyze subcommand: it commits to\nthe read-only toolchain analysis of ./services/api ending at the\nfeasibility verdict and proposal, without generating files and\nwithout asking the user which of the intake paths they meant.\n",
+          "passed": false,
+          "reason": "The response does commit to delivering the feasibility verdict and does not generate files or ask which intake path was meant. However, it refuses to perform any analysis itself and instead asks the user to manually run six sets of shell commands and paste the outputs. The rubric requires the response to commit to performing the read-only toolchain analysis of ./services/api\u2014the response blocks that analysis entirely by deferring to the user for data collection, rather than using available tools"
+        }
+      ],
+      "failure_reason": "The response does commit to delivering the feasibility verdict and does not generate files or ask which intake path was meant. However, it refuses to perform any analysis itself and instead asks the user to manually run six sets of shell commands and paste the outputs. The rubric requires the response to commit to performing the read-only toolchain analysis of ./services/api\u2014the response blocks that analysis entirely by deferring to the user for data collection, rather than using available tools"
+    },
+    {
+      "description": "onboard verb commits to the full chain",
+      "passed": false,
+      "score": 1,
+      "latency_ms": 24167,
+      "cost": 0.027211,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response treats this as the onboard subcommand: the full\nfour-workflow chain (analyze \u2192 propose \u2192 generate \u2192 verify) on\nthe current repo, starting with the read-only analysis and the\nexisting-definition check. It does not re-open the intake menu;\ninterview questions later in the flow are fine.\n",
+          "passed": false,
+          "reason": "The response does not execute the four-workflow chain (analyze \u2192 propose \u2192 generate \u2192 verify). Instead of starting the read-only analysis and existing-definition check itself using available tools, the assistant claims it lacks filesystem access and delegates all the detection work back to the user as a manual step. This effectively stalls at a pre-analyze gate rather than proceeding with the onboard subcommand. It also resembles re-opening an intake/interview step by asking the user to collect "
+        }
+      ],
+      "failure_reason": "The response does not execute the four-workflow chain (analyze \u2192 propose \u2192 generate \u2192 verify). Instead of starting the read-only analysis and existing-definition check itself using available tools, the assistant claims it lacks filesystem access and delegates all the detection work back to the user as a manual step. This effectively stalls at a pre-analyze gate rather than proceeding with the onboard subcommand. It also resembles re-opening an intake/interview step by asking the user to collect "
+    },
+    {
+      "description": "verify verb goes straight to launch-and-verify",
+      "passed": false,
+      "score": 1,
+      "latency_ms": 15114,
+      "cost": 0.020869,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response goes straight to verification of the freshly\ngenerated definition: launch, the verification triplet, and the\naction proof loop \u2014 not a new analysis or proposal pass.\n",
+          "passed": false,
+          "reason": "The output does not go straight to verification, launch, the verification triplet, or the action proof loop. Instead, it stalls entirely by claiming missing context and asking the user for a project directory and workshop name. There is no attempt to launch, verify, or execute any proof loop step \u2014 the response is purely a request for clarification before doing any work at all."
+        }
+      ],
+      "failure_reason": "The output does not go straight to verification, launch, the verification triplet, or the action proof loop. Instead, it stalls entirely by claiming missing context and asking the user for a project directory and workshop name. There is no attempt to launch, verify, or execute any proof loop step \u2014 the response is purely a request for clarification before doing any work at all."
+    },
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24361,
+      "cost": 0.028548
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 92382,
+      "cost": 0.098766
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23442,
+      "cost": 0.026986
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 16054,
+      "cost": 0.022749
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15926,
+      "cost": 0.022714
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16919,
+      "cost": 0.024008
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28625,
+      "cost": 0.029305
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13031,
+      "cost": 0.019221
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15835,
+      "cost": 0.022512
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 27761,
+      "cost": 0.03095
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13089,
+      "cost": 0.019909
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16255,
+      "cost": 0.021538
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20433,
+      "cost": 0.025104
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17359,
+      "cost": 0.022278
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 47967,
+      "cost": 0.04389
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17093,
+      "cost": 0.023669
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 44869,
+      "cost": 0.04462
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": false,
+      "score": 1,
+      "latency_ms": 24615,
+      "cost": 0.027329,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "Every DECISION question in the response (base, name, which actions,\nchannel pinning, optional toolchains) comes with an explicit\nrecommendation, and the questions are batched rather than dribbled\none at a time. Requests for repo EVIDENCE (asking to see a file or a\ncommand's output, since the assistant cannot inspect the repo in\nthis conversation) are not decision questions and need no\nrecommendation. Fail only if a decision question is left open-ended\nwith no recommended answer.\n",
+          "passed": false,
+          "reason": "The response identifies two decision questions \u2014 which action set to include (inner loop only vs. docs/packaging targets) and whether a CI series matrix implies parallel definitions \u2014 but provides no explicit recommendation for either. The rubric requires every decision question to come with a recommended answer; here both are left open-ended. Although the response states it would ask questions \"each with a recommendation,\" it does not actually supply those recommendations for the questions it n"
+        }
+      ],
+      "failure_reason": "The response identifies two decision questions \u2014 which action set to include (inner loop only vs. docs/packaging targets) and whether a CI series matrix implies parallel definitions \u2014 but provides no explicit recommendation for either. The rubric requires every decision question to come with a recommended answer; here both are left open-ended. Although the response states it would ask questions \"each with a recommendation,\" it does not actually supply those recommendations for the questions it n"
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18049,
+      "cost": 0.025134
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10904,
+      "cost": 0.017819
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 39950,
+      "cost": 0.040587
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22569,
+      "cost": 0.026403
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14507,
+      "cost": 0.020769
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 40563,
+      "cost": 0.042409
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": false,
+      "score": 0.8666666666666667,
+      "latency_ms": 10124,
+      "cost": 0.019103,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response proposes the node SDK with the channel pinned from the\nengines field (channel \"24\"), verified or to-verify via sdk info.\n",
+          "passed": false,
+          "reason": "The output clearly proposes the node SDK (`name: node`) with `channel: \"24\"` explicitly derived from `engines.node: \">=24\"`, satisfying the core requirement of pinning the channel from the engines field. However, the rubric requires that the channel be \"verified or to-verify via sdk info,\" and the response makes no mention of running or suggesting `sdk info` (or equivalent) to confirm the channel exists. The reasoning is confident and detailed, but the sdk info verification step is entirely abse"
+        }
+      ],
+      "failure_reason": "The output clearly proposes the node SDK (`name: node`) with `channel: \"24\"` explicitly derived from `engines.node: \">=24\"`, satisfying the core requirement of pinning the channel from the engines field. However, the rubric requires that the channel be \"verified or to-verify via sdk info,\" and the response makes no mention of running or suggesting `sdk info` (or equivalent) to confirm the channel exists. The reasoning is confident and detailed, but the sdk info verification step is entirely abse"
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16415,
+      "cost": 0.023636
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25859,
+      "cost": 0.030489
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 45067,
+      "cost": 0.044381
+    },
+    {
+      "description": "JVM repo maps to openjdk plus the matching build-tool SDK",
+      "passed": false,
+      "score": 0.7999999999999999,
+      "latency_ms": 32388,
+      "cost": 0.035652,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response proposes the `openjdk` SDK for the Java toolchain plus\nthe `maven` SDK for the build tool (the pom.xml + mvnw evidence; a\ngradle repo would get `gradle` instead), following the catalog's\nJVM rows (0.9.4+). Catalog-sourced picks are tagged unverified /\nto-confirm via `sdk find` / `sdk info` per the catalog protocol \u2014\nwording may vary, but the response must not present unconfirmed\nStore SDKs as certain. Falling back to a bare in-project apt SDK for\nJava WITHOUT first proposing the Store SDKs, or inventing SDK names\n(e.g. `java`, `jdk`, `maven-sdk`), is the failure mode. Noting that\nmvnw could reduce the maven SDK to optional is acceptable nuance.\n",
+          "passed": false,
+          "reason": "The response correctly proposes `openjdk` and tags it as unverified with a `sdk info` confirmation step. However, the rubric requires proposing the `maven` SDK as well, with mvnw being acceptable as optional nuance \u2014 the output instead goes further by explicitly recommending to omit `maven` entirely and listing only `openjdk`. The rubric states \"noting that mvnw could reduce the maven SDK to optional is acceptable nuance,\" but the output's firm recommendation to drop `maven` altogether fails to "
+        }
+      ],
+      "failure_reason": "The response correctly proposes `openjdk` and tags it as unverified with a `sdk info` confirmation step. However, the rubric requires proposing the `maven` SDK as well, with mvnw being acceptable as optional nuance \u2014 the output instead goes further by explicitly recommending to omit `maven` entirely and listing only `openjdk`. The rubric states \"noting that mvnw could reduce the maven SDK to optional is acceptable nuance,\" but the output's firm recommendation to drop `maven` altogether fails to "
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 32778,
+      "cost": 0.036992
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23655,
+      "cost": 0.027811
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5275,
+      "cost": 0.01554
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7871,
+      "cost": 0.017311
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13913,
+      "cost": 0.02143
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14779,
+      "cost": 0.020923
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 32317,
+      "cost": 0.037933
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16570,
+      "cost": 0.022379
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17723,
+      "cost": 0.023406
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5610,
+      "cost": 0.015823
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12646,
+      "cost": 0.019513
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27547,
+      "cost": 0.031154
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25915,
+      "cost": 0.029179
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4084,
+      "cost": 0.003675
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2562,
+      "cost": 0.003502
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3284,
+      "cost": 0.003702
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3542,
+      "cost": 0.003652
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5712,
+      "cost": 0.003559
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2780,
+      "cost": 0.003515
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5096,
+      "cost": 0.005211
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2810,
+      "cost": 0.003674
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3218,
+      "cost": 0.00394
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3740,
+      "cost": 0.004766
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3702,
+      "cost": 0.004549
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15797,
+      "cost": 0.022464
+    },
+    {
+      "description": "sdkcraft publishing routes to the design-sdk sibling",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17302,
+      "cost": 0.023398
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19929,
+      "cost": 0.025451
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6675,
+      "cost": 0.016792
+    }
+  ]
+}

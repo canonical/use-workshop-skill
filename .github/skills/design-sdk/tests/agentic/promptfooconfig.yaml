@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+description: |
+  Agentic end-to-end eval for the design-sdk skill.
+  Each task spawns `claude -p` in an isolated sandbox where design-sdk and
+  use-workshop are installed, and asserts on the transcript plus the
+  captured SDK artifacts (capture_paths swaps the workshop-shaped default
+  capture for the SDK repo shape). Run order is the fail-fast order:
+  onboard-sdk-repo needs no LXD; design-pack-mini builds with sdkcraft;
+  try-verify drives a real workshop. Default model is Sonnet 4.6.
+
+prompts:
+  # Each task supplies its own `task` var; this prompt template is just a
+  # passthrough so promptfoo's pipeline accepts the test cases.
+  - "{{task}}"
+
+providers:
+  - id: file://../../../_testlib/provider-agentic.js
+    config:
+      skills: [design-sdk, use-workshop]
+      model: claude-sonnet-4-6
+      agent_timeout_ms: 1200000
+      max_budget_usd: 3
+      capture_generated_files: true
+      capture_paths:
+        - sdkcraft.yaml
+        - VERSION
+        - renovate.json
+        - README.md
+        - .gitignore
+        - hooks
+        - services
+        - tests
+        - .github/workflows
+      sandbox_prefix: design-agentic-
+
+defaultTest:
+  options:
+    cache: false
+    # Pin llm-rubric grading to the local claude CLI judge (see the routing
+    # config's comment for why an unpinned grader is a problem).
+    provider: file://../../../_testlib/provider-judge-cli.js
+
+tests:
+  - file://tasks/onboard-sdk-repo.yaml
+  - file://tasks/design-pack-mini.yaml
+  - file://tasks/try-verify.yaml

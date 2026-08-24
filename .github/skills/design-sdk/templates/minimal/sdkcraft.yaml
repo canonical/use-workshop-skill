@@ -1,0 +1,38 @@
+# <name>/sdkcraft.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Minimal, version-only SDK: no payload parts — all setup logic lives in
+# hooks/. The single nil part exists only to adopt the version from the
+# VERSION file (never hardcode `version:`; renovate bumps VERSION).
+# vscode-remote is the reference SDK with this shape.
+
+name: <name>
+adopt-info: version
+summary: <one line, at most 78 characters>
+description: |
+  This SDK provides <what> for <purpose>.
+  <Key resources> are persisted on the host to speed up <what>
+  across workshop updates.
+license: <SPDX-or-terms-of-what-the-SDK-installs>
+# Single-base: keep base + architecture-name platforms. For a multi-base SDK,
+# delete base/build-base and use `ubuntu@XX.04:arch` platform keys instead.
+build-base: ubuntu@24.04
+platforms:
+  amd64:
+  arm64:
+
+parts:
+  version:
+    plugin: nil
+    override-pull: |
+      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      craftctl set version="$VERSION"
+
+# Declare plugs only for resources the SDK actually needs. A mount plug
+# persists a directory across workshop updates; mode/uid/gid have sensible
+# defaults for paths under /home/workshop/.
+#plugs:
+#  <state-name>:
+#    interface: mount
+#    workshop-target: /home/workshop/.<name>

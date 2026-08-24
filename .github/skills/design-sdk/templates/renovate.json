@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "custom.regex"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^VERSION$/"],
+      "matchStrings": [
+        "(?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "TODO_DEP_NAME",
+      "datasourceTemplate": "TODO_DATASOURCE",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "baseBranchPatterns": [
+    "TODO_BRANCH"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["TODO_DEP_NAME"],
+      "matchBaseBranches": ["TODO_BRANCH"],
+      "allowedVersions": "/^TODO_VERSION_PREFIX\\./"
+    }
+  ]
+}

@@ -21,9 +21,13 @@ jobs:
         run: make -C .github/skills/use-workshop/tests check
       - name: Static checks, onboard-workshop (shared manifests, bundle regen, YAML keys, hooks)
         run: make -C .github/skills/onboard-workshop/tests check
-      - name: Syntax-check shared JS providers
+      - name: Static checks, design-sdk (shared manifests, sdkcraft YAML keys, hooks, templates)
+        run: make -C .github/skills/design-sdk/tests check
+      - name: Syntax-check shared and reconstruction JS providers
         run: |
-          for f in .github/skills/_testlib/*.js; do node --check "$f"; done
+          for f in .github/skills/_testlib/*.js .github/skills/*/tests/reconstruction/*.js; do
+            node --check "$f"
+          done
       - name: REUSE lint
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
 
@@ -57,9 +61,9 @@ jobs:
   # as the llm-rubric judge, both through OpenRouter (~$1.41/run), so
   # OPENROUTER_API_KEY is the only secret this job (and this repo) needs.
   #
-  # onboard-workshop is deliberately NOT here: its routing gate is the
-  # subscription lane (local claude CLI login + local judge, $0), and a CI
-  # runner has no CLI login — Lane 2 is local-only by design.
+  # onboard-workshop and design-sdk are deliberately NOT here: their routing
+  # gates are the subscription lane (local claude CLI login + local judge,
+  # $0), and a CI runner has no CLI login — Lane 2 is local-only by design.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest

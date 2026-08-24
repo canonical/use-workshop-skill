@@ -17,19 +17,22 @@
         already onboarded and routes to the use-workshop skill (launch /
         evolve the existing definition). No new definition is generated.
 
-- description: sdkcraft publishing is out of scope
+- description: sdkcraft publishing routes to the design-sdk sibling
   vars:
     user: |
       While onboarding, can you also build and publish our in-project SDK to the Store with sdkcraft?
   assert:
     - type: not-contains
       value: sdkcraft push
+    - type: contains
+      value: design-sdk
     - type: llm-rubric
       value: |
-        The response declines to drive sdkcraft (build/publish is out of
-        scope), points at the sdkcraft CLI docs / craft-SDKs tutorial, and
-        does not improvise sdkcraft invocations. Continuing the onboarding
-        with the in-project SDK as-is is correct.
+        The response declines to drive sdkcraft inside the onboarding
+        (build/publish is the design-sdk sibling skill's territory) and
+        routes the Store-SDK work there rather than improvising sdkcraft
+        invocations. Continuing the onboarding with the in-project SDK
+        as-is is correct.
 
 - description: Sketch-SDK walkthrough is not offered
   vars:

@@ -88,7 +88,7 @@ see `BASELINE.md` for the derivation).
 
 The Anthropic HTTP tiers were retired 2026-08-20. The confirmation run on the
 model family the skill is actually written for is `make
-eval-routing-subscription`: the same 76 cases through the `claude` CLI on the
+eval-routing-subscription`: the same 84 cases through the `claude` CLI on the
 local subscription login, at $0. The agentic suite likewise drives the
 `claude` CLI directly and cannot use OpenRouter.
 
@@ -126,7 +126,7 @@ Rules of the road:
 
 ## What the suites test
 
-### Routing (76 cases across 12 scenario files)
+### Routing (84 cases across 13 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three

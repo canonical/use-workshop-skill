@@ -192,8 +192,14 @@ class AgenticProvider {
 
       // 4. Capture post-state independently of the agent's own commands.
       const workshopState = core.captureWorkshopState(sandbox, cleanupNames);
+      // capture_paths (optional) switches the capture from the workshop-shaped
+      // dumpTree to an explicit file/dir list — used by the design-sdk suite,
+      // whose artifacts (sdkcraft.yaml, VERSION, renovate.json, hooks/, …) the
+      // default capture would miss entirely.
       const generatedFiles = cfg.capture_generated_files
-        ? core.dumpTree(sandbox, ['workshop.yaml', '.workshop.yaml', '.gitignore'])
+        ? (Array.isArray(cfg.capture_paths) && cfg.capture_paths.length
+            ? core.dumpPaths(sandbox, cfg.capture_paths)
+            : core.dumpTree(sandbox, ['workshop.yaml', '.workshop.yaml', '.gitignore']))
         : null;
 
       // 5. Compose final output.

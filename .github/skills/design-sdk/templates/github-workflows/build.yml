@@ -1,0 +1,22 @@
+# .github/workflows/build.yml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# TODO: set the branch pattern to match your version branches:
+#   "latest" for a single track, "[0-9]+" for major-only,
+#   "[0-9]+.[0-9]+" for major.minor.
+
+name: Build SDK
+
+on:
+  pull_request:
+    branches:
+      - "[0-9]+.[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: canonical/sdkcraft-actions/.github/workflows/build.yml@main

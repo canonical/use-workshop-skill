@@ -47,6 +47,7 @@ defaultTest:
     skill: file://skill-bundle.md
 
 tests:
+  - file://scenarios/dispatch.yaml
   - file://scenarios/analyze.yaml
   - file://scenarios/feasibility-honesty.yaml
   - file://scenarios/interview.yaml

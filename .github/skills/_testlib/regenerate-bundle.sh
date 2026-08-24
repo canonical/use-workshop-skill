@@ -18,8 +18,9 @@
 #   appended to the bundle — used by onboard-workshop, which reads sibling
 #   use-workshop references by relative path.
 # --selection-out: also write a skill-selection context file holding ONLY the
-#   two skills' frontmatter blocks, used by scenarios/skill-selection.yaml to
-#   test which skill a model picks from descriptions alone.
+#   frontmatter blocks of every installed skill (discovered as sibling
+#   <skills-dir>/*/SKILL.md), used by scenarios/skill-selection.yaml to test
+#   which skill a model picks from descriptions alone.
 
 set -euo pipefail
 
@@ -92,14 +93,27 @@ done
 } > "${out}"
 
 if [[ -n "${selection_out}" ]]; then
-  # Skill-selection context: frontmatter (--- ... ---) of both skills only.
+  # Skill-selection context: frontmatter (--- ... ---) of every installed
+  # skill. Skills are auto-discovered as <skills_dir>/*/SKILL.md — the sorted
+  # glob keeps the order deterministic, and _testlib deliberately ships no
+  # SKILL.md so it can never be picked up. Adding a skill therefore changes
+  # this context (and the selection task) with no edit here.
+  skill_names=()
+  for f in "${skills_dir}"/*/SKILL.md; do
+    [[ -f "${f}" ]] || continue
+    skill_names+=("$(basename "$(dirname "${f}")")")
+  done
+  if [[ ${#skill_names[@]} -eq 0 ]]; then
+    echo "error: no */SKILL.md found under ${skills_dir}" >&2
+    exit 1
+  fi
   {
     # REUSE-IgnoreStart — emitted header for the GENERATED file, not this script's.
     echo "<!-- SPDX-License-Identifier: GPL-3.0-only -->"
     echo "<!-- Copyright 2026 Canonical Ltd. -->"
     # REUSE-IgnoreEnd
-    echo "Two skills are installed. Their metadata:"
-    for s in use-workshop onboard-workshop; do
+    echo "${#skill_names[@]} skills are installed. Their metadata:"
+    for s in "${skill_names[@]}"; do
       echo
       echo "## Skill: ${s}"
       awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "${skills_dir}/${s}/SKILL.md"

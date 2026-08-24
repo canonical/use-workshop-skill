@@ -1,6 +1,7 @@
 ---
 name: onboard-workshop
 description: Analyze an arbitrary repository and bootstrap a tailored Workshop definition from its existing build, test, and debug toolchain — feasibility verdict first, then propose, generate, launch, and verify. Use when a repo has no workshop definition yet and the user wants one derived from how the repo already builds and tests — "set up a workshop for this repo", "workshop-ify this project", "can this repo run in Workshop?".
+argument-hint: "[onboard|analyze|generate|verify|refine] [repo path]"
 ---
 
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
@@ -65,32 +66,44 @@ equivalent docs pages via `<docs>` instead — e.g.
 `reference/definition-files/workshop-definition.md` for definition anatomy,
 `reference/cli/workshop.md` for command signatures — and tell the user the
 plugin is meant to be installed whole.
+
+A second sibling, `design-sdk`, owns the publisher side: making a repo's
+software installable AS a Store SDK — `sdkcraft.yaml`, packed-SDK hooks,
+spread tests, publishing, and SDK-repo automation. That is not an
+onboarding; route it there.
 </sibling_skill>
 
 <intake>
 Pick the matching path:
 
-1. Onboard a repo end-to-end ("set up a workshop for this repo") — all four
-   workflows in order
-2. Analyze only / feasibility check ("can this run in Workshop?") — stop
-   after the verdict and proposal
-3. Refine an earlier proposal ("use a different base/SDK") — re-propose, then
-   regenerate
-4. Verify a freshly generated definition ("prove it works") — launch and
-   verify only
+1. `onboard` — Onboard a repo end-to-end ("set up a workshop for this repo")
+   — all four workflows in order
+2. `analyze` — Analyze only / feasibility check ("can this run in
+   Workshop?") — stop after the verdict and proposal
+3. `refine` — Refine an earlier proposal ("use a different base/SDK") —
+   re-propose, then regenerate
+4. `verify` — Verify a freshly generated definition ("prove it works") —
+   launch and verify only
 5. Operate, troubleshoot, or evolve an EXISTING workshop — not this skill;
    use `use-workshop`
+
+**If invoked with $ARGUMENTS, route directly without asking.** The leading
+token is matched against the subcommands above (`generate` maps to the
+"generate what we agreed" row); the rest is the repo path or request detail.
+Arguments with no recognized leading verb are a plain request — route them
+via the paraphrase table below.
 </intake>
 
 <routing>
-| User intent (paraphrases) | Path |
-|---------------------------|------|
-| "onboard", "set up a workshop for this repo", "workshop-ify", "make this project run in Workshop", "bootstrap from my toolchain", "derive a workshop from this codebase" | `workflows/analyze-repo.md` → `workflows/propose-plan.md` → `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
-| "can this repo run in Workshop", "is this feasible", "what would a workshop for this look like", "analyze first", "don't create anything yet" | `workflows/analyze-repo.md` → `workflows/propose-plan.md`, STOP at the proposal |
-| "generate what we agreed", "apply the proposal", "write the definition" | `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
-| "verify it", "prove the actions work", "launch what you generated" | `workflows/launch-and-verify.md` |
-| "tweak the proposal", "different base", "swap the SDK", "drop the docs actions" | `workflows/propose-plan.md` → `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
-| Existing workshop: run/refresh/connect/debug/parallel envs | `use-workshop` skill — do not improvise operations here |
+| Subcommand | User intent (paraphrases) | Path |
+|------------|---------------------------|------|
+| `onboard` | "onboard", "set up a workshop for this repo", "workshop-ify", "make this project run in Workshop", "bootstrap from my toolchain", "derive a workshop from this codebase" | `workflows/analyze-repo.md` → `workflows/propose-plan.md` → `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
+| `analyze` | "can this repo run in Workshop", "is this feasible", "what would a workshop for this look like", "analyze first", "don't create anything yet" | `workflows/analyze-repo.md` → `workflows/propose-plan.md`, STOP at the proposal |
+| `generate` | "generate what we agreed", "apply the proposal", "write the definition" | `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
+| `verify` | "verify it", "prove the actions work", "launch what you generated" | `workflows/launch-and-verify.md` |
+| `refine` | "tweak the proposal", "different base", "swap the SDK", "drop the docs actions" | `workflows/propose-plan.md` → `workflows/generate-definition.md` → `workflows/launch-and-verify.md` |
+| — | Existing workshop: run/refresh/connect/debug/parallel envs | `use-workshop` skill — do not improvise operations here |
+| — | "make this repo's tool an SDK others can install", "publish as a Store SDK", "sdkcraft.yaml", "SDK repo CI/renovate" | `design-sdk` skill — publisher-side work is not an onboarding |
 </routing>
 
 <reference_index>
@@ -116,12 +129,12 @@ Borrowed from the sibling (load by relative path):
 </reference_index>
 
 <workflows_index>
-| Workflow | Stage |
-|----------|-------|
-| `analyze-repo.md` | A: read-only toolchain analysis → Repo Facts |
-| `propose-plan.md` | B/C: capability map → verdict → interview → approved proposal |
-| `generate-definition.md` | D: write `.workshop/<name>.yaml` + in-project SDKs |
-| `launch-and-verify.md` | E/F: launch, verify, action proof loop, final report |
+| Workflow | Subcommand | Stage |
+|----------|------------|-------|
+| `analyze-repo.md` | `analyze` | A: read-only toolchain analysis → Repo Facts |
+| `propose-plan.md` | `analyze`/`refine` | B/C: capability map → verdict → interview → approved proposal |
+| `generate-definition.md` | `generate` | D: write `.workshop/<name>.yaml` + in-project SDKs |
+| `launch-and-verify.md` | `verify` | E/F: launch, verify, action proof loop, final report |
 </workflows_index>
 
 <verification_loop>
@@ -157,10 +170,10 @@ A run of this skill is complete when:
   (`workshop shell`, `workshop run <action>`) at most, then hand off.
 - Repos that already contain a definition → `use-workshop`
   (`workflows/bootstrap-project.md` there); onboarding never overwrites one.
-- `sdkcraft *` (building/publishing Store SDKs) and standalone `workshopctl` →
-  point at `<base>/reference/cli/sdkcraft.md`,
-  `<base>/reference/cli/workshopctl.md`,
-  `<base>/tutorial/part-4-craft-sdks.md`, then stop.
+- `sdkcraft *` (building/publishing Store SDKs) → the sibling `design-sdk`
+  skill: sdkcraft.yaml design, packed-SDK hooks, spread tests, publishing,
+  and SDK-repo automation all live there. Standalone `workshopctl` → point at
+  `<base>/reference/cli/workshopctl.md`, then stop.
 - Interactive `workshop sketch-sdk` flows (require `$EDITOR`) — write
   in-project SDKs directly instead.
 </out_of_scope>

@@ -145,6 +145,7 @@ defaultTest:
     skill: file://skill-bundle.md
 
 tests:
+  - file://scenarios/dispatch.yaml
   - file://scenarios/bootstrap.yaml
   - file://scenarios/daily-ops.yaml
   - file://scenarios/interfaces.yaml

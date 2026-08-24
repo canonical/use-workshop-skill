@@ -1,6 +1,7 @@
 ---
 name: use-workshop
 description: Operate the Workshop CLI fluently — launch and refresh workshops, run commands inside them, manage interfaces, debug failed changes, and orchestrate parallel environments via git worktrees. Use when the user mentions workshop, .workshop.yaml, an LXD-backed dev environment, or wants to plan/edit a workshop definition.
+argument-hint: "[init|run|actions|sdk|connect|worktrees|ide|multi|debug|purge] [details]"
 ---
 
 <!-- SPDX-License-Identifier: GPL-3.0-only -->
@@ -29,36 +30,57 @@ Authoritative readable docs:
 The base URL may change. It is recorded HERE only — every other file lists relative paths so a single edit re-points the whole skill. Do not embed local `docs/` paths in any file under this skill; the docs site is the source of truth.
 </docs>
 
+<sibling_skill>
+Two sibling skills ship in the same plugin:
+
+- `onboard-workshop` — a repo with NO workshop definition yet, deriving one
+  from its existing toolchain ("set up a workshop for this repo"). Route
+  onboarding requests there; this skill takes over once a definition exists.
+- `design-sdk` — the publisher side: designing, building, and publishing
+  Store SDKs with `sdkcraft` (sdkcraft.yaml, hooks, spread tests, SDK-repo
+  CI/renovate). Route `sdkcraft` and SDK-publishing requests there.
+
+If a sibling is not installed (single-skill vendoring), fetch the equivalent
+docs pages via `<docs>` instead and tell the user the plugin is meant to be
+installed whole.
+</sibling_skill>
+
 <intake>
 Pick the matching workflow based on what the user wants to do:
 
-1. Bootstrap a new project / scaffold a definition (`workshop init`) / launch a workshop for the first time
-2. Day-to-day ops (run a command, refresh, restart)
-3. Customize the workshop (add or edit `actions:`)
-4. Author an in-project SDK with hooks (`.workshop/<name>/`)
-5. Wire interfaces (mount, GPU, tunnel, ssh-agent, etc.)
-6. Run parallel environments (git worktrees per task)
-7. Connect an IDE or remote tool via SSH/tunnel
-8. Manage multiple workshops in one project
-9. Troubleshoot a failed change
-10. Purge or recover a stuck/orphaned workshop
+1. `init` — Bootstrap a new project / scaffold a definition (`workshop init`) / launch a workshop for the first time
+2. `run` — Day-to-day ops (run a command, refresh, restart)
+3. `actions` — Customize the workshop (add or edit `actions:`)
+4. `sdk` — Author an in-project SDK with hooks (`.workshop/<name>/`)
+5. `connect` — Wire interfaces (mount, GPU, tunnel, ssh-agent, etc.)
+6. `worktrees` — Run parallel environments (git worktrees per task)
+7. `ide` — Connect an IDE or remote tool via SSH/tunnel
+8. `multi` — Manage multiple workshops in one project
+9. `debug` — Troubleshoot a failed change
+10. `purge` — Purge or recover a stuck/orphaned workshop
 
 Then read the matching workflow under `workflows/` and follow it.
+
+**If invoked with $ARGUMENTS, route directly without asking.** The leading
+token is matched against the subcommands above; the rest is the request
+detail. Arguments with no recognized leading verb are a plain request —
+route them via the paraphrase table below.
 </intake>
 
 <routing>
-| User intent (paraphrases) | Workflow |
-|---------------------------|----------|
-| "set up", "first time", "bootstrap", "init", "scaffold a definition", "create a workshop definition", "workshop init", "I just cloned", "what do I do" | `workflows/bootstrap-project.md` |
-| "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
-| "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
-| "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-base", "check-health", "save-state", "restore-state", "set-health", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
-| "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
-| "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
-| "VS Code", "JetBrains", "remote IDE", "SSH into the workshop", "ssh the workshop", "remote-SSH", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
-| "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
-| "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update" | `workflows/troubleshoot.md` |
-| "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
+| Subcommand | User intent (paraphrases) | Workflow |
+|------------|---------------------------|----------|
+| `init` | "set up", "first time", "bootstrap", "init", "scaffold a definition", "create a workshop definition", "workshop init", "I just cloned", "what do I do" | `workflows/bootstrap-project.md` |
+| `run` | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
+| `actions` | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
+| `sdk` | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-base", "check-health", "save-state", "restore-state", "set-health", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
+| `connect` | "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
+| `worktrees` | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
+| `ide` | "VS Code", "JetBrains", "remote IDE", "SSH into the workshop", "ssh the workshop", "remote-SSH", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
+| `multi` | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
+| `debug` | "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update" | `workflows/troubleshoot.md` |
+| `purge` | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
+| — | "build an SDK", "package X as an SDK", "sdkcraft", "sdkcraft.yaml", "publish to the SDK Store", "SDK repo CI/renovate" | `design-sdk` skill — do not improvise `sdkcraft` here |
 </routing>
 
 <reference_index>
@@ -78,18 +100,18 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 </reference_index>
 
 <workflows_index>
-| Workflow | Purpose |
-|----------|---------|
-| `bootstrap-project.md` | First-time setup: scaffold a definition (via `workshop init` or a template) + launch + verify |
-| `daily-ops.md` | Run commands, edit, refresh, start/stop |
-| `customize-actions.md` | Add reusable shell commands via `actions:` |
-| `author-in-project-sdk.md` | Write or update an in-project SDK at `.workshop/<name>/` with hooks |
-| `manage-interfaces.md` | `connect`/`disconnect`/`remount`, plug binding, port forwarding |
-| `parallel-environments.md` | Git worktrees + per-worktree workshops for any parallel workload |
-| `ide-integration.md` | Remote IDE access patterns + browser-accessible services via tunnels |
-| `multi-workshop-projects.md` | `.workshop/` layout, in-project SDKs, cross-workshop tunnels |
-| `troubleshoot.md` | Diagnose with `changes`/`tasks`; recover via `--wait-on-error` |
-| `purge-and-recover.md` | `remove`/`restore`; recreate-dir recovery for orphans; LXD cleanup as fallback |
+| Workflow | Subcommand | Purpose |
+|----------|------------|---------|
+| `bootstrap-project.md` | `init` | First-time setup: scaffold a definition (via `workshop init` or a template) + launch + verify |
+| `daily-ops.md` | `run` | Run commands, edit, refresh, start/stop |
+| `customize-actions.md` | `actions` | Add reusable shell commands via `actions:` |
+| `author-in-project-sdk.md` | `sdk` | Write or update an in-project SDK at `.workshop/<name>/` with hooks |
+| `manage-interfaces.md` | `connect` | `connect`/`disconnect`/`remount`, plug binding, port forwarding |
+| `parallel-environments.md` | `worktrees` | Git worktrees + per-worktree workshops for any parallel workload |
+| `ide-integration.md` | `ide` | Remote IDE access patterns + browser-accessible services via tunnels |
+| `multi-workshop-projects.md` | `multi` | `.workshop/` layout, in-project SDKs, cross-workshop tunnels |
+| `troubleshoot.md` | `debug` | Diagnose with `changes`/`tasks`; recover via `--wait-on-error` |
+| `purge-and-recover.md` | `purge` | `remove`/`restore`; recreate-dir recovery for orphans; LXD cleanup as fallback |
 </workflows_index>
 
 <verification_loop>
@@ -118,18 +140,16 @@ A run of this skill is complete when:
 This skill DOES cover authoring in-project SDKs (under `.workshop/<name>/sdk.yaml` plus `hooks/` scripts). For that, use `workflows/author-in-project-sdk.md` together with `references/in-project-sdk.md`.
 
 It does NOT cover:
-- `sdkcraft *` (build-time packaging/publishing of Store SDKs).
+- `sdkcraft *` (build-time packaging/publishing of Store SDKs) → the sibling `design-sdk` skill. Designing `sdkcraft.yaml`, authoring packed-SDK hooks and spread tests, publishing to the SDK Store, and SDK-repo automation (version branches, CI, renovate) all live there — do not improvise `sdkcraft` invocations here.
 - `workshopctl` as a standalone CLI — driving it from outside a hook is out of scope. Emitting `workshopctl set-health <okay|waiting|error> [<message>]` *inside* a `check-health` hook script you are authoring IS in scope and is covered by `references/in-project-sdk.md` and `workflows/author-in-project-sdk.md`.
 - Interactive `workshop sketch-sdk` / `workshop sketches` flows. They require an `$EDITOR` session and cannot be driven by an agent. If a user asks for a sketch walkthrough, do NOT enumerate `workshop sketch-sdk` invocations or describe the editor-save-refresh loop step by step. Acknowledge the command as vocabulary, name the constraint (interactive `$EDITOR`), and route them to `workflows/author-in-project-sdk.md` (write `.workshop/<name>/` directly — that's the agent-drivable path to ship a custom SDK).
 
-For these, point the user at the docs (resolve via `<base>` from `<docs>` above):
-- `<base>/explanation/sdks/concepts.md` for the SDK-publisher mental model
-- `<base>/reference/cli/sdkcraft.md` for the `sdkcraft` CLI surface
+For the non-sdkcraft items, point the user at the docs (resolve via `<base>` from `<docs>` above):
 - `<base>/reference/cli/workshopctl.md` for the standalone `workshopctl` CLI
-- `<base>/tutorial/part-3-sketch-sdks.md` and `<base>/tutorial/part-4-craft-sdks.md` for hands-on SDK development
+- `<base>/tutorial/part-3-sketch-sdks.md` for hands-on sketch-SDK development
 - `<base>/reference/cli/workshop.md` (the `workshop sketch-sdk` section) — for the user's own reading, NOT to be summarized step-by-step in the skill's response
 
-Then stop. Do not improvise standalone `sdkcraft` / `workshopctl` invocations or step-by-step sketch sessions.
+Then stop. Do not improvise standalone `workshopctl` invocations or step-by-step sketch sessions.
 </out_of_scope>
 
 <self_healing>

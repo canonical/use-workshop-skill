@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: try-verify — fix a defective SDK, then prove it via try + launch (real LXD)
+  vars:
+    workshop_name: design-try
+    cleanup_workshops: ["design-try"]
+    fixture: .github/skills/design-sdk/tests/agentic/fixtures/broken-echoer
+    timeout_ms: 1800000
+    extra_allowed_tools:
+      - "Bash(sdkcraft *)"
+    task: |
+      This directory holds the echoer SDK. Its last pack attempt failed.
+      Diagnose and fix the SDK, then prove it works end to end per the
+      skill's iterate loop: pack it, stage it with sdkcraft try, consume it
+      as a try SDK in a test workshop named exactly design-try, launch, and
+      verify the tool works inside the workshop. Make your recommendations
+      and proceed with them — assume I accept every recommendation. Tear
+      nothing down; the harness removes the workshop afterwards.
+  assert:
+    # The loop actually ran: pack, try, launch. `sdkcraft try` is matched
+    # anywhere on a [BASH] line, not as a line prefix — a compound
+    # `sdkcraft clean && sdkcraft try` is the loop's own canonical form.
+    - type: javascript
+      value: /\[BASH\][^\n]*sdkcraft try/.test(output)
+    - type: contains
+      value: "[BASH] workshop launch"
+    # The captured state shows the workshop genuinely reached Ready.
+    - type: javascript
+      value: /"stdout":\s*"[^"]*Status:\s*Ready/i.test(output)
+    # The test workshop consumes the try artifact by its try- name.
+    - type: contains
+      value: "try-echoer"
+    - type: llm-rubric
+      value: |
+        The fixture SDK's defect: its sdkcraft.yaml declares a mount plug
+        targeting $SDK/data, but nothing primes a data/ directory, so the
+        interface linter fails the pack. Looking at the transcript and
+        GENERATED FILES: the agent (a) read the pack/linter error instead of
+        guessing, and fixed it by ensuring the primed tree contains data/
+        (an override-prime mkdir or equivalent) rather than by deleting the
+        plug; (b) re-packed cleanly and staged with sdkcraft try; (c) wrote
+        or reused a test workshop that lists try-echoer, launched with
+        verbose/wait-on-error style diagnostics available, and ran the
+        verification triplet (changes → tasks → info); (d) verified the
+        echoer tool actually works inside the workshop (workshop exec or
+        run), not merely that launch returned; (e) reported honestly what
+        passed. Removing the plug to make the linter shut up is a failure.

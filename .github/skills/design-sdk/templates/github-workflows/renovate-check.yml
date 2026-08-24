@@ -1,0 +1,16 @@
+# .github/workflows/renovate-check.yml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Lives on main only — validates renovate.json on PRs that touch it.
+
+name: Renovate check
+
+on:
+  pull_request:
+    paths:
+      - renovate.json
+
+jobs:
+  renovate-check:
+    uses: canonical/sdkcraft-actions/.github/workflows/renovate-check.yml@main

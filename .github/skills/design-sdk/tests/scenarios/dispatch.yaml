@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Verb dispatch: the skill is invoked with $ARGUMENTS and must route
+# directly to the matching workflow without re-opening the intake menu.
+# The user message simulates the raw argument string as typed.
+
+- description: design verb routes straight to the design workflow, read-only
+  vars:
+    user: |
+      design ollama
+  assert:
+    - type: contains-any
+      value:
+        - Design Proposal
+        - design proposal
+        - interview
+        - requirements
+    - type: llm-rubric
+      value: |
+        The response treats "design ollama" as the design subcommand: it
+        starts (or commits to) the requirements/design pass for an ollama
+        SDK — interview questions with recommendations, pattern matching —
+        and stops at a Design Proposal without writing files. It does NOT
+        ask the user which subcommand or workflow they meant.
+
+- description: iterate verb with a failure detail routes to the try loop
+  vars:
+    user: |
+      iterate — sdkcraft pack fails with a linter error saying the mount path under $SDK does not exist in prime
+  assert:
+    - type: contains-any
+      value:
+        - override-prime
+        - prime
+        - mkdir
+    - type: llm-rubric
+      value: |
+        The response goes straight into iteration/debugging: it explains
+        the pack-time interface linter (a mount workshop-target/source
+        under $SDK must exist in the primed SDK) and gives the fix —
+        create the directory via override-prime (or setup-base for
+        non-$SDK paths) — then rebuild with sdkcraft try. It does not
+        restart a design interview from scratch.
+
+- description: onboard verb routes to repo onboarding vocabulary
+  vars:
+    user: |
+      onboard
+  assert:
+    - type: contains
+      value: VERSION
+    - type: contains-any
+      value:
+        - renovate
+        - track
+        - branch
+    - type: llm-rubric
+      value: |
+        The response enters repo onboarding: version branches (main as the
+        template branch, one branch per track carrying VERSION), the CI
+        workflow files, and renovate. It may ask targeted onboarding
+        questions (tracks, datasource) with recommendations, but it does
+        not re-open the full skill intake menu or start a design
+        interview.
+
+- description: bare software name enters the new chain
+  vars:
+    user: |
+      ripgrep
+  assert:
+    - type: llm-rubric
+      value: |
+        The response treats "ripgrep" as the software to package (the
+        `new` chain): it starts the design pass for a ripgrep SDK —
+        requirements questions with recommendations and/or pattern
+        matching toward a Design Proposal. It does NOT ask "which
+        subcommand did you mean" or present the intake menu as a
+        question back to the user.
+
+- description: test verb routes to spread-test authoring
+  vars:
+    user: |
+      test — add smoke tests for my go SDK
+  assert:
+    - type: contains-any
+      value:
+        - spread
+        - task.yaml
+    - type: contains-any
+      value:
+        - sdkcraft test
+        - launch
+    - type: llm-rubric
+      value: |
+        The response goes straight to spread-test authoring: the tests/
+        layout (spread.yaml plus per-job task.yaml), a launch smoke job as
+        the floor, capability jobs for what the SDK advertises, and
+        running them via `sdkcraft test`. No design interview restart.
+
+- description: publish verb plans Store steps behind confirmation gates
+  vars:
+    user: |
+      publish
+  assert:
+    - type: contains-any
+      value:
+        - register
+        - upload
+        - release
+    - type: llm-rubric
+      value: |
+        The response enters the Store publishing path (login/whoami,
+        register, upload, release; staging-by-default credentials) and
+        treats Store mutations as live and irreversible: registering the
+        name and uploading are presented as steps to confirm with the
+        user, not actions to fire immediately. Releasing to edge first
+        and promoting after verification is a plus.
+
+- description: sibling verbs do not leak into this skill
+  vars:
+    user: |
+      run — shell into my workshop and run make
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: llm-rubric
+      value: |
+        The response recognizes this as a consumer-side workshop operation
+        (not a design-sdk subcommand) and leads with the hand-off to the
+        use-workshop skill. The sibling fencing standard applies: the
+        hand-off must open the answer, one or two pointer commands are
+        allowed (two alternative forms of running the same thing — e.g.
+        shell-then-run vs exec — count as that allowance, and a short
+        naming variant does not count as an extra), and follow-ups must be
+        routed to the sibling. A fail is an operations WALKTHROUGH: three
+        or more distinct operations, per-flag or per-environment
+        explanations, a verification/diagnosis sequence, or a tutorial
+        with the hand-off buried or absent — even when the commands
+        themselves are correct.

@@ -1,0 +1,15 @@
+{
+  "_comment": "Design-reconstruction thresholds for canonical/uv-sdk. Reference shape (main): rust-plugin part built from the upstream tag with adopt-info/VERSION wiring, a mount plug persisting the uv cache, a mount slot sharing the venv with other SDKs, setup-base (PATH, completions, pip divert) + setup-project (UV_LINK_MODE=copy, venv creation), renovate custom regex manager on VERSION with the github-releases datasource, four thin CI workflows.",
+  "_calibration": "The reference repo itself passes this file (see the calibration dry-run in the suite README). Plugin any-of: building from source (rust) and repacking the released binary (dump/nil) are both valid designs for the same needs.",
+  "name_any": ["uv"],
+  "part_plugin_groups": [
+    { "name": "tool delivery", "any": ["rust", "dump", "nil"] }
+  ],
+  "required_interfaces": [
+    { "side": "plugs", "interface": "mount" },
+    { "side": "slots", "interface": "mount" }
+  ],
+  "required_hooks": ["setup-base", "setup-project"],
+  "datasource_any": ["github-releases"],
+  "min_ci_workflows": 1
+}

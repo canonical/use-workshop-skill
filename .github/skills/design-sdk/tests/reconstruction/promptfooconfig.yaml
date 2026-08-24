@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+description: |
+  SDK-reconstruction eval for the design-sdk skill (one-off Sonnet 5
+  calibration round; see README.md here). Sandboxes are staged by
+  run-sdk-reconstruction.sh (an empty candidate directory plus the parked
+  reference SDK repo as hidden ground truth); the provider runs the design
+  agent offline (generate-and-stop), appends the generated tree, the
+  reference tree, and the deterministic compare-sdk.py scorecard, and the
+  asserts below gate on both the scorecard and a functional-equivalence
+  rubric. Do not invoke this config directly — use `make
+  eval-reconstruction`.
+
+prompts:
+  - "{{task}}"
+
+providers:
+  - id: file://provider-design-cli.js
+    config:
+      model: claude-sonnet-5
+
+defaultTest:
+  options:
+    cache: false
+    # Local claude judge by default (belt and braces with the runner's
+    # --grader flag). RECON_JUDGE=openai swaps in the pinned API judge at
+    # the driver level; scores are per (candidate, judge) pair.
+    provider: file://../../../_testlib/provider-judge-cli.js
+  assert:
+    # Deterministic gate: the scorecard's threshold verdict.
+    - type: contains
+      value: '"overall_pass": true'
+    # A design decision trail exists before the files (proposal wording from
+    # the skill's design workflow).
+    - type: contains-any
+      value:
+        - Design Proposal
+        - design proposal
+        - Recommendation
+    # Functional-equivalence + honesty rubric, graded against the reference
+    # tree the agent never saw.
+    - type: llm-rubric
+      value: |
+        You are comparing a GENERATED SDK repo against the REFERENCE SDK the
+        Workshop team ships (both appended after the transcript; the agent
+        never saw the reference). Score 1-5 and pass at 4+:
+        (a) Functional equivalence: a workshop consuming the generated SDK
+        would serve the briefed needs essentially as well as the reference —
+        the tool usable, persistence in place, services reachable, health
+        honest. Different plug/slot/part names or an equivalent plugin
+        choice (building from source vs repacking a release binary) count
+        fully.
+        (b) Envelope discipline: sdkcraft.yaml uses only real keys,
+        interfaces, and plugins; hooks are only the five real hook names; no
+        snapcraft muscle memory (apps:, stage-packages).
+        (c) Honesty: anything the agent could not verify offline (download
+        URLs, checksums, exact upstream artifact names) is marked as needing
+        verification, not asserted as fact; gaps are named.
+        (d) Structure quality: work is placed per the skill's doctrine —
+        apt/system setup in setup-base, project/user setup in
+        setup-project, services as systemd user units installed by a hook,
+        env vars via profile.d rather than shell rc files.
+        Fail (3 or below) if the generated SDK would not serve the briefed
+        needs, invents schema constructs, asserts unverifiable facts as
+        settled, or skips the design-before-files contract.
+
+tests:
+  - file://.work/tests.yaml

@@ -9,6 +9,8 @@
 .github/skills/use-workshop/tests/skill-bundle.md
 .github/skills/onboard-workshop/tests/skill-bundle.md
 .github/skills/onboard-workshop/tests/skill-selection-context.md
+.github/skills/design-sdk/tests/skill-bundle.md
+.github/skills/design-sdk/tests/skill-selection-context.md
 
 # Skill-local: per-run promptfoo outputs
 .github/skills/use-workshop/tests/.promptfoo*
@@ -17,7 +19,14 @@
 .github/skills/onboard-workshop/tests/.promptfoo*
 .github/skills/onboard-workshop/tests/output.*
 .github/skills/onboard-workshop/tests/results/raw/
+.github/skills/design-sdk/tests/.promptfoo*
+.github/skills/design-sdk/tests/output.*
+.github/skills/design-sdk/tests/results/raw/
 
 # Skill-local: reconstruction eval staging area and guinea-pig clone cache
 .github/skills/onboard-workshop/tests/reconstruction/.work/
 .github/skills/onboard-workshop/tests/reconstruction/.cache/
+.github/skills/design-sdk/tests/reconstruction/.work/
+
+# Python bytecode from local py_compile checks
+__pycache__/

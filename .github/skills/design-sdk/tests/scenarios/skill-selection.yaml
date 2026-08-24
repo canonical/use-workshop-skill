@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Cross-skill routing: vars.skill is OVERRIDDEN with
+# skill-selection-context.md, which holds every installed skill's
+# frontmatter. These cases are the automated guard on the 3-way boundary
+# between design-sdk (publisher), onboard-workshop (derive a definition
+# for an app repo), and use-workshop (operate).
+
+- description: Packaging software as a Store SDK picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Package ollama as a Workshop SDK that other teams can install from the Store.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: Creating an sdkcraft.yaml picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Create an sdkcraft.yaml for uv with a persistent cache.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: SDK-repo automation picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Set up renovate and CI with version branches for my SDK repo.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: Near miss — onboarding an SDK repo still picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Onboard my SDK repo: version branches, the upload workflow, renovate — the works.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: Near miss — onboarding an app repo picks onboard-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Onboard this repo to Workshop so my team can develop in it. It's a Django app.
+  assert:
+    - type: contains
+      value: onboard-workshop
+    - type: not-contains
+      value: design-sdk
+
+- description: In-project SDK authoring picks use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Add an in-project SDK under .workshop/tools/ that installs ruff into my workshop.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: design-sdk
+
+- description: sdkcraft try trouble picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      sdkcraft try keeps failing on my SDK and I can't tell which hook is wrong.
+  assert:
+    - type: contains
+      value: design-sdk
+
+- description: A failed consumer refresh still picks use-workshop
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      My workshop refresh failed with an error and I need to figure out what went wrong.
+  assert:
+    - type: contains
+      value: use-workshop
+    - type: not-contains
+      value: design-sdk
+
+- description: Store publishing picks design-sdk
+  vars:
+    skill: file://skill-selection-context.md
+    user: |
+      Publish my SDK to the SDK Store and release it to stable.
+  assert:
+    - type: contains
+      value: design-sdk

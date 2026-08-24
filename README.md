@@ -14,10 +14,16 @@ Agentic skills for [Workshop](https://ubuntu.com/workshop/docs/):
   capability envelope, then propose, generate, launch, and verify a tailored
   workshop definition. If onboarding is only partial or impossible, the
   skill says so instead of shipping a subpar workshop.
+- **`design-sdk`** — the publisher side: design, build, and publish Store
+  SDKs with `sdkcraft`. Interview-first design against the documented best
+  practices and the reference SDKs, generation of `sdkcraft.yaml` + hooks +
+  spread smoke tests + a concise README, the `sdkcraft try` / `workshop
+  refresh` iteration loop, and SDK-repo onboarding (version branches,
+  CI workflows, renovate).
 
-`onboard-workshop` borrows the sibling's references and templates by
-relative path (`../use-workshop/…`), so the two skills ship and vendor
-together.
+`onboard-workshop` and `design-sdk` borrow the sibling's references and
+templates by relative path (`../use-workshop/…`), so the skills ship and
+vendor together.
 
 ## Install
 
@@ -66,15 +72,15 @@ content edits to flow through.
 ### Copy into a single repo
 
 If you'd rather vendor the skills into one project (Claude Code or
-Copilot), copy BOTH directories — `onboard-workshop` reads
-`use-workshop`'s references and templates by sibling-relative path:
+Copilot), copy ALL THREE directories — `onboard-workshop` and `design-sdk`
+read `use-workshop`'s references and templates by sibling-relative path:
 
-- Claude Code: `.github/skills/{use-workshop,onboard-workshop}/` → `.claude/skills/`
-- Copilot:     `.github/skills/{use-workshop,onboard-workshop}/` → `.github/skills/`
+- Claude Code: `.github/skills/{use-workshop,onboard-workshop,design-sdk}/` → `.claude/skills/`
+- Copilot:     `.github/skills/{use-workshop,onboard-workshop,design-sdk}/` → `.github/skills/`
 
-If you truly need `onboard-workshop` standalone, its `<sibling_skill>`
-block in `SKILL.md` documents the docs-URL fallback it uses when the
-sibling files are absent.
+If you truly need `onboard-workshop` or `design-sdk` standalone, the
+`<sibling_skill>` block in each `SKILL.md` documents the docs-URL fallback
+it uses when the sibling files are absent.
 
 For the Workshop CLI itself, see the
 [Workshop docs](https://ubuntu.com/workshop/docs/).
@@ -175,3 +181,10 @@ sandbox-copied with their workshop definitions hidden, the skill onboards
 them from toolchain evidence alone, and the generated definitions are
 scored against the originals (deterministic thresholds + a
 functional-equivalence rubric).
+
+For `design-sdk`, see
+[`.github/skills/design-sdk/tests/README.md`](.github/skills/design-sdk/tests/README.md)
+— its suite mirrors the onboard shape (Lane 2-only routing gate + agentic
+tasks) and adds an *SDK reconstruction* harness: given only a user-level
+brief naming the software, the skill designs an SDK from scratch and the
+output is scored against the corresponding reference SDK repo.

@@ -1,0 +1,25 @@
+# workshop.yaml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Throwaway consumer definition for the try loop: launch this next to the
+# SDK-in-progress after `sdkcraft try`. The base must match one of the SDK's
+# declared platforms.
+
+name: test-<name>
+base: ubuntu@24.04
+sdks:
+  - name: try-<name>
+  # A tunnel slot on the SDK needs a same-named plug on the system SDK to
+  # reach the host (loopback endpoints auto-connect):
+  #- name: system
+  #  plugs:
+  #    <name>-server:
+  #      interface: tunnel
+  #      endpoint: <port>
+
+# Wire optional mount slot/plug pairs explicitly — policy default is the
+# system slot, and multi-eligible order is not guaranteed:
+#connections:
+#  - plug: <consumer>:<plug>
+#    slot: <provider>:<slot>

@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+- description: design-pack-mini — design + generate + sdkcraft pack for a local tool
+  vars:
+    workshop_name: design-pack-unused
+    cleanup_workshops: ["design-pack-unused"]
+    fixture: .github/skills/design-sdk/tests/agentic/fixtures/hello-tool
+    timeout_ms: 1200000
+    extra_allowed_tools:
+      - "Bash(sdkcraft *)"
+    task: |
+      This directory holds hello-tool, a small self-contained shell utility
+      (bin/hello-tool, VERSION, LICENSE). Design and generate a Workshop SDK
+      for it IN THIS DIRECTORY, sourcing the tool from the local tree — the
+      sandbox has no network, so the part must not download anything. Make
+      your recommendations and proceed with them — assume I accept every
+      recommendation. Then run sdkcraft pack until it succeeds, and list the
+      produced artifact with ls. Do not launch a workshop and do not use
+      sdkcraft try; packing is the goal.
+  assert:
+    # The pack actually ran and produced an artifact (its filename shape is
+    # the reliable success signal: <name>_<platform>[_<base>].sdk).
+    - type: contains
+      value: "[BASH] sdkcraft pack"
+    - type: javascript
+      value: /[a-z0-9][a-z0-9-]*_(amd64|arm64|riscv64|all)(_ubuntu@[0-9]+\.[0-9]+)?\.sdk/.test(output)
+    # The captured sdkcraft.yaml stays inside the schema envelope: every
+    # top-level key drawn from the generated file must be in the allowlist.
+    - type: javascript
+      value: |
+        const m = output.match(/### sdkcraft\.yaml[^\n]*\n```\n([\s\S]*?)\n```/);
+        if (!m) return false;
+        const allowed = new Set(['adopt-info','base','build-base','contact','description','issues','license','name','package-repositories','parts','platforms','plugs','slots','source-code','summary','title','version','website']);
+        const keys = [...m[1].matchAll(/^([A-Za-z][A-Za-z0-9-]*):/gm)].map(k => k[1]);
+        return keys.length > 0 && keys.every(k => allowed.has(k));
+    # Any captured hook is one of the five real hook names.
+    - type: javascript
+      value: |
+        const hooks = [...output.matchAll(/^### hooks\/([^\s]+)/gm)].map(h => h[1]);
+        const real = new Set(['setup-base','setup-project','check-health','save-state','restore-state']);
+        return hooks.every(h => real.has(h));
+    # The forbidden part keys never appear IN THE GENERATED FILES. A blunt
+    # transcript-wide not-contains would fire on the skill bundle's own
+    # prohibition text (mention vs prescription, fix-#12 class), so scope
+    # the check to the captured-files dump and match key usage (colon).
+    - type: javascript
+      value: "!/stage-(packages|snaps)\\s*:/.test(output.split('--- GENERATED FILES ---')[1] || '')"
+    - type: llm-rubric
+      value: |
+        Looking at the transcript and GENERATED FILES: the agent (a) settled
+        the design before writing files (a proposal with recommendations; a
+        compact one is fine for a tool this small); (b) generated an
+        sdkcraft.yaml with a local-source part (dump or nil — no download,
+        no git clone, no network) that primes the tool onto bin/, plus
+        version wiring via adopt-info reading the VERSION file with
+        craftctl set version; (c) wrote a setup-base hook that puts the tool
+        on PATH via /etc/profile.d (not ~/.bashrc); (d) ran sdkcraft pack,
+        fixed anything it rejected (shellcheck, linter, schema), and showed
+        the resulting .sdk artifact; (e) did not add interfaces the tool has
+        no need for, and did not start a workshop. A first failed pack that
+        the agent then fixes is a pass; ending without a produced artifact
+        is a failure.

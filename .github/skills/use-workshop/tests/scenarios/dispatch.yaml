@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+
+# Verb dispatch: the skill is invoked with $ARGUMENTS and must route
+# directly to the matching workflow without re-opening the intake menu.
+# The user message simulates the raw argument string as typed.
+
+- description: debug verb routes straight to troubleshooting
+  vars:
+    user: |
+      debug — refresh failed with "no space left on device"
+  assert:
+    - type: contains-any
+      value:
+        - storage
+        - disk
+        - space
+    - type: llm-rubric
+      value: |
+        The response goes straight into the troubleshooting workflow for
+        the disk-space failure class (diagnosing via workshop
+        changes/tasks, LXD storage pool growth per the documented
+        recovery) without asking the user which workflow they meant.
+
+- description: connect verb routes straight to interface management
+  vars:
+    user: |
+      connect — forward port 8888 from the workshop to my host
+  assert:
+    - type: contains-any
+      value:
+        - tunnel
+        - connect
+    - type: llm-rubric
+      value: |
+        The response treats this as interface management: exposing port
+        8888 via a tunnel (plug/slot wiring and the workshop connect
+        step where needed), not a generic Q&A or a different workflow.
+        It does not re-open the intake menu.
+
+- description: bare worktrees verb enters parallel environments
+  vars:
+    user: |
+      worktrees
+  assert:
+    - type: contains-any
+      value:
+        - worktree
+        - parallel
+    - type: llm-rubric
+      value: |
+        The response enters the parallel-environments workflow (git
+        worktrees with a workshop per worktree). Asking targeted
+        follow-ups about the user's repo is fine; asking which workflow
+        they meant is the failure mode.

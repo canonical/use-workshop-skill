@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-Five kinds of SDKs are referenced in workshop definitions and on the CLI. They differ in origin, lifetime, and how they're named in YAML. Pick the right kind for the user's intent. The broader SDK *lifecycle* — sketch → in-project → built/published Store SDK → consumed — is laid out in `explanation/sdks/lifecycle.md`; this skill operates SDKs and authors in-project ones, leaving build/publish (`sdkcraft`) out of scope.
+Five kinds of SDKs are referenced in workshop definitions and on the CLI. They differ in origin, lifetime, and how they're named in YAML. Pick the right kind for the user's intent. The broader SDK *lifecycle* — sketch → in-project → built/published Store SDK → consumed — is laid out in `explanation/sdks/lifecycle.md`; this skill operates SDKs and authors in-project ones; build/publish (`sdkcraft`) belongs to the sibling `design-sdk` skill.
 </overview>
 
 <sdk_types>
@@ -44,7 +44,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 </type>
 
 <type name="Try SDK">
-**Origin:** locally available, produced by the SDK-authoring toolchain (out of scope for this skill).
+**Origin:** locally available, produced by the SDK-authoring toolchain (the sibling `design-sdk` skill's territory).
 **YAML name:** `try-<NAME>`. No `channel`.
 **Lifetime:** local only; not in the Store.
 **When to encounter:** if the user already has a try SDK on disk and wants to consume it from a workshop. Reference it as `try-<NAME>` in the `sdks:` list.

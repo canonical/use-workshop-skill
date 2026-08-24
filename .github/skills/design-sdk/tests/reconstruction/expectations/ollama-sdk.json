@@ -1,0 +1,20 @@
+{
+  "_comment": "Design-reconstruction thresholds for canonical/ollama-sdk. Reference shape (main): dump part downloading the release tarball with adopt-info/VERSION wiring, a services dump part carrying ollama.service, gpu plug, mount plug for the models directory, tunnel slot at 11434, setup-project installing + enabling the systemd user unit, check-health polling via set-health waiting, renovate github-releases datasource with extractVersionTemplate, four thin CI workflows.",
+  "_calibration": "The reference repo itself passes this file. The tunnel endpoint 11434 is upstream-determined (ollama's fixed port), so it is gated exactly; mount targets are design freedom and only recorded.",
+  "name_any": ["ollama"],
+  "part_plugin_groups": [
+    { "name": "binary delivery", "any": ["dump", "nil"] }
+  ],
+  "required_interfaces": [
+    { "side": "plugs", "interface": "gpu" },
+    { "side": "plugs", "interface": "mount" },
+    { "side": "slots", "interface": "tunnel", "endpoint": "11434" }
+  ],
+  "required_hooks": ["setup-project", "check-health"],
+  "require_service_unit": true,
+  "datasource_any": ["github-releases"],
+  "min_ci_workflows": 1,
+  "anywhere_token_groups": [
+    { "name": "systemd user unit install", "any": ["systemctl --user"] }
+  ]
+}

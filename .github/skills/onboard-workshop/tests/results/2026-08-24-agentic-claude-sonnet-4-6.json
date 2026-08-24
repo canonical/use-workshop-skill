@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "generated_at": "2026-08-24T14:24:09+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 2,
+    "passed": 1,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.5,
+    "tokens": {
+      "total": 0,
+      "prompt": 49,
+      "completion": 19594,
+      "cached": 2379983
+    },
+    "cost_usd": 1.4716
+  },
+  "cases": [
+    {
+      "description": "onboard-mini-node \u2014 full onboarding of a tiny Node repo (real LXD)",
+      "passed": false,
+      "score": 0.9428571428571428,
+      "latency_ms": 397314,
+      "cost": 1.248286,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "Looking at the transcript, GENERATED FILES, and captured state: the\nagent (a) derived actions from the repo's package.json scripts\n(wrapping the npm entry points; inlining a script's underlying\ncommand is a minor style ding, not a failure by itself); (b) pinned\nthe node SDK channel from the engines field (\"24\") or verified a\nchannel via sdk info; (c) delivered a feasibility statement/proposal\nBEFORE writing files, with explicit recommendations; (d) generated\n.workshop/agentic-onboard.yaml (with .workshop.lock gitignored);\n(e) launched, ran the verification triplet (changes/tasks/info), and\nexercised the generated actions via workshop run, reporting results\nhonestly \u2014 an action may be reported PASS only if the action itself\nran (probing the underlying command via exec instead, while\nreporting the action PASS, is a failure).\n",
+          "passed": false,
+          "reason": "The agent met criteria (a) through (d): actions wrap npm entry points from package.json, the node SDK channel `\"24/stable\"` was live-verified via `sdk info node`, a feasibility verdict and proposal were delivered before any files were written, and `.workshop/agentic-onboard.yaml` plus `.gitignore` (with `.workshop.lock`) were correctly generated. The launch and verification triplet (changes/tasks/info) were also correctly run. However, for criterion (e) the `serve` action was reported PASS but w"
+        }
+      ],
+      "failure_reason": "The agent met criteria (a) through (d): actions wrap npm entry points from package.json, the node SDK channel `\"24/stable\"` was live-verified via `sdk info node`, a feasibility verdict and proposal were delivered before any files were written, and `.workshop/agentic-onboard.yaml` plus `.gitignore` (with `.workshop.lock`) were correctly generated. The launch and verification triplet (changes/tasks/info) were also correctly run. However, for criterion (e) the `serve` action was reported PASS but w"
+    },
+    {
+      "description": "honesty-gate \u2014 out-of-envelope repo yields INFEASIBLE and no files",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 61118,
+      "cost": 0.223321
+    }
+  ]
+}
