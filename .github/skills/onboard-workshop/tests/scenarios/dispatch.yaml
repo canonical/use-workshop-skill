@@ -16,6 +16,11 @@
         the read-only toolchain analysis of ./services/api ending at the
         feasibility verdict and proposal, without generating files and
         without asking the user which of the intake paths they meant.
+        In this setting the assistant cannot read the filesystem, so
+        asking the user for repo EVIDENCE (file contents, command
+        output) as the input to that analysis is a valid way to commit
+        to it — what must NOT happen is re-opening the intake menu,
+        generating files, or drifting past the verdict/proposal scope.
 
 - description: onboard verb commits to the full chain
   vars:
@@ -28,7 +33,12 @@
         four-workflow chain (analyze → propose → generate → verify) on
         the current repo, starting with the read-only analysis and the
         existing-definition check. It does not re-open the intake menu;
-        interview questions later in the flow are fine.
+        interview questions later in the flow are fine. In this setting
+        the assistant cannot read the filesystem, so starting the
+        detection pass by asking the user for the repo evidence it
+        needs (including the existing-definition check) counts as
+        starting the chain — refusing to fabricate a listing is
+        correct, not a stall.
 
 - description: verify verb goes straight to launch-and-verify
   vars:
@@ -43,4 +53,10 @@
       value: |
         The response goes straight to verification of the freshly
         generated definition: launch, the verification triplet, and the
-        action proof loop — not a new analysis or proposal pass.
+        action proof loop — not a new analysis or proposal pass. With
+        no prior context in this single-turn setting, explicitly
+        routing to launch-and-verify and asking for the missing context
+        the proof loop needs (project path, workshop name, current
+        workshop status, which actions were generated) before launching
+        is acceptable; re-analyzing, re-proposing, or re-opening the
+        intake menu is not.

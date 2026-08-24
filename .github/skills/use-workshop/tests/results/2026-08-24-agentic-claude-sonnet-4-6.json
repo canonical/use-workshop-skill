@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "generated_at": "2026-08-24T14:29:58+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 119,
+      "completion": 17610,
+      "cached": 3224505
+    },
+    "cost_usd": 2.2509
+  },
+  "cases": [
+    {
+      "description": "bootstrap-project \u2014 greenfield Python workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 69946,
+      "cost": 0.292608
+    },
+    {
+      "description": "daily-ops \u2014 launch workshop and run a defined action",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 48950,
+      "cost": 0.213357
+    },
+    {
+      "description": "customize-actions \u2014 add a new action and run it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 40876,
+      "cost": 0.194865
+    },
+    {
+      "description": "author-in-project-sdk \u2014 write .workshop/ruff/ with setup-project, launch, verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 63977,
+      "cost": 0.272468
+    },
+    {
+      "description": "manage-interfaces \u2014 wire an HTTP service tunnel from workshop to host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 143348,
+      "cost": 0.537071
+    },
+    {
+      "description": "ide-integration \u2014 verify out-of-the-box SSH access for a remote-SSH IDE workflow",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 54574,
+      "cost": 0.229561
+    },
+    {
+      "description": "multi-workshop-projects \u2014 migrate to multi-workshop layout and add a second workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 76000,
+      "cost": 0.272728
+    },
+    {
+      "description": "troubleshoot \u2014 diagnose a failed launch and recover to Ready",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 61098,
+      "cost": 0.238208
+    }
+  ]
+}

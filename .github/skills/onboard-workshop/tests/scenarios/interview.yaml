@@ -6,10 +6,11 @@
     user: |
       Before you generate anything, what do you need to ask me about my Python repo?
   assert:
-    - type: contains-any
-      value:
-        - Recommendation
-        - recommend
+    # No deterministic token gate here: a fully correct answer may pose ZERO
+    # decision questions (pure evidence-first: "share these files, they
+    # decide everything") and such answers phrase themselves too diversely
+    # for a contains-any list — two distinct correct samples missed two
+    # successive token lists. The rubric below carries the full substance.
     - type: llm-rubric
       value: |
         Every DECISION question in the response (base, name, which actions,
@@ -18,7 +19,10 @@
         one at a time. Requests for repo EVIDENCE (asking to see a file or a
         command's output, since the assistant cannot inspect the repo in
         this conversation) are not decision questions and need no
-        recommendation. Fail only if a decision question is left open-ended
+        recommendation. Previewing which decision questions WOULD be asked
+        after the evidence arrives (categories named descriptively, not yet
+        posed for an answer) is likewise not an open question. Fail only if
+        a decision question actually posed to the user is left open-ended
         with no recommended answer.
 
 - description: Base recommendation follows CI evidence

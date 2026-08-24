@@ -38,13 +38,16 @@
     - type: llm-rubric
       value: |
         The response identifies `workshopctl` as the in-workshop
-        health-reporting tool used by SDK hooks, treats operating it as
-        out of scope for this skill (the user is told they shouldn't / won't
-        normally call it), and points to the docs. The response MAY include
-        an illustrative example showing how an SDK author would call
-        `workshopctl` from a hook, provided the example is clearly bracketed
-        as "SDK author perspective, not yours" or equivalent — that's
-        explanatory framing, not improvisation.
+        health-reporting tool used by SDK hooks, tells the user that
+        driving it as a standalone CLI (from a terminal, outside a hook)
+        is out of scope / not something they normally do, and points to
+        the docs for the full CLI. Explaining or exemplifying
+        `workshopctl set-health` INSIDE a `check-health` hook the user
+        would author is in scope for this skill (hook authoring is
+        covered here) and must not be counted against the response —
+        the failure mode is presenting workshopctl as a general-purpose
+        CLI to drive from outside hooks, or omitting the
+        standalone-is-out-of-scope framing entirely.
 
 - description: User asks about sdkcraft pack vs workshop launch
   vars:
