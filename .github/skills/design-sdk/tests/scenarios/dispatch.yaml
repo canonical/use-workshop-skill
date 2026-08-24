@@ -126,7 +126,15 @@
       value: use-workshop
     - type: llm-rubric
       value: |
-        The response recognizes this as consumer-side workshop operation
-        (not a design-sdk subcommand) and hands off to the use-workshop
-        skill rather than improvising workshop run/exec instructions
-        here.
+        The response recognizes this as a consumer-side workshop operation
+        (not a design-sdk subcommand) and leads with the hand-off to the
+        use-workshop skill. The sibling fencing standard applies: the
+        hand-off must open the answer, one or two pointer commands are
+        allowed (two alternative forms of running the same thing — e.g.
+        shell-then-run vs exec — count as that allowance, and a short
+        naming variant does not count as an extra), and follow-ups must be
+        routed to the sibling. A fail is an operations WALKTHROUGH: three
+        or more distinct operations, per-flag or per-environment
+        explanations, a verification/diagnosis sequence, or a tutorial
+        with the hand-off buried or absent — even when the commands
+        themselves are correct.

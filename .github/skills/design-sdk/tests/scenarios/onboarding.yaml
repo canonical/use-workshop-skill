@@ -18,12 +18,19 @@
         - track
     - type: llm-rubric
       value: |
-        The response lays out the template model: main is the template
-        branch (renovate.json plus the renovate workflows, NO VERSION
-        file), and one long-lived track branch (e.g. latest) carries
-        VERSION plus the build/upload workflows without the renovate
-        workflows. Renovate bumps VERSION via PRs against the track
-        branch; merging triggers the upload.
+        The response works toward the template model: main as the
+        template branch (renovate.json plus the renovate workflows, NO
+        VERSION file) and one long-lived track branch (e.g. latest)
+        carrying VERSION plus the build/upload workflows without the
+        renovate workflows; renovate bumps VERSION via PRs against the
+        track branch and merging triggers the upload. Entering the
+        onboarding workflow's preflight (batched questions with
+        recommendations about VERSION/adopt-info wiring, datasource,
+        platforms) before touching the repo is an acceptable first step.
+        The failure mode is proposing a DIFFERENT release model — VERSION
+        kept on main, renovate workflows on the track branch, tags-only
+        releases, or hand-rolled CI — or contradicting the template
+        split where the response does describe it.
 
 - description: Renovate workflows live on main only
   vars:
@@ -64,14 +71,18 @@
   assert:
     - type: llm-rubric
       value: |
-        The response follows the onboarding git sequence (commit all with
-        VERSION; git rm VERSION on main; branch the track from the commit
-        that still has VERSION; remove the renovate workflows on the
-        track branch) and treats it as a sequence of confirmed steps —
-        asking or explicitly confirming before executing git mutations,
-        with pushing called out as the outward-facing step. Blind-running
-        the whole sequence including push without any confirmation is
-        the failure mode.
+        The response treats the branch surgery as a sequence of confirmed
+        steps, never blind-run: either it shows the onboarding git
+        sequence (commit all with VERSION; git rm VERSION on main; branch
+        the track from the commit that still has VERSION; remove the
+        renovate workflows on the track branch) with per-mutation
+        confirmation and pushing called out as the outward-facing step,
+        or it runs the workflow's preflight gate first (repo facts,
+        VERSION/adopt-info wiring, clean tree) while explicitly framing
+        the upcoming sequence as per-mutation-confirmed. Failure modes:
+        blind-running the sequence including push without any
+        confirmation, or showing a sequence that deviates from the
+        template model (e.g. VERSION kept on main).
 
 - description: CI workflow files delegate to sdkcraft-actions
   vars:

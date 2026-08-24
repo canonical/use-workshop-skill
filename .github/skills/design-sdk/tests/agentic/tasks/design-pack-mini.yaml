@@ -40,11 +40,12 @@
         const hooks = [...output.matchAll(/^### hooks\/([^\s]+)/gm)].map(h => h[1]);
         const real = new Set(['setup-base','setup-project','check-health','save-state','restore-state']);
         return hooks.every(h => real.has(h));
-    # The forbidden part keys never appear.
-    - type: not-contains
-      value: "stage-packages"
-    - type: not-contains
-      value: "stage-snaps"
+    # The forbidden part keys never appear IN THE GENERATED FILES. A blunt
+    # transcript-wide not-contains would fire on the skill bundle's own
+    # prohibition text (mention vs prescription, fix-#12 class), so scope
+    # the check to the captured-files dump and match key usage (colon).
+    - type: javascript
+      value: "!/stage-(packages|snaps)\\s*:/.test(output.split('--- GENERATED FILES ---')[1] || '')"
     - type: llm-rubric
       value: |
         Looking at the transcript and GENERATED FILES: the agent (a) settled

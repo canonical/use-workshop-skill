@@ -18,9 +18,11 @@
       and proceed with them — assume I accept every recommendation. Tear
       nothing down; the harness removes the workshop afterwards.
   assert:
-    # The loop actually ran: pack, try, launch.
-    - type: contains
-      value: "[BASH] sdkcraft try"
+    # The loop actually ran: pack, try, launch. `sdkcraft try` is matched
+    # anywhere on a [BASH] line, not as a line prefix — a compound
+    # `sdkcraft clean && sdkcraft try` is the loop's own canonical form.
+    - type: javascript
+      value: /\[BASH\][^\n]*sdkcraft try/.test(output)
     - type: contains
       value: "[BASH] workshop launch"
     # The captured state shows the workshop genuinely reached Ready.

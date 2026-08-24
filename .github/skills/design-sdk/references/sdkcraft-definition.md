@@ -115,9 +115,17 @@ Each entry under `parts:` is a standard craft-parts definition (`plugin`,
   security updates flowing).
 - `build-packages`/`build-snaps` ARE allowed (build-container-only tooling
   such as `curl`, `jq`).
-- Common plugins in shipped SDKs: `nil` (hook-only or hand-rolled pulls),
-  `dump` (unpack an artifact or copy a local dir), `rust`, `npm`, `cmake`,
-  `make`. The full craft-parts plugin set is available.
+- The plugin set is CLOSED — exactly the craft-parts default group plus
+  SDKcraft's python override: `ant`, `autotools`, `bazel`, `cargo-use`,
+  `cmake`, `dotnet`, `dump`, `go`, `go-use`, `gradle`, `jlink`, `make`,
+  `maven`, `maven-use`, `meson`, `nil`, `npm`, `npm-use`, `poetry`,
+  `python`, `qmake`, `ruby`, `rust`, `scons`, `uv`. A plugin not in this
+  list does not exist (there is no `zig`, no `cargo`, no custom names) —
+  if a user names one, say so and build that software with `nil`/`dump`
+  plus `override-pull`/`override-build` scripts (or `make`/`cmake` when
+  upstream provides those). Common picks in shipped SDKs: `nil`
+  (hook-only or hand-rolled pulls), `dump` (unpack an artifact or copy a
+  local dir), `rust`, `npm`, `cmake`, `make`.
 - `$CRAFT_PROJECT_DIR`, `$CRAFT_PART_SRC`, `$CRAFT_PART_INSTALL`, `$CRAFT_PRIME`,
   `$CRAFT_ARCH_BUILD_FOR`, `$CRAFT_PLATFORM`, and `$CRAFT_PROJECT_VERSION` are
   in scope in overrides; `case "$CRAFT_ARCH_BUILD_FOR" in ...` is the standard

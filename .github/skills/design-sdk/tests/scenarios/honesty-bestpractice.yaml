@@ -110,11 +110,15 @@
     - type: llm-rubric
       value: |
         The response says existence is not health: check-health should
-        exercise real functionality (run the tool, query the daemon,
-        list models — the ollama pattern) and report via workshopctl
-        set-health, using waiting while a service starts (retried up to
-        ten times, five seconds per attempt) and channeling the failing
-        command's output into the error message.
+        exercise real functionality (run the tool, query the daemon, list
+        models) and report via workshopctl set-health, using waiting while
+        a service starts and channeling the failing command's output into
+        the error message. If it states retry/timing semantics they must
+        not contradict the contract (waiting is retried up to ten times at
+        one-second intervals; each attempt has a five-second budget to
+        report) — stating only part of the contract, or naming no numbers
+        at all, is fine. Naming the ollama pattern is welcome but not
+        required.
 
 - description: Environment variables avoid shell-specific files
   vars:

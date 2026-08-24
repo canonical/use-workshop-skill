@@ -90,7 +90,17 @@ Pick the matching path (subcommand — what the user wants):
 
 **If invoked with $ARGUMENTS, route directly without asking.** Arguments
 whose first token is not a recognized subcommand route to the `new` chain
-with the whole argument string as the software description.
+with the whole argument string as the software description — with one
+exception. A sibling's subcommand (`init`, `run`, `actions`, `connect`,
+`worktrees`, `ide`, `multi`, `debug`, `purge` — `use-workshop`'s verbs), or
+any request that is a sibling's territory (a consumer-side workshop
+operation, onboarding an app repo), is HANDED OFF per the sibling rows in
+`<routing>`: name the sibling skill and stop — do not improvise `workshop`
+operations here even though the borrowed references describe them. The
+carve-out: anything involving an SDK under development stays HERE — a
+failed launch/refresh while applying a `try-<NAME>` SDK, a hook you are
+authoring, a test workshop from the iterate loop — that is `iterate`, not
+a hand-off.
 </intake>
 
 <routing>
@@ -104,7 +114,7 @@ with the whole argument string as the software description.
 | `readme` | "write the SDK README", "document the SDK" | `workflows/write-readme.md` |
 | `onboard` | "onboard my SDK repo", "set up renovate", "version branches", "automate SDK releases", "CI for my SDK repo" | `workflows/onboard-repo.md` |
 | `publish` | "publish to the SDK Store", "register the name", "upload a revision", "release to stable", "store credentials", "flip to production" | `workflows/publish-store.md` |
-| — | Consumer side: run/refresh/connect/debug a workshop, edit workshop.yaml, author an in-project SDK | `use-workshop` skill — do not improvise operations here |
+| — | Consumer side: run/refresh/connect/debug a workshop, edit workshop.yaml, author an in-project SDK | `use-workshop` skill — name it and STOP: at most one pointer command, never an operations walkthrough. The borrowed sibling references are in context for authoring test workshops in the iterate loop, NOT for answering consumer questions — "the cheatsheet is loaded" is not a reason to answer here |
 | — | "set up a workshop for this repo", "workshop-ify this project" (an app repo, not an SDK) | `onboard-workshop` skill |
 
 The `new` chain stops after `write-readme.md` unless the user asked for repo

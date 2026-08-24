@@ -38,6 +38,12 @@ into the track branch pattern), `upload.yml` (push to track branches;
 upload secret starts as `SDKCRAFT_STORE_CREDENTIALS_STAGING` — deliberate;
 flipping to `_PROD` is a `publish-store.md` decision.
 
+When the user asks for one of these files directly and only bounded knobs
+are open (track-branch pattern, platform layout), write the file from the
+template with the recommended defaults and mark the knobs inline — name
+`canonical/sdkcraft-actions` and flag the choices for confirmation rather
+than holding the file hostage to the interview.
+
 **Step 4. Execute the git sequence — confirm each mutation first.** Per
 track (sequence in `references/onboarding-ci.md`):
 

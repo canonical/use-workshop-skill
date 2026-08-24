@@ -17,15 +17,25 @@ approval.
 
 <process>
 
-**Step 1. Requirements interview.** Settle the ten questions. Ask only the
-ones the request leaves open, batched into ONE message, each with a
-recommendation ("Options: A / B — Recommendation: A, because <evidence>"):
+**Step 1. Requirements interview.** Before any question, state what the
+brief already pins — the constructs that are settled by the request itself,
+each named with its mechanism, so the user sees the design taking shape:
+a host-reachable service pins a tunnel SLOT at its port **plus a systemd
+user unit** (no `apps:`/`services:` key exists; hooks don't exec daemons);
+"persists across updates" pins a mount plug; "shared with other SDKs" pins
+a mount SLOT; GPU need pins the `gpu` plug. Then settle the ten questions.
+Ask only the ones the request leaves open, batched into ONE message, each
+with a recommendation ("Options: A / B — Recommendation: A, because
+<evidence>"):
 
 1. What software, exactly (binary, toolchain, daemon, GUI-adjacent tool)?
 2. How does upstream distribute it (release tarballs, git tags, npm, PyPI,
    apt, install script)?
 3. What must persist across workshop updates (caches, models, config)?
-4. Does it serve a network service consumers reach from the host?
+4. Does it serve a network service consumers reach from the host? (If the
+   answer is or may be yes, the recommendation names the mechanism up
+   front: a tunnel SLOT at the service's port plus a systemd user unit —
+   there is no `apps:`/`services:` key, and hooks don't exec daemons.)
 5. Hardware needs (GPU, camera, USB device)?
 6. Which Ubuntu bases, and one base or several?
 7. Which architectures (amd64 / arm64 / riscv64)?

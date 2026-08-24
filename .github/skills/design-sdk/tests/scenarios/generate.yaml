@@ -24,7 +24,7 @@
 - description: Daemon generation follows the systemd user-unit pattern
   vars:
     user: |
-      Generate the service wiring for the daemon SDK we designed: the unit file and whichever hook installs it.
+      Generate the service wiring for the daemon SDK we designed — name inferd, started with "inferd serve", listening on 8080: the unit file and whichever hook installs it.
   assert:
     - type: contains
       value: systemctl --user

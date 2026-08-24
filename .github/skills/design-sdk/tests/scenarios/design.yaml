@@ -36,10 +36,15 @@
     - type: llm-rubric
       value: |
         The response maps the need to a tunnel SLOT (endpoint 8080) so the
-        host can reach the service, and runs the daemon as a systemd user
-        unit shipped via a dump part and enabled in setup-project — NOT an
-        apps:/services: key (which does not exist in sdkcraft.yaml) and
-        NOT a process exec'd directly from a hook.
+        host can reach the service, and runs the daemon as a systemd
+        (user) service unit — NOT an apps:/services: key (which does not
+        exist in sdkcraft.yaml) and NOT a process exec'd directly from a
+        hook. Because the software is unnamed, an interview-first response
+        is fine as long as its recommendations already encode that
+        mapping (tunnel slot at 8080; daemon under a service unit); the
+        dump-part/setup-project mechanics may be deferred to the Design
+        Proposal. Failure modes: an apps:/services: key, a tunnel PLUG
+        where the slot is needed, or the daemon exec'd raw from a hook.
 
 - description: Data that must survive updates maps to a mount plug
   vars:
@@ -99,11 +104,13 @@
         - recommend
     - type: llm-rubric
       value: |
-        Where the response asks about (or settles) the track model, it
-        attaches an explicit recommendation with a reason (e.g. a single
-        `latest` track for a tool users always want current, or
-        major-version tracks if upstream maintains parallel majors) —
-        never an open question with no stance.
+        The response takes a stance on the track model rather than
+        bouncing the delegated decision back as an open question. A
+        recommendation with a stated reason is ideal; a track choice
+        settled inside the Design Proposal with a pattern or reference
+        citation on that line also counts (the proposal's citation is its
+        evidence). The failure mode is asking the user about tracks with
+        no stance, or ignoring their "no opinion" delegation.
 
 - description: Design stops at the proposal when asked not to write
   vars:
@@ -133,8 +140,13 @@
         - connections
     - type: llm-rubric
       value: |
-        The response matches the design to the uv reference pattern: a
-        mount plug for the persistent cache, and a mount SLOT exposing the
-        venv/env directory so other SDKs can plug into it — noting the
-        consumer wires slot-to-plug pairs with a connections: entry in the
-        workshop definition (regular-SDK slots are not auto-connected).
+        The response matches the design to the uv reference pattern —
+        the shared-cache-plus-venv-slot shape: a mount plug for the
+        persistent cache and a mount SLOT exposing the venv/env directory
+        for other SDKs. Because the software is unnamed, an
+        interview-first response passes when it explicitly identifies the
+        uv reference SDK / its cache+venv-sharing shape as the match; the
+        full mount plug/slot and connections: wiring detail may be
+        deferred to the Design Proposal. Failure modes: missing the uv
+        pattern entirely, inventing a sharing mechanism outside the
+        mount interface, or claiming regular-SDK slots auto-connect.
