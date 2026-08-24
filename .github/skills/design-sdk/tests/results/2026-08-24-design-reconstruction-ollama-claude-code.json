@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "generated_at": "2026-08-24T12:42:39+00:00",
+    "model": "claude-sonnet-5",
+    "provider": "claude-cli",
+    "total_cases": 2,
+    "passed": 2,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 110,
+      "completion": 71404,
+      "cached": 5170371
+    },
+    "cost_usd": 2.6161
+  },
+  "cases": [
+    {
+      "description": "design-reconstruct ollama-sdk (offline)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 495272,
+      "cost": 1.244682
+    },
+    {
+      "description": "design-reconstruct claude-code-sdk (offline)",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 399008,
+      "cost": 1.371415
+    }
+  ]
+}

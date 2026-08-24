@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "generated_at": "2026-08-24T12:42:39+00:00",
+    "model": "claude-sonnet-5",
+    "provider": "claude-cli",
+    "total_cases": 1,
+    "passed": 1,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 40,
+      "completion": 35380,
+      "cached": 1890068
+    },
+    "cost_usd": 1.1532
+  },
+  "cases": [
+    {
+      "description": "design-reconstruct uv-sdk (offline)",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 329441,
+      "cost": 1.153168
+    }
+  ]
+}
