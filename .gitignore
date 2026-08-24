@@ -27,3 +27,6 @@
 .github/skills/onboard-workshop/tests/reconstruction/.work/
 .github/skills/onboard-workshop/tests/reconstruction/.cache/
 .github/skills/design-sdk/tests/reconstruction/.work/
+
+# Python bytecode from local py_compile checks
+__pycache__/
