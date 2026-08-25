@@ -96,7 +96,9 @@ revision).
 Per-hook shapes proven in the reference SDKs:
 
 - `setup-base` — PATH via profile.d with the self-reference escaped
-  (`export PATH="$SDK/bin:\$PATH"` inside an unquoted heredoc); apt work
+  (`export PATH="$SDK/bin:\$PATH"` inside an unquoted heredoc), or a single
+  entrypoint symlink into `/usr/local/bin` when `$SDK/bin` is a venv (its
+  `python` on PATH would shadow the system interpreter — hermes); apt work
   (`apt-get update` then `eatmydata apt-get install <pkgs>` — no `-y`, the
   image's apt config supplies defaults); shell completions into
   `/etc/bash_completion.d/`; pre-creating a mount slot's source directory

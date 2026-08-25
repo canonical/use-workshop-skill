@@ -11,7 +11,9 @@ argument-hint: "[new|design|generate|iterate|test|readme|onboard|publish] [softw
 Five rules that always apply to designing SDKs. Every workflow assumes them.
 
 1. **Interview first; design from named patterns.** Before writing any file,
-   settle: what software, how upstream distributes it, what must persist,
+   settle: what software — and whether it is a standalone application or a
+   library/environment other SDKs consume — how upstream distributes it,
+   what must persist,
    whether it serves a network service, hardware needs, bases and
    architectures, version scheme, renovate datasource, track count. Every
    proposed construct maps to a pattern in

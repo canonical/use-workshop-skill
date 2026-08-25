@@ -70,6 +70,16 @@ host tools can reach it, and `check-health` polls the service (see below).
 </parts_decomposition>
 
 <parts_or_hooks>
+- The SDK's own deliverable → a part, always. The SDK tree is mounted
+  read-only and version-locked by Workshop; installing the tool from a hook
+  at runtime (`pip`/`uv`/`npm` into `~/…` or `$SDK/venv`) puts it in
+  user-writable space where it can self-update outside version management —
+  and packs an empty SDK image. Distinguish a *standalone application*
+  (baked into the part, immutable — hermes for Python) from a
+  *library/environment other SDKs consume* (the venv slot/plug shape in
+  `<sdk_dependencies>`, where the runtime install IS the shared resource).
+  Mount plugs carry the tool's user data (config, credentials, sessions) —
+  never the tool itself.
 - Debian packages → `setup-base`, never parts: integrates with the image's
   apt cache and keeps distribution security updates flowing.
   `stage-packages`/`stage-snaps` are rejected by SDKcraft outright.
