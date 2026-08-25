@@ -130,7 +130,7 @@ are optional.
 - Every reference SDK: `adopt-info` + `VERSION` file read in
   `override-pull`; no hardcoded `version:`.
 - Repo shape: `sdkcraft.yaml`, `hooks/`, `README.md`, `renovate.json`,
-  `.github/workflows/` (4 thin files), `tests/` (spread) — plus `services/`
+  `.github/workflows/` (5 thin files), `tests/` (spread) — plus `services/`
   when there's a daemon.
 - Plug names are short nouns for the resource (`cache`, `models`,
   `mod-cache`, `venv`), not tool names; singleton interfaces keep their

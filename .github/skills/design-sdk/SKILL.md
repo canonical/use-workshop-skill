@@ -193,8 +193,10 @@ A run of this skill is complete when:
 - [ ] Spread tests cover launch plus the SDK's primary functionality.
 - [ ] The README matches the template with no verbosity on connections or
       implementation details.
-- [ ] An onboarding left `main` as the template branch (no VERSION) and every
-      version branch carrying VERSION without the renovate workflows.
+- [ ] An onboarding left `main` as the template branch (never VERSION) and
+      every version branch carrying its own VERSION commit without the
+      renovate workflows, with `LONG_TERM_BRANCHES` set or named as a
+      remaining manual step.
 - [ ] Every mutating workshop command was followed by the verification
       triplet.
 </success_criteria>
