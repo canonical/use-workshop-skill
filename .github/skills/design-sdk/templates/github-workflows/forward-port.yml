@@ -1,0 +1,30 @@
+# .github/workflows/forward-port.yml
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# TODO: set the repository variable LONG_TERM_BRANCHES to the JSON array of
+# track branches this repo maintains, e.g. '["latest"]' or
+# '["1.24","1.25"]' — `gh variable set LONG_TERM_BRANCHES --body '["1.24"]'`.
+# Keep it in step with renovate.json's baseBranchPatterns.
+#
+# On every push to main, one PR main → <track> is opened per listed branch
+# (skipped while one is already open; review requested from the pusher).
+# main never carries VERSION, so the merge leaves each track's VERSION alone.
+
+name: Forward-Port from Main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  forward-port:
+    uses: canonical/sdkcraft-actions/.github/workflows/forward-port.yml@main
+    with:
+      long-term-branches: ${{ vars.LONG_TERM_BRANCHES }}

@@ -102,6 +102,13 @@ platforms:
 Supported architectures: `amd64`, `arm64`, `armhf`, `i386`, `ppc64el`,
 `riscv64`, `s390x`. `build-for: all` is for SDKs shipping no compiled
 binaries.
+
+Python caveat: compiled wheels (pydantic-core, cryptography, numpy) and a
+uv-managed CPython are architecture-specific, so a Python application builds
+natively per arch — layouts 1 or 2, where `build-on` equals `build-for`.
+Cross-building from amd64 (layout 3) fetches amd64 wheels for the arm64
+target and fails at runtime with `ImportError: wrong ELF class`; only a
+dependency tree confirmed pure-Python end to end may cross-build.
 </platforms>
 
 <parts>
@@ -125,7 +132,8 @@ Each entry under `parts:` is a standard craft-parts definition (`plugin`,
   plus `override-pull`/`override-build` scripts (or `make`/`cmake` when
   upstream provides those). Common picks in shipped SDKs: `nil`
   (hook-only or hand-rolled pulls), `dump` (unpack an artifact or copy a
-  local dir), `rust`, `npm`, `cmake`, `make`.
+  local dir), `rust`, `npm`, `cmake`, `make`, and `uv` for a standalone
+  Python application with its interpreter bundled (hermes).
 - `$CRAFT_PROJECT_DIR`, `$CRAFT_PART_SRC`, `$CRAFT_PART_INSTALL`, `$CRAFT_PRIME`,
   `$CRAFT_ARCH_BUILD_FOR`, `$CRAFT_PLATFORM`, and `$CRAFT_PROJECT_VERSION` are
   in scope in overrides; `case "$CRAFT_ARCH_BUILD_FOR" in ...` is the standard

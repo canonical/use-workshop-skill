@@ -11,14 +11,20 @@ argument-hint: "[new|design|generate|iterate|test|readme|onboard|publish] [softw
 Five rules that always apply to designing SDKs. Every workflow assumes them.
 
 1. **Interview first; design from named patterns.** Before writing any file,
-   settle: what software, how upstream distributes it, what must persist,
+   settle: what software — and whether it is a standalone application or a
+   library/environment other SDKs consume — how upstream distributes it,
+   what must persist,
    whether it serves a network service, hardware needs, bases and
    architectures, version scheme, renovate datasource, track count. Every
    proposed construct maps to a pattern in
    `references/reference-sdk-patterns.md` or
    `references/design-best-practices.md` — never an invented field or flag.
-   Every question carries a recommendation ("Options: A / B —
-   Recommendation: A, because <evidence>"), batched into one message.
+   A pattern whose catalog entry is marked evolving (hermes — the Python
+   mechanism SDKcraft's maintainers call unsettled) is recommended WITH that
+   caveat, as the current exemplar to prove in the try loop, never as
+   settled convention. Every question carries a recommendation ("Options:
+   A / B — Recommendation: A, because <evidence>"), batched into one
+   message.
 
 2. **Copy, don't synthesize, YAML.** Shapes come from `templates/` here, the
    reference SDKs, and `../use-workshop/templates/` — never from memory.
@@ -191,8 +197,10 @@ A run of this skill is complete when:
 - [ ] Spread tests cover launch plus the SDK's primary functionality.
 - [ ] The README matches the template with no verbosity on connections or
       implementation details.
-- [ ] An onboarding left `main` as the template branch (no VERSION) and every
-      version branch carrying VERSION without the renovate workflows.
+- [ ] An onboarding left `main` as the template branch (never VERSION) and
+      every version branch carrying its own VERSION commit without the
+      renovate workflows, with `LONG_TERM_BRANCHES` set or named as a
+      remaining manual step.
 - [ ] Every mutating workshop command was followed by the verification
       triplet.
 </success_criteria>

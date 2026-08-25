@@ -3,7 +3,8 @@
 
 <overview>
 The exemplar catalog: named patterns mined from Canonical's published
-reference SDKs (the `canonical/reference-sdks` index on GitHub). Every design
+reference SDKs (the `canonical/reference-sdks` index on GitHub), plus one
+community exemplar (hermes) for a shape the index does not cover yet. Every design
 decision in a generated SDK should name its closest pattern here — the
 pattern says not just WHAT the shape is but WHY it is that shape. When the
 user has local checkouts of the reference SDKs, prefer reading the real repo
@@ -92,6 +93,29 @@ Why: consumers of optional slots must work in both wirings and teach the
 user the explicit wiring in their output.
 </pattern>
 
+<pattern name="standalone Python application with bundled interpreter (hermes)">
+A Python application that IS the deliverable (an AI agent released on
+GitHub/PyPI): a `plugin: uv` part (`build-snaps: [astral-uv]`) whose
+`override-pull` fetches the upstream tag named by `VERSION`; `override-build`
+installs a uv-managed CPython under `$CRAFT_PART_INSTALL`
+(`UV_PYTHON_INSTALL_DIR`), creates a relocatable venv there, and runs
+`uv sync --no-dev --no-editable` against the upstream lockfile —
+deliberately NOT `craftctl default`, whose venv step rewrites `bin/python*`
+to a path that is dead inside a workshop. `setup-base` symlinks ONLY the
+entrypoint (`ln -sf "$SDK/bin/<tool>" /usr/local/bin/<tool>`) — never
+`$SDK/bin` onto PATH (its `python` would shadow the system interpreter for
+every shell) and never `PYTHONPATH`. One mount plug for the tool's home
+(`~/.<tool>`: config, secrets, sessions) — user data only, never the
+installation. Native per-arch platforms, no cross-builds (compiled wheels).
+Why: the SDK tree is read-only and version-locked, so the application is
+baked at build time rather than `pip install`ed from a hook into
+user-writable space; a bundled interpreter keeps one build shape across
+bases whose `python3` differs. Provenance: `mz2/hermes-agent-sdk`, the shape
+SDKcraft's maintainers point at while calling the Python approach
+unsettled — treat the mechanism as try-loop-verified, not settled, and say
+so in the proposal.
+</pattern>
+
 <pattern name="version-only configurator (vscode-remote)">
 No payload at all: single `nil` part that only runs `craftctl set version`;
 everything happens in `setup-base` (reconfigure sshd, drop the user
@@ -106,7 +130,7 @@ are optional.
 - Every reference SDK: `adopt-info` + `VERSION` file read in
   `override-pull`; no hardcoded `version:`.
 - Repo shape: `sdkcraft.yaml`, `hooks/`, `README.md`, `renovate.json`,
-  `.github/workflows/` (4 thin files), `tests/` (spread) — plus `services/`
+  `.github/workflows/` (5 thin files), `tests/` (spread) — plus `services/`
   when there's a daemon.
 - Plug names are short nouns for the resource (`cache`, `models`,
   `mod-cache`, `venv`), not tool names; singleton interfaces keep their
@@ -121,4 +145,5 @@ are optional.
 - `explanation/sdks/concepts.md` (try area, SDK types, reference implementations pointer)
 - `explanation/sdks/sdk-vs-dockerfile.md` (framing for why SDKs are setup units)
 - `reference/index.md` (the reference-implementations listing)
+- `reference/definition-files/sdkcraft-definition.md` (the SDK installation tree is mounted read-only — why hermes bakes the application)
 </source_docs>

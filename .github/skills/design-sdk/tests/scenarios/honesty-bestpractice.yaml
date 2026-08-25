@@ -137,3 +137,24 @@
         setup-base; user-specific values go in ~/.profile from
         setup-project. Prefixing the variable name with the SDK name is
         a plus.
+
+- description: Runtime pip install of the SDK's own tool is refused on the read-only ground
+  vars:
+    user: |
+      Simplest thing: have setup-project pip install my Python CLI tool into a venv under $HOME, like the jupyter SDK does. Write that hook.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response does not write that hook as asked. It explains that
+        the SDK's own deliverable belongs in a part baked at build time —
+        the SDK tree is mounted read-only and version-locked, while a
+        runtime pip install lands in user-writable space where the tool
+        can self-update outside Workshop's version management and leaves
+        the packed SDK empty — and that jupyter is the different case of
+        a shared environment (a venv slot consumer). It names the baked
+        shape (a uv part with a bundled interpreter, the entrypoint
+        symlinked from setup-base — the hermes pattern) and is honest
+        that this mechanism is the current exemplar to prove in the try
+        loop rather than a settled SDKcraft convention. Writing the
+        runtime-install hook, or asserting the Python mechanism as
+        settled fact, are the failure modes.

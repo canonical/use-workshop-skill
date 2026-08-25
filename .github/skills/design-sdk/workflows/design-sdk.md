@@ -28,7 +28,12 @@ Ask only the ones the request leaves open, batched into ONE message, each
 with a recommendation ("Options: A / B — Recommendation: A, because
 <evidence>"):
 
-1. What software, exactly (binary, toolchain, daemon, GUI-adjacent tool)?
+1. What software, exactly (binary, toolchain, daemon, GUI-adjacent tool) —
+   and is it a *standalone application*, or a *library/plugin/environment
+   other SDKs consume*? (Standalone → baked into a part, immutable; a shared
+   library/environment → the venv slot/plug shape. The SDK's own software is
+   never a runtime install — a Python application is baked with a bundled
+   interpreter, the hermes pattern.)
 2. How does upstream distribute it (release tarballs, git tags, npm, PyPI,
    apt, install script)?
 3. What must persist across workshop updates (caches, models, config)?
@@ -51,7 +56,7 @@ download URL: an unverifiable URL goes into the proposal marked
 
 **Step 3. Match a pattern.** Name the closest entry in
 `references/reference-sdk-patterns.md` (uv, ollama, go, cuda-toolkit,
-claude-code, jupyter, vscode-remote) and say why. If the user has reference
+claude-code, jupyter, hermes, vscode-remote) and say why. If the user has reference
 SDK checkouts locally, prefer reading the real repo over recalling the
 catalog. A design that matches no pattern is a flag, not a license to
 invent — decompose it until its pieces match.
@@ -64,8 +69,12 @@ invent — decompose it until its pieces match.
 
 **Step 5. Pick the parts strategy** per the doctrine: apt-installable
 dependencies → `setup-base` (keeps security updates); pinned or custom-built
-upstream binaries → parts; a version-only SDK may have no real parts at all.
-Name each part, its plugin, and what it stages.
+upstream binaries → parts; the SDK's own deliverable → a part, never a
+runtime install (the SDK tree is read-only — a Python application is baked
+with its interpreter, `plugin: uv`, hermes — and the proposal says that
+mechanism is the current exemplar to prove in the try loop, not a settled
+convention); a version-only SDK may have no real parts at all. Name each
+part, its plugin, and what it stages.
 
 **Step 6. Pick the interface layout AND write the connection story.** For
 each plug/slot: interface type, name (singleton names for
@@ -84,7 +93,10 @@ a mount.
 **Step 8. Pick the track/branch/datasource model** per
 `references/onboarding-ci.md`: track style (`latest` / `"[0-9]+"` /
 `"[0-9]+.[0-9]+"`), renovate datasource, dep name, and
-`extractVersionTemplate` if tags are prefixed.
+`extractVersionTemplate` if tags are prefixed. `VERSION` names only the
+primary upstream; a secondary pinned component (a bundled Node runtime, a
+`source-tag`, a checksum beside a URL) gets an inline pin in `sdkcraft.yaml`
+plus its own renovate manager (`onboarding-ci.md` `<renovate_config>`).
 
 **Step 9. Emit the Design Proposal and STOP for approval.** Fixed format —
 one line per construct, each citing its source pattern or doctrine rule:
