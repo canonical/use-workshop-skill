@@ -11,6 +11,9 @@
 #     platform-flag: "--platform".
 # The staging secret is deliberate: a fresh SDK must not publish to the
 # production Store. Flip to SDKCRAFT_STORE_CREDENTIALS_PROD when ready.
+# `risk` is left at the sdkcraft-actions default (edge): first releases land
+# on edge; setting `risk: "stable"` is the publish-store promotion step,
+# taken together with the _PROD flip.
 
 name: Build and Upload SDK
 
@@ -35,6 +38,5 @@ jobs:
     with:
       platforms: '["amd64"]'
       platform-flag: "--build-for"
-      risk: "stable"
     secrets:
       SDKCRAFT_STORE_CREDENTIALS: ${{ secrets.SDKCRAFT_STORE_CREDENTIALS_STAGING }}
