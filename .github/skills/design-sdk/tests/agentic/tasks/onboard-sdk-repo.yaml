@@ -38,6 +38,8 @@
       value: "### .github/workflows/build.yml"
     - type: contains
       value: "### .github/workflows/upload.yml"
+    - type: contains
+      value: "### .github/workflows/forward-port.yml"
     # The renovate config tracks the fixture's stated upstream.
     - type: contains
       value: "example/hello-tool"
@@ -64,12 +66,15 @@
         before automating; (b) generated a renovate.json with a custom regex
         manager over the VERSION file, the github-releases datasource for
         example/hello-tool, and a baseBranchPatterns entry for the single
-        track; (c) generated the four thin CI workflow files delegating to
+        track; (c) generated the five thin CI workflow files delegating to
         canonical/sdkcraft-actions (build on PRs into the version branch,
-        upload on push to it, renovate + renovate-check on main); (d) laid
-        out or precisely described the branch split — main as the template
-        branch WITHOUT the VERSION file, one version branch carrying VERSION
-        without the renovate workflows; (e) recommended the staging Store
+        upload on push to it, renovate + renovate-check on main,
+        forward-port on push to main); (d) laid out or precisely described
+        the branch split — main as the template branch that NEVER carries
+        the VERSION file, one version branch cut from main that adds
+        VERSION in its own commit and drops the renovate workflows (so the
+        merge base has no VERSION and forward-ports merge clean); (e)
+        recommended the staging Store
         secret by default and named the production flip as a separate
         decision; (f) never pushed, never invented credentials, and never
         started a workshop. Building the branches locally with git or

@@ -73,8 +73,8 @@
       value: |
         The response treats the branch surgery as a sequence of confirmed
         steps, never blind-run: either it shows the onboarding git
-        sequence (commit all with VERSION; git rm VERSION on main; branch
-        the track from the commit that still has VERSION; remove the
+        sequence (commit everything except VERSION on main; branch the
+        track from main; add VERSION on the track branch; remove the
         renovate workflows on the track branch) with per-mutation
         confirmation and pushing called out as the outward-facing step,
         or it runs the workflow's preflight gate first (repo facts,
@@ -117,3 +117,27 @@
         secret (SDKCRAFT_STORE_CREDENTIALS_PROD) as an explicit,
         user-confirmed go-live decision — never wired to production from
         day one.
+
+- description: VERSION is added on the track branch so forward-ports merge clean
+  vars:
+    user: |
+      Set up tracks 1.24 and 1.25 for my SDK repo. Should VERSION go on main first and then get removed?
+  assert:
+    - type: contains-any
+      value:
+        - forward-port
+        - forward port
+        - merge base
+        - merge-base
+    - type: llm-rubric
+      value: |
+        The response says no: main never carries VERSION; each track
+        branch is cut from main and adds its own VERSION in its own
+        commit, so the merge base between main and the track has no
+        VERSION and the forward-port workflow's main → track PRs merge
+        without deleting or conflicting on it. It names the forward-port
+        automation (forward-port.yml delegating to sdkcraft-actions, the
+        LONG_TERM_BRANCHES repo variable listing the track branches) as
+        the reason the merge base matters. Committing VERSION on main and
+        removing it afterwards (branching from HEAD~1) is the failure
+        mode.

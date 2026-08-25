@@ -10,7 +10,7 @@ change means seeding a new row, not editing an old one.
 
 ## Routing eval (`make eval-routing`)
 
-**60 cases across 8 scenario files** (incl. 9 cross-skill selection cases
+**64 cases across 8 scenario files** (incl. 9 cross-skill selection cases
 against the 3-way selection context). This suite's gate is the
 **subscription lane** from day one: Sonnet via the local claude CLI login as
 candidate, the local claude judge for llm-rubric grading — $0, no API keys,

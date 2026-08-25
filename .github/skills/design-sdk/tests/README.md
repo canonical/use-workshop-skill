@@ -15,7 +15,7 @@ at all; see `TESTING.md` at the repo root for the three-lane doctrine.
    and spread files parse-only); shellcheck; bundle regen; template hook
    executable bits — a **hard** failure here, unlike the onboard suite's
    advisory check, because sdkcraft enforces `+x` at pack time.
-2. **Routing eval** (`make eval-routing`, $0): 60 promptfoo cases. The
+2. **Routing eval** (`make eval-routing`, $0): 64 promptfoo cases. The
    bundle appends the borrowed sibling references (see
    `scripts/bundle-extras.txt`). `scenarios/skill-selection.yaml` overrides
    `vars.skill` with `skill-selection-context.md` (every installed skill's

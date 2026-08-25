@@ -150,3 +150,54 @@
         deferred to the Design Proposal. Failure modes: missing the uv
         pattern entirely, inventing a sharing mechanism outside the
         mount interface, or claiming regular-SDK slots auto-connect.
+
+- description: Python application from PyPI is baked into a part, not installed at runtime
+  vars:
+    user: |
+      Design an SDK for a coding agent written in Python and published on PyPI. It keeps its config and session history in ~/.agent.
+  assert:
+    - type: contains-any
+      value:
+        - uv
+        - part
+    - type: contains-any
+      value:
+        - mount
+        - persist
+    - type: llm-rubric
+      value: |
+        The response bakes the application into the SDK at build time as
+        a part — the hermes pattern: a uv part bundling a CPython
+        interpreter plus the app inside the part's install tree (or, at
+        minimum, an explicit build-time install into the part), with
+        setup-base exposing only the tool's entrypoint (a symlink into
+        /usr/local/bin — not the venv's bin/ on PATH, no PYTHONPATH) and
+        a mount plug for ~/.agent carrying user data only. An
+        interview-first response passes when it names this baked shape
+        as its recommendation. The failure mode is installing the agent
+        at runtime from a hook — pip/uv into a venv under $HOME or
+        $SDK/venv, "like jupyter" — which leaves the SDK image empty and
+        the tool self-updatable in user-writable space; exposing it via
+        PYTHONPATH is the other failure mode.
+
+- description: Python environment shared with other SDKs still matches the venv-slot shape
+  vars:
+    user: |
+      Design an SDK that provides a Python environment with a fixed set of scientific libraries preinstalled, for other SDKs to import from.
+  assert:
+    - type: contains-any
+      value:
+        - slot
+        - venv
+    - type: llm-rubric
+      value: |
+        The response recognises a shared library/environment rather than a
+        standalone application and reaches for the sharing shape: the
+        environment is exposed to other SDKs through a mount SLOT (the uv
+        reference SDK's venv slot, consumers wiring it with connections:),
+        where populating that environment IS the shared resource — so a
+        runtime install into the slot directory, or a baked environment
+        exposed through the slot, both pass. It does NOT treat this as a
+        standalone tool to symlink into /usr/local/bin, and it does not
+        invent a sharing mechanism outside the mount interface or claim
+        the slot auto-connects.
