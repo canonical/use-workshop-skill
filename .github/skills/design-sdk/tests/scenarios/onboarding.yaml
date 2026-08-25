@@ -134,10 +134,11 @@
         The response says no: main never carries VERSION; each track
         branch is cut from main and adds its own VERSION in its own
         commit, so the merge base between main and the track has no
-        VERSION and the forward-port workflow's main → track PRs merge
-        without deleting or conflicting on it. It names the forward-port
-        automation (forward-port.yml delegating to sdkcraft-actions, the
-        LONG_TERM_BRANCHES repo variable listing the track branches) as
-        the reason the merge base matters. Committing VERSION on main and
-        removing it afterwards (branching from HEAD~1) is the failure
-        mode.
+        VERSION and the forward-port main → track merges neither delete
+        nor conflict on it. It connects this to the forward-port
+        automation (forward-port.yml and/or the LONG_TERM_BRANCHES repo
+        variable listing the track branches) as the reason the merge
+        base matters; naming the sdkcraft-actions delegation is a bonus,
+        not required. The failure mode is recommending that VERSION be
+        committed on main and removed afterwards (e.g. branching from
+        HEAD~1), or leaving VERSION on main.

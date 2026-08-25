@@ -75,7 +75,9 @@ host tools can reach it, and `check-health` polls the service (see below).
   at runtime (`pip`/`uv`/`npm` into `~/…` or `$SDK/venv`) puts it in
   user-writable space where it can self-update outside version management —
   and packs an empty SDK image. Distinguish a *standalone application*
-  (baked into the part, immutable — hermes for Python) from a
+  (baked into the part, immutable — hermes for Python, a mechanism the
+  SDKcraft maintainers still call unsettled: recommend it as the current
+  exemplar to prove in the try loop, never as settled convention) from a
   *library/environment other SDKs consume* (the venv slot/plug shape in
   `<sdk_dependencies>`, where the runtime install IS the shared resource).
   Mount plugs carry the tool's user data (config, credentials, sessions) —

@@ -71,8 +71,10 @@ invent — decompose it until its pieces match.
 dependencies → `setup-base` (keeps security updates); pinned or custom-built
 upstream binaries → parts; the SDK's own deliverable → a part, never a
 runtime install (the SDK tree is read-only — a Python application is baked
-with its interpreter, `plugin: uv`, hermes); a version-only SDK may have no
-real parts at all. Name each part, its plugin, and what it stages.
+with its interpreter, `plugin: uv`, hermes — and the proposal says that
+mechanism is the current exemplar to prove in the try loop, not a settled
+convention); a version-only SDK may have no real parts at all. Name each
+part, its plugin, and what it stages.
 
 **Step 6. Pick the interface layout AND write the connection story.** For
 each plug/slot: interface type, name (singleton names for

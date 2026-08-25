@@ -19,8 +19,12 @@ Five rules that always apply to designing SDKs. Every workflow assumes them.
    proposed construct maps to a pattern in
    `references/reference-sdk-patterns.md` or
    `references/design-best-practices.md` — never an invented field or flag.
-   Every question carries a recommendation ("Options: A / B —
-   Recommendation: A, because <evidence>"), batched into one message.
+   A pattern whose catalog entry is marked evolving (hermes — the Python
+   mechanism SDKcraft's maintainers call unsettled) is recommended WITH that
+   caveat, as the current exemplar to prove in the try loop, never as
+   settled convention. Every question carries a recommendation ("Options:
+   A / B — Recommendation: A, because <evidence>"), batched into one
+   message.
 
 2. **Copy, don't synthesize, YAML.** Shapes come from `templates/` here, the
    reference SDKs, and `../use-workshop/templates/` — never from memory.
