@@ -17,7 +17,7 @@ restore: |
 
 execute: |
   workshop exec -- bash -lc '<name> --version' | MATCH "<version-regex>"
-  workshop info | MATCH 'status:\s+okay'
+  workshop info | MATCH 'status:\s+ready'
 
 debug: |
   workshop exec -- bash -lc 'echo PATH=$PATH' || true
