@@ -91,7 +91,10 @@ Always ship the `launch` job; add one job per advertised capability:
   refresh`, assert the data survived.
 - State round-trip (SDKs with save/restore-state): change the tool setting,
   refresh, assert it stuck.
-- Health honesty: `workshop info | grep -E 'status:\s+okay'`.
+- Health honesty: `workshop info | MATCH 'status:\s+ready'` — `ready` is
+  the workshop status that every SDK's `check-health` rolls up into.
+  `okay` is only what the hook reports through `workshopctl set-health`;
+  `workshop info` never prints it, and there is no per-SDK health line.
 
 Keep the suite small and fast — these run in CI on every PR via the shared
 build workflow.

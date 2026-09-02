@@ -19,6 +19,21 @@ SDK passes through here before it is called done.
 
 <process>
 
+**Step 0. Toolchain preflight, once per session.** `workshop --version`
+(the flag — `workshop version` is not a subcommand) and
+`snap list workshop sdkcraft`. Trust the snap table over `sdkcraft
+--version`, which on an edge build reports a dev string
+(`0.0.post1.dev1+g<sha>`) rather than the release number. The two snaps are
+independent — separate channels and publishers — and `sdkcraft` commonly
+trails `workshop` by a point release; that skew is normal, not a fault.
+Every `(0.9.x+)` note in this skill's references is a floor: below it, name
+the version the behavior needs and drop the feature instead of inventing a
+workaround. Never `snap refresh` or `snap remove` these on the user's
+behalf — Workshop is not forward compatible (after a snap update a workshop
+refuses `restore` and `--continue` until one `workshop refresh`), downgrades
+are unsupported, and removing the snap deletes every workshop and SDK on the
+machine. Report the mismatch and let the user decide.
+
 **Step 1. Build into the try area.** `sdkcraft clean && sdkcraft try` — the
 deterministic default; `clean` may be skipped only when nothing but hook
 bodies changed since the last try. Useful flags: `--verbose`;
@@ -40,9 +55,11 @@ one `--wait-on-error` workshop at a time). Subsequent iterations:
 `workshop refresh` (add `--wait-on-error` while diagnosing).
 
 **Step 4. Verify.** The triplet — `workshop changes` →
-`workshop tasks <ID>` → `workshop info` — after every launch/refresh; the
-SDK's health line in `workshop info` must be okay. Then hook-specific
-checks via `workshop exec`:
+`workshop tasks <ID>` → `workshop info` — after every launch/refresh;
+`workshop info` must report `status: ready`, the roll-up of every SDK's
+`check-health` (there is no per-SDK health line, and `okay` — the value
+the hook passes to `workshopctl set-health` — never appears in that
+output). Then hook-specific checks via `workshop exec`:
 - `setup-base`: the installed packages/files exist; `/etc/profile.d/<NAME>.sh`
   says what it should.
 - `setup-project`: user-context config exists;

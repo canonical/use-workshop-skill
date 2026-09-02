@@ -57,12 +57,16 @@
         - branch
     - type: llm-rubric
       value: |
-        The response enters repo onboarding: version branches (main as the
-        template branch, one branch per track carrying VERSION), the CI
-        workflow files, and renovate. It may ask targeted onboarding
-        questions (tracks, datasource) with recommendations, but it does
-        not re-open the full skill intake menu or start a design
-        interview.
+        The response routes to repo onboarding and speaks its vocabulary:
+        the template branching model (main as the renovate-driven template
+        branch, one long-lived branch per track carrying VERSION), the CI
+        workflow files, and renovate. Either shape passes — generating
+        those artifacts, or running the workflow's Step 1 preflight as one
+        batched question set with recommendations (tracks, datasource,
+        VERSION/adopt-info wiring, clean tree on main), which is the
+        prescribed move when a bare `onboard` leaves every preflight item
+        open. It does NOT re-open the full skill intake menu, ask which
+        subcommand was meant, or start a design interview.
 
 - description: bare software name enters the new chain
   vars:

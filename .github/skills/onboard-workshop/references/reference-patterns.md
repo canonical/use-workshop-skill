@@ -42,6 +42,25 @@ connections:
   - plug: <python-tool-sdk>:venv
     slot: uv:venv
 ```
+
+That shared venv runs the **base image's** Python (`ubuntu@24.04` → 3.12):
+`uv` builds it with `--system-site-packages` and no `--python`, so the repo's
+`requires-python` / `.python-version` never reaches it. It is also not the
+venv the project itself uses — `uv sync` still creates `/project/.venv`,
+honours the pin (fetching a uv-managed CPython when the base's differs), and
+sits on the bind mount, so it survives `workshop refresh` and host IDEs see
+it. A pinned repo with no venv-sharing SDK needs nothing here: leave the
+default alone.
+
+The two together — a pin the base cannot satisfy AND a Python SDK wired to
+`uv:venv` — is the case that silently breaks, and the tool gets the base's
+interpreter. First choice: set `base:` to the Ubuntu release carrying the
+pinned interpreter (22.04 → 3.10, 24.04 → 3.12). Otherwise the in-project SDK
+owns the shared venv instead — a mount SLOT with `workshop-source:` (a plug is
+private and cannot be shared), created in `setup-base` the way `uv` does it
+(before any connection, with `uv` listed above it) via `uv venv --python
+<pin>`, and the consumer wired to `project-<name>:venv`. No upstream SDK ships
+that second shape: propose it try-loop-verified, not settled, and say so.
 </pattern>
 
 <pattern name="In-project SDK for repo-specific setup">

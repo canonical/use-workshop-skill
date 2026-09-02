@@ -28,8 +28,13 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
      `playwright`, `puppeteer` = GUI test host → desktop plug + X libraries
      (see step 4). `packageManager`/lockfile → which install command to wrap
      (`npm ci` vs `pnpm install`).
-   - `pyproject.toml` / `requirements*.txt` / `uv.lock` → `uv` SDK;
-     `requires-python` pins the interpreter.
+   - `pyproject.toml` / `requirements*.txt` / `uv.lock` → `uv` SDK (channel
+     `latest/stable`). `requires-python` / `.python-version` pin the
+     interpreter, not the channel — record the pin, but it normally reaches
+     nothing in the definition, since `uv sync` honours it when it builds
+     `/project/.venv`. It only becomes a definition decision when a Python
+     SDK shares `uv:venv`, which runs the base's interpreter — see the
+     shared-venv pattern in `references/reference-patterns.md`.
    - `Cargo.toml` → `rust`; `rust-toolchain.toml` pins the channel.
    - `global.json` / `*.csproj` → `dotnet`; SDK version from `global.json`.
    - `pubspec.yaml` → `flutter`.
@@ -233,4 +238,5 @@ Debug/IDE: <launch.json entries, F5 flow — evidence> | none found
 - `how-to/develop-sdks/write-runtime-hooks.md`
 - `how-to/develop-with-workshops/run-workshops-in-github-actions.md`
 - `how-to/develop-with-workshops/connect-vscode.md`
+- `how-to/develop-with-workshops/manage-python-environments.md`
 </source_docs>

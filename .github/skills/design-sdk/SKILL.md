@@ -193,7 +193,7 @@ A run of this skill is complete when:
 - [ ] A Design Proposal was delivered and approved before any file was
       generated.
 - [ ] Every generated or edited SDK went through the try loop and came up
-      healthy (`workshop info` reports the SDK okay).
+      healthy (`workshop info` reports `status: ready`).
 - [ ] Spread tests cover launch plus the SDK's primary functionality.
 - [ ] The README matches the template with no verbosity on connections or
       implementation details.
