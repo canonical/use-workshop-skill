@@ -22,6 +22,8 @@ sudo snap set workshop workshop.experimental-vms=1
 sudo snap restart workshop.workshopd
 ```
 
+Answering "how do I opt in" does not mean endorsing the VM. In the same answer, say plainly that `container` is the default and the supported choice, and that the user can simply drop the `confinement:` line if they don't need the harder boundary (an AI agent working in the project, or nested LXD). Give the opt-in and let them choose, but never let the opt-in read as the recommended path.
+
 The gate is evaluated at `launch` only. An already-launched VM workshop keeps refreshing even if the option is later unset — so "it launched once, therefore the option is still set" is not a safe inference.
 
 Beyond the opt-in, a VM workshop that declares **any** SDK also needs an LXD that can mount shifted disks into a VM — in practice LXD from `latest/edge`. See `<limitations>`.
