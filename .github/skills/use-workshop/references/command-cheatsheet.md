@@ -118,7 +118,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - `--no-wait`.
 
 **`workshop connections [<WORKSHOP>] [flags]`** — List interface plug/slot connections for one workshop or the whole project.
-- `--all`: include disconnected plugs in the output.
+- `--all`: include disconnected plugs in the output. **Mutually exclusive with a workshop name** — naming a workshop already implies `--all`, and passing both is rejected with `cannot use --all with workshop name`. So it is `workshop connections --all` (whole project, incl. disconnected) or `workshop connections <WORKSHOP>` (that workshop, incl. disconnected), never both.
 - `--no-headers`.
 
 **`workshop remount <WORKSHOP>/<SDK>:<PLUG> <SOURCE> [flags]`** — Mount a new host source location to a mount-interface plug's target.

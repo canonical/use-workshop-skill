@@ -38,7 +38,7 @@ confinement: virtual-machine
 
 - Values: `container` and `virtual-machine`. **Omitting the key selects `container`** — `workshop init` without `--vm` writes no `confinement:` line at all, and that absence is not a defect.
 - Scaffold it with `workshop init <NAME> --vm`, or add the key by hand to a definition that has not been launched yet.
-- A bad value fails at YAML decode, before any validation of the rest of the file: `invalid file "<path>/workshop.yaml": invalid confinement: "<value>"`.
+- A bad value fails at YAML decode, before the rest of the file is validated. The message is `invalid confinement: "<value>"`, wrapped in whichever command hit it — `error: cannot launch "dev": invalid confinement: "classic"` (verified against 0.9.7).
 
 Confirm what you actually got — never infer confinement from the definition file alone, since the file can have been edited after launch:
 
@@ -55,15 +55,17 @@ A VM workshop is not a container with a stronger wall. Four differences change w
 **1. Confinement is fixed at launch.** Editing `confinement:` on a launched workshop and refreshing fails:
 
 ```
-error: cannot refresh "<NAME>": confinement changed from "container" to "virtual-machine"
+error: cannot refresh "dev": cannot refresh "dev": confinement changed from "virtual-machine" to "container"
 ```
+
+(The doubled `cannot refresh` prefix is an upstream message-wrapping quirk, not a transcription error. Note also that *removing* the key from a launched VM's definition triggers this too — an absent `confinement:` means `container`, which is a change.)
 
 There is no in-place migration. `workshop remove <NAME>` then `workshop launch <NAME>` — and say so plainly, because this is the one place in this skill where remove+launch is the correct answer rather than the anti-pattern.
 
 **2. SDK support depends on the host's LXD.** Where LXD offers shifted mounts to containers only, a VM workshop that declares an SDK is refused:
 
 ```
-error: cannot launch "<NAME>": SDKs are currently unavailable for virtual machines
+error: cannot refresh "dev": cannot refresh "dev": SDKs are currently unavailable for virtual machines
 ```
 
 Probe the host before promising SDKs in a VM:
@@ -74,7 +76,7 @@ lxc query /1.0/metadata/configuration | jq -r '.configs["device-disk"]["device-c
 
 `container` means container-only — install LXD from `latest/edge` to lift it. Workshop probes this at runtime, so the restriction disappears on its own once LXD is new enough. A workshop that declares no SDKs is unaffected.
 
-**3. Interfaces are not auto-connected.** Launching a VM skips the auto-connect step entirely, and so does refreshing one — the connection persistence that holds for containers (0.9.5+) does **not** apply here. Wire what you need with `workshop connect`, and re-wire after every refresh. Interfaces backed by LXD proxy devices — tunnel, desktop, ssh-agent, camera, custom-device — are unavailable in a VM regardless, and the in-workshop `workshopctl` socket is not created.
+**3. Interfaces are not auto-connected.** Launching a VM skips the auto-connect step entirely, and so does refreshing one — the connection persistence that holds for containers (0.9.5+) does **not** apply here. Wire what you need with `workshop connect`, and re-wire after every refresh. Interfaces backed by LXD proxy devices — tunnel, desktop, ssh-agent, camera, custom-device — are unavailable in a VM regardless. The `workshopctl` binary is still installed inside a VM, but the socket it talks to is not created, so don't read its presence as proof the interface machinery is live.
 
 **4. SDK health checks do not run.** `check-health` is skipped after launch and refresh, so `workshop info` reports no SDK health notes for a VM. Do not wait for a health signal that will not arrive.
 
