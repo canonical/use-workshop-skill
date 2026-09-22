@@ -48,8 +48,12 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
   skill must never perform, and on a stock LXD refuses any definition that
   declares SDKs — which every onboarded definition does. It also skips
   auto-connect and `check-health`, so the launch-and-verify stage has nothing
-  to verify against. If the user asks for a VM, say this plainly and hand them
-  to `../use-workshop/references/confinement.md`; do not emit the key.
+  to verify against. If the user asks for a VM, say this plainly and offer the
+  container definition instead; do not emit the key. For your own reading, the
+  model lives in the sibling skill file `../use-workshop/references/confinement.md`
+  — that is a SKILL file, not a docs page, so never hand its path to the user
+  or splice it onto the docs base URL. The citable upstream page is
+  `release-notes/v0.9.7.md`; the VM how-to is not published yet.
 - **No invented SDK names or channels.** An SDK exists when `sdk find`/
   `sdk info` says so (or the catalog lists it, tagged unverified). A channel
   exists when `sdk info` lists it.
