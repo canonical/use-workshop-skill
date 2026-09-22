@@ -76,6 +76,18 @@ column, and a judge change means seeding a new row, not editing an old one.
   `_testlib/provider-routing-cli.js`; the design-sdk round also verified
   `--model claude-sonnet-5` on it).
 
+**The claude CLI version is part of the instrument, not an incidental.** The
+2026-09-22 round measured this directly: on CLI **2.1.278**, the
+onboard-workshop tree pinned at 60/60 under **2.1.241** scored **56/60**,
+while the 0.9.7 tree scored 55/61 — a control run committed as
+`results/2026-09-22-control-pre097-*.json`. The tool-less routing candidate
+now reacts to its deliberately empty scratch cwd by re-opening an intake menu
+instead of reasoning from the bundle, which only bites the one suite whose
+scenarios are repo-analysis shaped (use-workshop pinned 91/91 on both lanes
+and design-sdk 65/65 on the same CLI that day). Before re-pinning any
+repo-shaped suite, check `claude --version` against the pin above and, if it
+differs, seed a new instrument row rather than editing an existing cell.
+
 ## Layout
 
 Shared implementation lives in `.github/skills/_testlib/` (drivers,

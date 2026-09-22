@@ -1,0 +1,492 @@
+{
+  "meta": {
+    "generated_at": "2026-09-22T11:45:00+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "claude-cli",
+    "total_cases": 60,
+    "passed": 56,
+    "failed": 4,
+    "errors": 0,
+    "pass_rate": 0.9333,
+    "tokens": {
+      "total": 1966953,
+      "prompt": 1902098,
+      "completion": 64855,
+      "cached": 1799583
+    },
+    "cost_usd": 2.1002
+  },
+  "cases": [
+    {
+      "description": "analyze verb stops at the verdict without asking which path",
+      "passed": false,
+      "score": 1,
+      "latency_ms": 20195,
+      "cost": 0.245424,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response treats this as the analyze subcommand: it commits to\nthe read-only toolchain analysis of ./services/api ending at the\nfeasibility verdict and proposal, without generating files and\nwithout asking the user which of the intake paths they meant.\nIn this setting the assistant cannot read the filesystem, so\nasking the user for repo EVIDENCE (file contents, command\noutput) as the input to that analysis is a valid way to commit\nto it \u2014 what must NOT happen is re-opening the intake menu,\ngenerating files, or drifting past the verdict/proposal scope.\n",
+          "passed": false,
+          "reason": "The response explicitly re-opens the intake menu by presenting three numbered alternative paths (\"correct path\", \"clone repo\", \"share files\"), which the rubric forbids. While asking for file contents as evidence would be acceptable, the response frames this as a choice between intake paths rather than committing to the analyze subcommand and soliciting evidence to complete that analysis. The response also never commits to the feasibility verdict/proposal scope \u2014 instead it defers entirely, treat"
+        }
+      ],
+      "failure_reason": "The response explicitly re-opens the intake menu by presenting three numbered alternative paths (\"correct path\", \"clone repo\", \"share files\"), which the rubric forbids. While asking for file contents as evidence would be acceptable, the response frames this as a choice between intake paths rather than committing to the analyze subcommand and soliciting evidence to complete that analysis. The response also never commits to the feasibility verdict/proposal scope \u2014 instead it defers entirely, treat"
+    },
+    {
+      "description": "onboard verb commits to the full chain",
+      "passed": true,
+      "score": 0.8,
+      "latency_ms": 59218,
+      "cost": 0.285381
+    },
+    {
+      "description": "verify verb goes straight to launch-and-verify",
+      "passed": false,
+      "score": 1,
+      "latency_ms": 22785,
+      "cost": 0.030723,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response goes straight to verification of the freshly\ngenerated definition: launch, the verification triplet, and the\naction proof loop \u2014 not a new analysis or proposal pass. With\nno prior context in this single-turn setting, explicitly\nrouting to launch-and-verify and asking for the missing context\nthe proof loop needs (project path, workshop name, current\nworkshop status, which actions were generated) before launching\nis acceptable; re-analyzing, re-proposing, or re-opening the\nintake menu is not.\n",
+          "passed": false,
+          "reason": "The response does not route to launch-and-verify at all. Instead of asking for the specific context the proof loop needs (project path, workshop name, current status, which actions were generated), it presents a binary A/B menu where option B explicitly offers to re-run `onboard` (re-analysis/re-proposing). This is exactly the behavior the rubric prohibits: re-opening the intake menu and offering to start over rather than proceeding to the verification triplet and action proof loop."
+        }
+      ],
+      "failure_reason": "The response does not route to launch-and-verify at all. Instead of asking for the specific context the proof loop needs (project path, workshop name, current status, which actions were generated), it presents a binary A/B menu where option B explicitly offers to re-run `onboard` (re-analysis/re-proposing). This is exactly the behavior the rubric prohibits: re-opening the intake menu and offering to start over rather than proceeding to the verification triplet and action proof loop."
+    },
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 60925,
+      "cost": 0.079056
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": false,
+      "score": 0.5,
+      "latency_ms": 102665,
+      "cost": 0.134055,
+      "failed_assertions": [
+        {
+          "type": "icontains-any",
+          "value": [
+            "workshop.yaml",
+            ".workshop",
+            "existing workshop definition",
+            "existing definition",
+            "existing-workshop",
+            "definition already present",
+            "already present",
+            "already has a workshop"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"workshop.yaml, .workshop, existing workshop definition, existing definition, existing-workshop, definition already present, already present, already has a workshop\""
+        },
+        {
+          "type": "llm-rubric",
+          "value": "The response includes checking whether the project already has a\nworkshop definition (workshop.yaml, .workshop.yaml, or a .workshop/\ndirectory) as an early step, and does not propose overwriting or\nregenerating an existing definition. Naming the specific filenames is\na plus, not required \u2014 in a chat eval the model cannot list the repo,\nso committing to the check as step one satisfies this. Explicitly mentioning the\nroute-away to the use-workshop skill is a plus, not required.\n",
+          "passed": false,
+          "reason": "The output lists specific files to examine (go.mod, Makefile, main.go, README.md, .github/workflows) but makes no mention of checking for an existing workshop definition (workshop.yaml, .workshop.yaml, or .workshop/ directory) at any step. The table of files and their purposes does not include any workshop-related file. The response does not satisfy the rubric's requirement that checking for an existing workshop definition be included as an early step."
+        }
+      ],
+      "failure_reason": "The output lists specific files to examine (go.mod, Makefile, main.go, README.md, .github/workflows) but makes no mention of checking for an existing workshop definition (workshop.yaml, .workshop.yaml, or .workshop/ directory) at any step. The table of files and their purposes does not include any workshop-related file. The response does not satisfy the rubric's requirement that checking for an existing workshop definition be included as an early step."
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 31873,
+      "cost": 0.041847
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 30254,
+      "cost": 0.039258
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19895,
+      "cost": 0.026454
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13566,
+      "cost": 0.020766
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24830,
+      "cost": 0.027801
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18232,
+      "cost": 0.023994
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 0.85,
+      "latency_ms": 27376,
+      "cost": 0.031953
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 32346,
+      "cost": 0.036027
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12126,
+      "cost": 0.020064
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18240,
+      "cost": 0.025095
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 35837,
+      "cost": 0.038649
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14006,
+      "cost": 0.020496
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 85406,
+      "cost": 0.074211
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11785,
+      "cost": 0.020568
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 48911,
+      "cost": 0.049812
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 33920,
+      "cost": 0.044103
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13135,
+      "cost": 0.020469
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12241,
+      "cost": 0.020133
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 38064,
+      "cost": 0.039321
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18970,
+      "cost": 0.02538
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20445,
+      "cost": 0.026208
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 34767,
+      "cost": 0.042909
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11230,
+      "cost": 0.020379
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19243,
+      "cost": 0.025329
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25555,
+      "cost": 0.030738
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 44935,
+      "cost": 0.046569
+    },
+    {
+      "description": "JVM repo maps to openjdk plus the matching build-tool SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17334,
+      "cost": 0.025482
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 29208,
+      "cost": 0.037428
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28693,
+      "cost": 0.032184
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8167,
+      "cost": 0.01692
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8633,
+      "cost": 0.018009
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15405,
+      "cost": 0.023862
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17813,
+      "cost": 0.024201
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28594,
+      "cost": 0.036105
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17092,
+      "cost": 0.024177
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14598,
+      "cost": 0.022104
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7060,
+      "cost": 0.01701
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17940,
+      "cost": 0.025251
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24912,
+      "cost": 0.030693
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": false,
+      "score": 0.7,
+      "latency_ms": 22548,
+      "cost": 0.030708,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The report includes: the verdict recap, files created, a per-action\nproof table (PASS/FAIL/UNVERIFIED with reasons), tunnel results, any\ngaps, and next steps (commit the definition, keep .workshop.lock\ngitignored, workshop shell to start working).\n",
+          "passed": false,
+          "reason": "The output presents a structural template showing what a final report would contain (verdict, files created, proof table, tunnels, gaps, next steps), and the template does include all the required elements from the rubric. However, the output explicitly states it cannot provide a filled-in report because no actual analysis or generation has been performed \u2014 all values are placeholders. The rubric asks whether \"the report includes\" these elements, and while the template structure does enumerate a"
+        }
+      ],
+      "failure_reason": "The output presents a structural template showing what a final report would contain (verdict, files created, proof table, tunnels, gaps, next steps), and the template does include all the required elements from the rubric. However, the output explicitly states it cannot provide a filled-in report because no actual analysis or generation has been performed \u2014 all values are placeholders. The rubric asks whether \"the report includes\" these elements, and while the template structure does enumerate a"
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2747,
+      "cost": 0.003132
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2916,
+      "cost": 0.002961
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4375,
+      "cost": 0.003246
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3788,
+      "cost": 0.00306
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3790,
+      "cost": 0.003042
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4874,
+      "cost": 0.003006
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6700,
+      "cost": 0.005199
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2965,
+      "cost": 0.002967
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3358,
+      "cost": 0.003402
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3675,
+      "cost": 0.004176
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4455,
+      "cost": 0.00483
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11335,
+      "cost": 0.020313
+    },
+    {
+      "description": "sdkcraft publishing routes to the design-sdk sibling",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18961,
+      "cost": 0.023787
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11943,
+      "cost": 0.020574
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10749,
+      "cost": 0.019251
+    }
+  ]
+}
