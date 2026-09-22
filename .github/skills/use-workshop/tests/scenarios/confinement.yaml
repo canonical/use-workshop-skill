@@ -44,7 +44,8 @@
       value: |
         The response names the `--vm` flag on `workshop init` (0.9.7+) and
         explains that it writes `confinement: virtual-machine` into the
-        generated definition, which can equally be added by hand. It says or
+        generated definition. Mentioning that the key can equally be added by
+        hand is a plus, not required — the user asked only about init. It says or
         implies that omitting the key means `container`. It should also warn
         that a VM is experimental and needs the snap opt-in before it will
         launch. It does NOT claim `--vm` exists on `workshop launch` or
