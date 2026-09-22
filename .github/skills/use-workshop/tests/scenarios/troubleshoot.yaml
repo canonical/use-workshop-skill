@@ -387,3 +387,23 @@
         to run `workshop refresh` to apply it to the pre-0.9.2 workshop. It does
         NOT misdiagnose it as a missing `gpu` plug, a broken driver install, or a
         storage/daemon problem.
+
+- description: "`workshop start` refused — workshop too old (0.9.6 format guard)"
+  vars:
+    user: |
+      `workshop start dev` fails with: cannot start "dev": workshop too old: use "workshop remove dev" and "workshop launch dev" to update it. I already ran `workshop refresh` after the snap updated and it didn't help. What now?
+  assert:
+    - type: contains
+      value: workshop remove
+    - type: contains
+      value: workshop launch
+    - type: llm-rubric
+      value: |
+        The response follows the error message verbatim: remove the workshop
+        and launch it again. It makes clear that, unlike the post-snap-update
+        refusal of `workshop restore` / `launch --continue` / `refresh
+        --continue` — which one `workshop refresh` clears — this format guard
+        is NOT cleared by a refresh, which is why the user's refresh changed
+        nothing. It does NOT recommend another refresh, a daemon restart, or a
+        snap downgrade.
+

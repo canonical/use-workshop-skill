@@ -127,6 +127,11 @@ EOF
 </environment_variables>
 
 <health_checks>
+Caveat worth knowing, not designing around: Workshop skips `check-health`
+entirely under VM confinement (0.9.7+), so an SDK gets no health signal in a
+VM workshop. VM workshops cannot carry SDKs on a stock LXD anyway — design for
+containers and don't weaken the health check for it.
+
 `check-health` must test real functionality, not the mere presence of files,
 and report through `workshopctl set-health` — quickly (the runner allows five
 seconds per attempt):

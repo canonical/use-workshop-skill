@@ -7,12 +7,14 @@ The seven interface types and how to wire them. The most important distinction a
 
 <model>
 A workshop is a graph of capabilities wired through two named endpoints that both reference an **interface** type:
-- **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints.
+- **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints. Concretely, a regular SDK may define slots for **`mount` and `tunnel` only** — slots for every other interface are built into the `system` SDK and cannot be added to it under another name.
 - **plug** = the consumer end (declared on the SDK that wants the capability).
 - **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it with `workshop connect`. Persistence (0.9.5+): manual connections survive `workshop refresh` (while their plugs/slots still exist in the definition), and a manual `workshop disconnect` without `--forget` stays disconnected across refreshes; `workshop restore` resets everything to auto-connect defaults. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default; the pairing must still satisfy the interface's auto-connect policy, so manual-only interfaces cannot be wired this way). Full model: `explanation/interfaces/plugs-and-slots.md`.
 </model>
 
 <auto_vs_manual>
+**VM confinement (0.9.7+) voids this whole table.** A `confinement: virtual-machine` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On stock LXD a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/confinement.md`.
+
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|
 | **mount** | Yes, but **to system-SDK slots only** | A regular-SDK mount slot is the target — it is NOT auto-connected; pair it explicitly with a top-level `connections:` entry |

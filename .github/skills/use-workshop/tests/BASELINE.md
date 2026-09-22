@@ -11,7 +11,15 @@ regression.
 
 ## Routing eval
 
-**84 cases across 13 scenario files** — the 2026-08-24 design-sdk round:
+**91 cases across 14 scenario files** — the 2026-09-22 Workshop **0.9.7**
+round: the 84-case suite plus `confinement.yaml` (6 cases for VM
+confinement — the experimental opt-in, `workshop init --vm`, the
+fixed-at-launch remove+launch path, the `SDKs are currently unavailable for
+virtual machines` refusal, the no-auto-connect-in-a-VM symptom, and the
+`ubuntu@20.04` deprecation being a warning rather than a rejection) and one
+new `troubleshoot.yaml` case for the 0.9.6 `workshop start` format guard,
+whose remedy is remove+launch and NOT the refresh that clears the 0.9.5
+guard. Before that, the 2026-08-24 design-sdk round:
 the 81-case 0.9.5 suite plus `dispatch.yaml` (3 cases for the new
 `$ARGUMENTS` verb-dispatch intake), with the two Store-publishing
 out-of-scope cases rerouted to expect a `design-sdk` handoff instead of
@@ -24,8 +32,10 @@ and the 0.9.5 `workshop init` forms), with 3 existing cases rewritten to the
 0.9.5 surface (both `ide-integration.yaml` SSH cases now assert the
 zero-setup hostname path instead of the retired sshd+tunnel ritual, and the
 `troubleshoot.yaml` strict-validation case now targets SDK YAML with the
-real `unknown SDK YAML fields:` string). **Every rate recorded below
-predates this round and needs a re-pin.**
+real `unknown SDK YAML fields:` string). (That round's re-pin landed on
+2026-08-20; the sentence that once stood here calling for it is kept out of
+the way deliberately — read the dated rows in the table below, not this
+paragraph, for what is currently pinned.)
 
 Historical context — the 76-case suite was the prior 73-case suite plus 3
 new cases (2026-07-22) covering the Workshop 0.9.3/0.9.4 surface and two

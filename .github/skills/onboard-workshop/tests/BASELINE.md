@@ -8,8 +8,12 @@ merge below a pinned cell without investigation.
 
 ## Routing eval (`make eval-routing`)
 
-**60 cases across 9 scenario files** (incl. 11 cross-skill selection
-cases) since the 2026-08-24 design-sdk round, which added `dispatch.yaml`
+**61 cases across 9 scenario files** (incl. 11 cross-skill selection
+cases) since the 2026-09-22 Workshop 0.9.7 round, which added one
+`feasibility-honesty.yaml` case for a user asking the onboarded definition
+to use VM confinement — out of envelope, because a VM needs a host-level
+snap opt-in this skill will not perform and refuses SDK-bearing definitions
+on a stock LXD. Previously 60 cases since the 2026-08-24 design-sdk round, which added `dispatch.yaml`
 (the `$ARGUMENTS` verb-dispatch intake), three design-sdk near-miss
 selection cases against the now 3-skill auto-discovered selection context,
 and rerouted the sdkcraft out-of-scope case to a `design-sdk` handoff.

@@ -17,7 +17,8 @@ The complete expressive surface of a workshop definition:
 | Construct | Limits | Onboarding use |
 |-----------|--------|----------------|
 | `name` | `^[a-z](?:-?[a-z0-9])*$`, max 40 chars; must match filename in `.workshop/<name>.yaml` layout | Default `dev` |
-| `base` | Exactly one of `ubuntu@20.04`, `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` | Match the repo's CI runner / docs; default `ubuntu@24.04` |
+| `base` | Exactly one of `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (`ubuntu@20.04` is deprecated as of 0.9.7 — still accepted, but warns on every launch/refresh and breaks next release) | Match the repo's CI runner / docs; default `ubuntu@24.04`; never propose `20.04` |
+| `confinement` | `container` (default; omit the key) or `virtual-machine` (0.9.7+, experimental). Onboarding always emits a container — see `<not_in_envelope>` | Omit |
 | `sdks` | Store SDKs by name (+ snap-style `channel`), in-project SDKs as `project-<name>`, try SDKs as `try-<name>`, implicit `system` | Toolchains and runtimes |
 | `sdks[].plugs` / `sdks[].slots` | Graft interface endpoints onto any listed SDK (incl. `system`) | Tunnels for dev servers; desktop/gpu/device access |
 | `connections` | Explicit plug↔slot wiring when auto-connect isn't enough | venv sharing, cross-SDK content |
@@ -36,12 +37,19 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
   or arbitrary directory. To use a recipe from another repo, vendor it as an
   in-project SDK.
 - **No workshop-level `env:`, `services:`, `hooks:`, `mounts:`, or `packages:`
-  keys.** The five top-level keys are `name`, `base`, `sdks`, `connections`,
-  `actions` — nothing else. Environment setup and daemons belong to SDKs;
+  keys.** The top-level keys are `name`, `base`, `confinement`, `sdks`,
+  `connections`, `actions` — nothing else. Environment setup and daemons belong to SDKs;
   mounts are interface endpoints.
 - **No non-Ubuntu bases.** No Alpine, Fedora, Debian, or arbitrary images.
-- **No non-Linux toolchains.** Workshops are Ubuntu LXD containers: no macOS
+- **No non-Linux toolchains.** Workshops are Ubuntu LXD instances: no macOS
   (Xcode/iOS), Windows (MSVC/.NET Framework), or BSD-only builds.
+- **No `confinement: virtual-machine` in a generated definition.** VM
+  confinement (0.9.7+) is experimental, needs a host-level snap opt-in this
+  skill must never perform, and on a stock LXD refuses any definition that
+  declares SDKs — which every onboarded definition does. It also skips
+  auto-connect and `check-health`, so the launch-and-verify stage has nothing
+  to verify against. If the user asks for a VM, say this plainly and hand them
+  to `../use-workshop/references/confinement.md`; do not emit the key.
 - **No invented SDK names or channels.** An SDK exists when `sdk find`/
   `sdk info` says so (or the catalog lists it, tagged unverified). A channel
   exists when `sdk info` lists it.
@@ -63,8 +71,9 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
   `gpu`, `camera`, `desktop`, `ssh-agent`, `custom-device` (by `subsystem`/
   `vendorid`/`productid`) and `mount` cover.
 - **No nested virtualization guarantees.** VM-based tooling (KVM-dependent
-  emulators, nested hypervisors) is outside what the definition can promise.
-  Docker inside the workshop IS available — via the Store `docker` SDK, not by
+  emulators, nested hypervisors) is outside what a container-confined
+  definition can promise, and VM confinement is out of envelope (above).
+  Docker inside the workshop IS available — via the Store `docker-ce` SDK, not by
   hand-installing dockerd.
 </not_in_envelope>
 
@@ -141,7 +150,7 @@ Fallback offered:              # only for low-confidence PARTIAL
    workflow) + `desktop` plug; headless variant via `xvfb-run` action.
 3. **Web app with Postgres in docker-compose** → PARTIAL (typically). App
    build/test/serve map (SDK + actions + tunnel); the database maps via the
-   Store `docker` SDK running compose inside the workshop — but if the repo
+   Store `docker-ce` SDK running compose inside the workshop — but if the repo
    needs a macOS-only E2E driver, that is `GAP: <driver> — macOS-only — none`.
 4. **iOS application** → INFEASIBLE. Xcode toolchain cannot run in an Ubuntu
    container. No definition generated.

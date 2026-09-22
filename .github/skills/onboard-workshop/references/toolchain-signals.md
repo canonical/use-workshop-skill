@@ -85,7 +85,7 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
      libxss1 libasound2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1
      libxrandr2 libxfixes3 libxext6 libpango-1.0-0 libcairo2 libcups2t64
      libdbus-1-3 libexpat1 libxcb1 xvfb` (24.04 names; verify at launch).
-   - `services:` containers (postgres, redis) → Store `docker` SDK inside the
+   - `services:` containers (postgres, redis) → Store `docker-ce` SDK inside the
      workshop, or a GAP if the setup can't be reproduced.
    - Runner OS (`runs-on: ubuntu-24.04`) → `base:` recommendation.
    - **A matrix over several runner OSes or target series** (`runs-on:
@@ -179,7 +179,7 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
 | Sphinx serve on :8000 | port | tunnel slot (serving SDK) + `system` plug, endpoint 8000 |
 | `.golangci.yaml` + `.golangci.incremental.yaml` | both configs | one `lint:` action, two invocations |
 | `go test -coverpkg` in CI | flags | `cover:` action verbatim |
-| `docker-compose.yaml` | services, ports | `docker` SDK + compose-wrapping action + tunnels |
+| `docker-compose.yaml` | services, ports | `docker-ce` SDK + compose-wrapping action + tunnels |
 | `.vscode/launch.json` | debug entry | note + `ide-integration.md` pointer |
 | torch + CUDA in requirements | variant | `cuda-toolkit` SDK + `gpu` plug (ROCm variant file if needed) |
 | `cmake -B build` / `meson setup builddir` | build dir path | `mount` plug, `workshop-target: <path>` (outside `/project/`) |

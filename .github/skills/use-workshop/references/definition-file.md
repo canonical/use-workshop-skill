@@ -21,7 +21,8 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
-| `base` | yes | string | OS image: `ubuntu@20.04`, `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` |
+| `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted, but warns on every launch/refresh and breaks in the release after 0.9.7 |
+| `confinement` | optional | string | `container` (default when the key is absent) or `virtual-machine` (0.9.7+, experimental and snap-gated). Fixed at launch. See `references/confinement.md` |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |
 | `actions` | optional | map | Named bash scripts invoked via `workshop run` |
@@ -127,6 +128,16 @@ actions:
 </interface_specifics>
 
 <minimal_examples>
+
+**VM confinement (0.9.7+, experimental — needs the snap opt-in; no SDKs on stock LXD):**
+```yaml
+name: dev
+base: ubuntu@24.04
+confinement: virtual-machine
+actions:
+  <action>: |
+    <command>
+```
 
 **Single SDK, no extras:**
 ```yaml

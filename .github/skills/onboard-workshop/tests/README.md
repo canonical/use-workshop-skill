@@ -16,7 +16,7 @@ $0 subscription lane, no API keys):
    One `make update-docs-manifest` run in the sibling's tests dir refreshes
    both skills' ground truth.
 2. **Routing eval** (`make eval-routing`, $0 — claude CLI Sonnet candidate +
-   local judge): 53 promptfoo cases. The
+   local judge): 60 promptfoo cases. The
    bundle appends the borrowed sibling references (see
    `scripts/bundle-extras.txt`) so the eval simulates required reading being
    satisfied. `scenarios/skill-selection.yaml` overrides `vars.skill` with

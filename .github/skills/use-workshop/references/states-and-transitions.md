@@ -26,11 +26,11 @@ Operational but not running. Container is shut down but still linked to the proj
 </state>
 
 <state name="Pending">
-Intermediate state during a state change. Only a few commands accepted. Usually transient — wait for `workshop changes` to show the change as `Done` or `Error`.
+Intermediate state during a state change. Only a few commands accepted. Usually transient — wait for `workshop changes` to show the change as `Done` or `Error`. Under VM confinement (0.9.7+) `Pending` legitimately runs longer: `start` allows 10 minutes for a VM against 5 for a container, and a VM's first launch on a given base downloads a separate VM image. Check `workshop changes` before calling it a stall.
 </state>
 
 <state name="Waiting">
-Paused mid-change because `--wait-on-error` was used and an error occurred. Container is up; only a few commands accepted, most importantly `workshop shell` (for debugging) and `workshop refresh --continue` / `--abort` (or `workshop launch --continue`/`--abort`).
+Paused mid-change because `--wait-on-error` was used and an error occurred. The instance is up; only a few commands accepted, most importantly `workshop shell` (for debugging) and `workshop refresh --continue` / `--abort` (or `workshop launch --continue`/`--abort`).
 - Transitions: `launch --continue` / `refresh --continue` → `Ready`; `launch --abort` → `Off`; `refresh --abort` → `Ready` (reverts).
 - Use this state to investigate failed hooks. You can shell in and fix the cause manually before continuing.
 </state>
