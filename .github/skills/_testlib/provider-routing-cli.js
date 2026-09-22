@@ -20,6 +20,14 @@
 // eval, where the bundle IS the entire system message. The user message is
 // piped on stdin.
 //
+// A short HARNESS_NOTE is appended to that system prompt (see the constant
+// below) telling the candidate it has no tools and no repo, and that the
+// empty scratch cwd is not the subject of any question. Without it the CLI's
+// injected per-machine context makes repo-analysis prompts derail into "the
+// directory is empty, give me a path". This is provider-level framing, in the
+// same family as --tools "" and writeSandboxSettings; the HTTP lane has no
+// cwd and therefore needs no equivalent.
+//
 // Auth is always subscription-style here: API key vars are unset in the
 // child env (a misconfigured run fails loudly instead of billing), and
 // isolation comes from --setting-sources project + --strict-mcp-config in
@@ -38,6 +46,58 @@ const os = require('node:os');
 const path = require('node:path');
 
 const core = require('./claude-cli-core.js');
+
+// Appended to every system prompt this provider writes. The CLI injects
+// per-machine sections (cwd, env info, memory paths, git status) into the
+// prompt and there is no flag to suppress them: as of 2.1.278
+// --exclude-dynamic-system-prompt-sections only RELOCATES them into the first
+// user message, and is ignored with a custom system prompt anyway. So a
+// tool-less candidate sitting in an empty scratch dir sees an empty directory
+// and, on repo-analysis prompts, answers about THAT instead of the scenario —
+// "The working directory /tmp/routing-eval-XXXX is empty" rather than the
+// routing decision under test. Measured 2026-09-22: five of six onboard
+// failures were this, and the same effect cost the pre-0.9.7 tree four cases.
+//
+// Two drafts were needed. Saying "you have no repo access" made the candidate
+// REPORT that instead ("I can't see the repository...") — the same derail in
+// a different hat. The load-bearing part turned out to be the tool ban: with
+// --tools "" the CLI still lets the model EMIT a tool call and hallucinate its
+// result, so it would "list" the scratch dir, read back an empty listing it
+// invented, and answer about that.
+//
+// Deliberately says nothing about HOW to route. It bans fabricated inspection
+// and names the cwd as out of frame; whether a given case should answer, ask
+// for context, or hand off stays the candidate's decision, which is the thing
+// under measurement. A note that nudged that choice would inflate the verdict.
+const HARNESS_NOTE = `
+
+---
+
+# How to answer here (harness note, not part of the skill)
+
+You have no tools in this exchange. Do not emit tool calls or tool results,
+and do not inspect or describe the current working directory — it is an empty
+scratch directory created for this measurement, it is not the project under
+discussion, and its contents are not evidence about anything.
+
+Answer the user's message directly, from the skill content above, treating
+their account of the situation as the ground truth.
+`;
+
+// The skill-SELECTION context (regenerate-bundle.sh --selection-out) is a
+// different shape: ~2 KB of frontmatter that ends with its own instruction,
+// "Answer with the single skill name ... then one sentence of reasoning."
+// Appending the note there displaces that closing instruction and measurably
+// breaks selection — A/B'd 2026-09-22 on design-sdk's "In-project SDK
+// authoring picks use-workshop": 1/3 with the note, 3/3 without. Those cases
+// have no cwd problem to solve anyway (the answer is one word), so the note is
+// simply not appended to them.
+const SELECTION_MARKER = 'skills are installed. Their metadata:';
+
+function withHarnessNote(system) {
+  const text = String(system);
+  return text.includes(SELECTION_MARKER) ? text : text + HARNESS_NOTE;
+}
 
 function parseChatPrompt(prompt, vars) {
   let system = null;
@@ -100,7 +160,7 @@ class RoutingCliProvider {
 
     try {
       const systemFile = path.join(cwd, 'system-prompt.md');
-      fs.writeFileSync(systemFile, String(system));
+      fs.writeFileSync(systemFile, withHarnessNote(system));
       core.writeSandboxSettings(cwd);
 
       const stdoutFile = path.join(cwd, 'stdout.json');

@@ -8,6 +8,14 @@ unavailable or its search misses — always prefer a live `sdk find <keyword>` +
 `sdk info <name>` (they are the ground truth for existence, channels, and
 supported bases). Any SDK proposed from this table and not confirmed live MUST
 be tagged "(catalog, unverified — confirm with `sdk info` before launch)".
+
+**Precision here is not authority.** Some rows carry a corrected Store name or
+a narrowed channel list; that records what was true when the table was
+generated, and it is still a catalog claim, not a confirmation. A name being
+spelled exactly right is not evidence the SDK exists on this machine, on this
+base, or on that channel today. Run `sdk find` / `sdk info` and say what came
+back — never present a catalog row as settled fact because it looks specific.
+
 Regenerate via `tests/scripts/update-sdk-catalog.sh` (maintainer-only).
 </overview>
 
@@ -48,6 +56,10 @@ Generated from canonical/reference-sdks @ 070f581d on 2026-09-22 (hand-curated v
   `sdk info <name>` is authoritative and channels drift.
 - A toolchain absent here AND absent from `sdk find` results → in-project SDK
   (apt recipe) or a GAP; never invent a Store name.
+- Pairing notes ("pair with `openjdk`") and version floors ("0.9.4+") are
+  catalog claims too. Proposing a pair still means confirming BOTH names live,
+  or tagging both unverified — a confident sentence about how two SDKs work
+  together is not a substitute for `sdk find`.
 - Cache/venv plugs (e.g. `node` caches, `uv:venv`) auto-wire or wire via
   `connections:` — see `references/reference-patterns.md`.
 </usage_rules>
