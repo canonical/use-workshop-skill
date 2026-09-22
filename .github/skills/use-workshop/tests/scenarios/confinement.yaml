@@ -20,10 +20,12 @@
         workshop.experimental-vms=1` and `sudo snap restart
         workshop.workshopd` — and makes clear the daemon restart is part of
         the opt-in rather than optional. It flags that VM confinement is
-        experimental and that containers remain the default and supported
-        choice. It does NOT invent a `workshop launch --vm` / `--experimental`
-        flag, an environment variable the user should export by hand, or a
-        config file to edit.
+        experimental and steers the user toward containers as the normal
+        choice — either framing counts ("the default", "the supported
+        choice", "what you want unless you need a harder boundary"). It does
+        NOT invent a `workshop launch --vm` / `--experimental` flag, an
+        environment variable the user should export by hand, or a config file
+        to edit.
 
 - description: Scaffolding a VM workshop with workshop init
   vars:
@@ -63,11 +65,12 @@
       value: |
         The response explains that confinement is fixed at launch, so refresh
         cannot change it, and that the only path is `workshop remove dev`
-        followed by `workshop launch dev`. It warns that this discards the
-        workshop's state and any manual `workshop connect` / `workshop
-        remount` wiring. It does NOT suggest `workshop restore`, a snap
-        restart, or another `workshop refresh` variant as the fix, and it does
-        NOT claim the refresh would have worked with a flag.
+        followed by `workshop launch dev`. It warns that this is destructive —
+        naming either the lost manual `workshop connect` / `workshop remount`
+        wiring or the discarded workshop state is enough; it need not name
+        both. It does NOT suggest `workshop restore`, a snap restart, or
+        another `workshop refresh` variant as the fix, and it does NOT claim
+        the refresh would have worked with a flag.
 
 - description: VM workshop that declares SDKs is refused
   vars:
@@ -94,17 +97,20 @@
   assert:
     - type: contains
       value: workshop connect
-    - type: not-contains
-      value: workshop restore
+    # No blunt `not-contains: workshop restore`: a correct answer often names
+    # restore precisely to say it does NOT help here either
+    # (mention-vs-prescription, cf. BASELINE assertion fixes 2/3/7/12). The
+    # rubric below carries the real guard.
     - type: llm-rubric
       value: |
         The response explains this is expected behavior, not a bug: under VM
         confinement Workshop skips auto-connect at launch AND at refresh and
         restores nothing, so the connection persistence that containers gained
         in 0.9.5 does not apply. The remedy is to re-run `workshop connect`
-        after each refresh. It does NOT blame `--forget`, `workshop restore`,
-        or a missing `connections:` entry, and it does NOT tell the user to
-        file a bug or reinstall.
+        after each refresh. It does NOT blame `--forget` or a missing
+        `connections:` entry, does NOT prescribe `workshop restore` as the fix
+        (naming it only to say it does not help here is fine), and does NOT
+        tell the user to file a bug or reinstall.
 
 - description: base ubuntu@20.04 is deprecated, not rejected (0.9.7)
   vars:
