@@ -18,11 +18,12 @@ ROUTING_SH        := scripts/run-routing.sh
 BUNDLE_SH         := scripts/regenerate-bundle.sh
 SOURCE_DOCS_SH    := $(TESTLIB)/check-source-docs.sh
 YAML_KEYS_PY      := $(TESTLIB)/check-yaml-keys.py
+SCENARIOS_PY      := $(TESTLIB)/check-scenarios.py
 CATALOG_SH        := scripts/update-sdk-catalog.sh
 RECONSTRUCTION_SH := reconstruction/run-reconstruction.sh
 SIBLING_TESTS     := ../../use-workshop/tests
 
-.PHONY: help check check-yaml check-yaml-keys check-shell check-source-docs \
+.PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
         check-catalog-stamp check-hooks-exec eval-bundle eval-routing \
         eval-agentic eval-reconstruction eval-reconstruction-full \
         update-sdk-catalog eval-clean eval-clean-all
@@ -31,6 +32,7 @@ help:
 	@echo "onboard-workshop eval targets:"
 	@echo "  check                     all free static checks (CI entry point)"
 	@echo "  check-source-docs         cited doc paths exist in the SHARED docs-manifest.txt (offline)"
+	@echo "  check-scenarios          assert every scenarios/*.yaml is registered in every promptfooconfig*.yaml (offline)"
 	@echo "  check-yaml-keys           YAML snippets/templates against the SHARED schema allowlists (offline)"
 	@echo "  check-catalog-stamp       sdk-catalog.md markers + generation stamp intact (offline)"
 	@echo "  check-hooks-exec          advisory: warn if template hook stubs lack the executable bit (offline)"
@@ -44,7 +46,7 @@ help:
 	@echo "  eval-clean-all            eval-clean + reconstruction .cache/ and .work/ (~150 MB+; re-clones on next run)"
 
 # All free static checks in one entry point, shared by CI and local runs.
-check: check-source-docs eval-bundle check-yaml check-yaml-keys check-shell \
+check: check-source-docs eval-bundle check-yaml check-yaml-keys check-scenarios check-shell \
        check-catalog-stamp check-hooks-exec
 	@test -s skill-bundle.md || { echo "error: skill-bundle.md is empty" >&2; exit 1; }
 	@echo "ok: all static checks passed"
@@ -54,6 +56,9 @@ check-yaml:
 files = sorted(glob.glob('scenarios/*.yaml') + glob.glob('../templates/**/*.yaml', recursive=True) + glob.glob('agentic/tasks/*.yaml')); \
 [yaml.safe_load(open(f)) for f in files]; \
 print('ok: %d YAML file(s) parsed' % len(files))"
+
+check-scenarios:
+	python3 $(SCENARIOS_PY) --tests-dir $(CURDIR)
 
 check-yaml-keys:
 	python3 $(YAML_KEYS_PY) --skill-root $(CURDIR)/.. --allowed-keys $(CURDIR)/$(SIBLING_TESTS)/allowed-keys.json --templates-recursive --classify-sdk-template

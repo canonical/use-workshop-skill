@@ -12,7 +12,7 @@ and Anthropic/OpenAI API spend is **zero by design**.
 
 | Lane | What | Cost | Keys | Where |
 |------|------|------|------|-------|
-| **0 — static** | `make check` in all three `tests/` dirs: source-doc paths vs the shared manifest, YAML parse + schema-key lint (incl. the sdkcraft classifier), bundle regen, shellcheck, catalog stamp, hooks exec bits, REUSE | $0 | none | CI, every push/PR |
+| **0 — static** | `make check` in all three `tests/` dirs: source-doc paths vs the shared manifest, YAML parse + schema-key lint (incl. the sdkcraft classifier), scenario-file registration, bundle regen, shellcheck, catalog stamp, hooks exec bits, REUSE | $0 | none | CI, every push/PR |
 | **1 — routing gate** | use-workshop's 91-case routing eval: candidate `z-ai/glm-5.2`, judge `gpt-5.5`, both via OpenRouter, backend-pinned | ~$1.41/run | `OPENROUTER_API_KEY` (the repo's only secret) | CI `workflow_dispatch`, or locally (`make eval-routing`) |
 | **2 — subscription** | Everything that shells the `claude` CLI on the local subscription login: use-workshop's Sonnet confirmation (`make eval-routing-subscription`), the onboard-workshop and design-sdk routing gates (`make eval-routing` in each), all three agentic E2E suites (`make eval-agentic`), the onboard reconstruction harness (`make eval-reconstruction[-full]`) and design-sdk's one-off SDK-reconstruction round (`make eval-reconstruction` there; candidate `claude-sonnet-5`, pair never re-run). Local Claude judge for all llm-rubric grading | $0 | none | **Local only** — a CI runner has no CLI login |
 

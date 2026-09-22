@@ -38,6 +38,7 @@ defaultTest:
 tests:
   - file://scenarios/dispatch.yaml
   - file://scenarios/bootstrap.yaml
+  - file://scenarios/confinement.yaml
   - file://scenarios/daily-ops.yaml
   - file://scenarios/interfaces.yaml
   - file://scenarios/parallel-envs.yaml

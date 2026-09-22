@@ -8,10 +8,10 @@ Shared implementation for both skills' `tests/` suites. **Not a skill** — no
 
 Two consumption patterns:
 
-- **Check scripts** (`check-source-docs.sh`, `check-yaml-keys.py`) and
-  `_summarize.py` are invoked directly by each suite's `Makefile` with argv
-  flags (`--skill-root`, `--manifest`, `--allowed-keys`, …). No per-suite
-  copies.
+- **Check scripts** (`check-source-docs.sh`, `check-yaml-keys.py`,
+  `check-scenarios.py`) and `_summarize.py` are invoked directly by each
+  suite's `Makefile` with argv flags (`--skill-root`, `--manifest`,
+  `--allowed-keys`, `--tests-dir`, …). No per-suite copies.
 - **Drivers and providers** (`run-routing.sh`, `regenerate-bundle.sh`,
   `provider-agentic.js`, `provider-routing-cli.js`, `provider-judge-cli.js`,
   `claude-cli-core.js`) are reached through ~10-line wrappers in each suite's
