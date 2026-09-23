@@ -25,7 +25,7 @@ the manual run summary diff.
 
 ## Prerequisites
 
-- `promptfoo` 0.121.9 (or a compatible later version) on PATH.
+- `promptfoo` 0.121.17 (or a compatible later version) on PATH.
 - `OPENROUTER_API_KEY` exported — this is the only key an ordinary routing
   run needs. It covers both the GLM-5.2 candidate and the `llm-rubric`
   judge, which is pinned in `promptfooconfig.yaml`
@@ -88,7 +88,7 @@ see `BASELINE.md` for the derivation).
 
 The Anthropic HTTP tiers were retired 2026-08-20. The confirmation run on the
 model family the skill is actually written for is `make
-eval-routing-subscription`: the same 84 cases through the `claude` CLI on the
+eval-routing-subscription`: the same 91 cases through the `claude` CLI on the
 local subscription login, at $0. The agentic suite likewise drives the
 `claude` CLI directly and cannot use OpenRouter.
 
@@ -126,7 +126,7 @@ Rules of the road:
 
 ## What the suites test
 
-### Routing (84 cases across 13 scenario files)
+### Routing (91 cases across 14 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three
@@ -171,7 +171,7 @@ tests/
 │   └── run-agentic.sh
 │   # check-source-docs.sh, check-yaml-keys.py, and _summarize.py live in the
 │   # shared ../../_testlib/ (see its README)
-├── scenarios/                   # routing test cases (12 files)
+├── scenarios/                   # routing test cases (13 files)
 ├── agentic/                     # agentic E2E suite (see its README)
 └── results/
     ├── *.json                   # slim per-run summaries (committed)

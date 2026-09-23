@@ -40,6 +40,11 @@ suites:
       BASE/noble: ubuntu@24.04
 ```
 
+`vm: true` here is *spread's* backend setting — run the job in a full LXD VM on
+the test runner. It has nothing to do with Workshop's `confinement:` key
+(0.9.7+); a workshop under test stays a container, since a VM workshop cannot
+carry SDKs on a stock LXD.
+
 Variant names under `environment:` (`BASE/jammy`, `BASE/noble`,
 `BASE/resolute`) are how one job runs against several bases — `sdkcraft
 test` drops the variants whose base wasn't packed. Host-side values can be

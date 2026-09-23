@@ -90,6 +90,24 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Exception:** a change stuck in `Doing` with EVERY command failing on `other changes in progress` is a daemon-level stall the CLI cannot clear — there, `snap restart workshop` followed by recreating the workshop IS the correct path. See `workflows/troubleshoot.md` Step 7 and `references/async-and-recovery.md`.
 </anti_pattern>
 
+<anti_pattern name="Refreshing to switch a launched workshop between container and VM">
+**Wrong:** editing `confinement:` in the definition of a launched workshop and running `workshop refresh` to apply it.
+**Why it's bad:** confinement is fixed at launch. The refresh fails with `confinement changed from "container" to "virtual-machine"` and nothing changes — the snapshot is keyed on confinement, so the daemon cannot reproduce the workshop under the other sandbox.
+**Right:** `workshop remove <NAME>` then `workshop launch <NAME>`. This is one of the few places where remove+launch is correct rather than the anti-pattern at the top of this file. Warn the user first that it discards manual `connect`/`remount` wiring. See `references/confinement.md`.
+</anti_pattern>
+
+<anti_pattern name="Promising SDKs, interfaces, or health checks in a VM workshop">
+**Wrong:** proposing a `confinement: virtual-machine` definition that carries `sdks:`, `connections:`, or a tunnel, and treating it like a container with a stronger wall.
+**Why it's bad:** on a stock LXD a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need an LXD that can mount shifted disks into a VM, i.e. `latest/edge`. Even where SDKs do work, a VM skips auto-connect at launch *and* refresh, has no proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device), and never runs `check-health`, so `workshop info` shows no SDK health notes.
+**Right:** default to container confinement. Only reach for a VM when the user explicitly needs the harder boundary or nested virtualization, and when you do, say up front what it gives up and check the LXD capability first. See `references/confinement.md`.
+</anti_pattern>
+
+<anti_pattern name="Offering `workshop refresh` for every post-update refusal">
+**Wrong:** answering `cannot start "<NAME>": workshop too old` with "run `workshop refresh` first".
+**Why it's bad:** two different guards produce similar-sounding refusals with *different* remedies. The 0.9.5 back-compat guard (on `restore` / `launch --continue` / `refresh --continue`) is cleared by one `workshop refresh`. The 0.9.6 format guard on `workshop start` is not — the message itself names the remedy, and only remove+launch works.
+**Right:** read the error text. It says `use "workshop remove <NAME>" and "workshop launch <NAME>" to update it` — follow it verbatim.
+</anti_pattern>
+
 <anti_pattern name="Assuming the channel is fresh">
 **Wrong:** assuming `latest/stable` means "current and reliable".
 **Why it's bad:** what `latest/stable` resolves to is the publisher's choice. It may be old or unsuitable.
@@ -103,4 +121,6 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `how-to/customize-workshops/move-projects.md`
 - `explanation/workshops/concepts.md`
 - `reference/cli/workshop.md` (launch, refresh sections)
+- `reference/workshops.md` (backward- and forward-compatibility policy)
+- `release-notes/v0.9.7.md` (VM confinement and its limits)
 </source_docs>

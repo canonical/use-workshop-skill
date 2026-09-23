@@ -148,6 +148,10 @@ workshopctl set-health okay
 - Use `--code=<slug>` for distinct failure modes when there are several.
 - The hook runs as root: wrap user-context checks in
   `sudo -u workshop --login` so PATH and profile.d take effect.
+Caveat worth knowing, not designing around: Workshop skips `check-health`
+entirely under VM confinement (0.9.7+), so an SDK gets no health signal in a
+VM workshop. VM workshops cannot carry SDKs on a stock LXD anyway — design for
+containers and don't weaken the health check for it.
 </health_checks>
 
 <sdk_dependencies>

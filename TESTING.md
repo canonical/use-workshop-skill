@@ -12,8 +12,8 @@ and Anthropic/OpenAI API spend is **zero by design**.
 
 | Lane | What | Cost | Keys | Where |
 |------|------|------|------|-------|
-| **0 — static** | `make check` in all three `tests/` dirs: source-doc paths vs the shared manifest, YAML parse + schema-key lint (incl. the sdkcraft classifier), bundle regen, shellcheck, catalog stamp, hooks exec bits, REUSE | $0 | none | CI, every push/PR |
-| **1 — routing gate** | use-workshop's 84-case routing eval: candidate `z-ai/glm-5.2`, judge `gpt-5.5`, both via OpenRouter, backend-pinned | ~$1.41/run | `OPENROUTER_API_KEY` (the repo's only secret) | CI `workflow_dispatch`, or locally (`make eval-routing`) |
+| **0 — static** | `make check` in all three `tests/` dirs: source-doc paths vs the shared manifest, YAML parse + schema-key lint (incl. the sdkcraft classifier), scenario-file registration, bundle regen, shellcheck, catalog stamp, hooks exec bits, REUSE | $0 | none | CI, every push/PR |
+| **1 — routing gate** | use-workshop's 91-case routing eval: candidate `z-ai/glm-5.2`, judge `gpt-5.5`, both via OpenRouter, backend-pinned | ~$1.41/run | `OPENROUTER_API_KEY` (the repo's only secret) | CI `workflow_dispatch`, or locally (`make eval-routing`) |
 | **2 — subscription** | Everything that shells the `claude` CLI on the local subscription login: use-workshop's Sonnet confirmation (`make eval-routing-subscription`), the onboard-workshop and design-sdk routing gates (`make eval-routing` in each), all three agentic E2E suites (`make eval-agentic`), the onboard reconstruction harness (`make eval-reconstruction[-full]`) and design-sdk's one-off SDK-reconstruction round (`make eval-reconstruction` there; candidate `claude-sonnet-5`, pair never re-run). Local Claude judge for all llm-rubric grading | $0 | none | **Local only** — a CI runner has no CLI login |
 
 Lane 2 mechanics: the harness drops `--bare`, **unsets**
@@ -70,11 +70,38 @@ column, and a judge change means seeding a new row, not editing an old one.
   update-docs-manifest` regenerates the shared `docs-manifest.txt` +
   `allowed-keys.json`; `make -C .github/skills/onboard-workshop/tests
   update-sdk-catalog` re-stamps the SDK catalog.
-- Versions: promptfoo 0.121.17 everywhere (CI pins it for the gate; Lane 2
-  is verified on it too) with claude CLI 2.1.241 (whose binary carries the
-  `--system-prompt-file` flag the routing candidate depends on — see
-  `_testlib/provider-routing-cli.js`; the design-sdk round also verified
-  `--model claude-sonnet-5` on it).
+- Versions: promptfoo 0.121.17 everywhere — CI installs exactly that
+  (`ci.yaml`), so it is a real pin and local runs should match it.
+  **The claude CLI is deliberately NOT pinned: use whatever is installed.**
+  Record `claude --version` in a BASELINE row as provenance; never treat it as
+  a gate, and never block a re-pin on it.
+
+## The claude CLI is not pinned
+
+Use whatever `claude` is installed. A version is provenance on a row, not a
+gate — do not freeze a baseline cell waiting for a particular binary, and do
+not seed a parallel "instrument" row when the CLI moves. When a CLI change
+moves a rate: investigate the drop, fix the cause if there is one, then
+re-measure and re-pin with the version noted.
+
+What the old 2.1.241 pin was really standing in for is a **capability**, and
+that is now checked directly instead of documented: the routing candidate
+needs a binary accepting `--system-prompt-file`, because the use-workshop
+bundle is ~151 KB and an inline `--system-prompt` cannot clear Linux's 128 KiB
+argv limit. `run-routing.sh`'s preflight exercises the flag on every
+subscription run and fails once, loudly, naming the capability.
+
+The 2026-09-22 round is the worked example of why the pin was the wrong tool.
+On CLI 2.1.278 the onboard-workshop tree pinned at 60/60 scored 56/60, which
+looked like an instrument change — a control run committed as
+`results/2026-09-22-control-pre097-*.json`. The real cause was fixable and had
+nothing to do with the version: the CLI injects per-machine sections (cwd, env,
+git status) into every prompt, so a tool-less candidate in an empty scratch dir
+answered *about the empty directory* on repo-analysis prompts instead of the
+scenario. `provider-routing-cli.js` now appends a short harness note telling
+the candidate to answer from the user's description and ignore the working
+directory. Pinning the CLI would have preserved the old number while leaving
+the defect in place.
 
 ## Layout
 

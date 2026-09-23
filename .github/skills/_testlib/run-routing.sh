@@ -135,13 +135,31 @@ if (( subscription )); then
 
   # Preflight the CLI login with one tiny tool-less probe: a not-logged-in or
   # rate-limited CLI otherwise surfaces as every case erroring mid-run.
+  #
+  # The probe also exercises --system-prompt-file, which the candidate provider
+  # depends on and cannot work around: the use-workshop bundle is ~151 KB, far
+  # over Linux's 128 KiB per-argv limit, so an inline --system-prompt is
+  # impossible. No claude CLI VERSION is pinned anywhere (see TESTING.md) —
+  # this capability check is what that pin used to stand in for, and it fails
+  # once, loudly, instead of erroring every case with an opaque message.
+  probe_system="$(mktemp -t routing-preflight-XXXXXX.md)"
+  printf 'Reply with the single word: ok\n' > "${probe_system}"
   probe_out="$(printf 'ok' | claude -p --model "${model}" --tools "" \
       --setting-sources project --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
-      --no-session-persistence --output-format json 2>&1)" || {
-    echo "error: claude CLI preflight failed — is the CLI logged in (claude login)?" >&2
+      --no-session-persistence --system-prompt-file "${probe_system}" \
+      --output-format json 2>&1)" || {
+    rm -f "${probe_system}"
+    if printf '%s' "${probe_out}" | grep -qi -- '--system-prompt-file'; then
+      echo "error: this claude CLI does not accept --system-prompt-file, which the" >&2
+      echo "       routing candidate requires (the skill bundle is far larger than the" >&2
+      echo "       argv limit, so an inline --system-prompt cannot be used). Update the CLI." >&2
+    else
+      echo "error: claude CLI preflight failed — is the CLI logged in (claude login)?" >&2
+    fi
     printf '       %s\n' "$(printf '%s' "${probe_out}" | tail -c 400)" >&2
     exit 2
   }
+  rm -f "${probe_system}"
   if printf '%s' "${probe_out}" | python3 -c 'import json,sys
 d = json.loads(sys.stdin.read() or "{}")
 sys.exit(1 if d.get("is_error") else 0)' 2>/dev/null; then :; else
@@ -358,6 +376,11 @@ set -e
 #   legitimate long answer that merely truncates keeps full diversity and
 #   is NOT flagged (the 2026-08-13 migration verified truncated-but-valid
 #   answers exist).
+# - DROPPED RESULTS: promptfoo's stats can count a case its output file
+#   never lists (observed 2026-09-23 with two suites evaluating concurrently
+#   against the shared local promptfoo store: stats said 90+1, the file held
+#   90). The summary then reports an N-1 denominator as if it were whole.
+#   Any gap between the stats total and the listed results counts as errors.
 # Any of these would otherwise overwrite a canonical baseline with a
 # broken run.
 if [[ -f "${raw_json}" ]]; then
@@ -394,6 +417,9 @@ for c in (res.get("results") or []):
         if not (cr or {}).get("pass") and reason.startswith("API error:"):
             extra += 1
             break
+listed = len(res.get("results") or [])
+counted = sum(int(stats.get(k) or 0) for k in ("successes", "failures", "errors"))
+extra += max(0, counted - listed)
 print((e or 0) + extra)' "${raw_json}" 2>/dev/null || echo -1)"
 else
   error_count=-1

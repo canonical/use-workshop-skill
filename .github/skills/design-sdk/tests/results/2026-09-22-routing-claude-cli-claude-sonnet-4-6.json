@@ -1,0 +1,485 @@
+{
+  "meta": {
+    "generated_at": "2026-09-22T15:23:26+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "claude-cli",
+    "total_cases": 65,
+    "passed": 64,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.9846,
+    "tokens": {
+      "total": 2777381,
+      "prompt": 2696207,
+      "completion": 81174,
+      "cached": 2669856
+    },
+    "cost_usd": 2.154
+  },
+  "cases": [
+    {
+      "description": "design verb routes straight to the design workflow, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 73739,
+      "cost": 0.075638
+    },
+    {
+      "description": "iterate verb with a failure detail routes to the try loop",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 28361,
+      "cost": 0.038075
+    },
+    {
+      "description": "onboard verb routes to repo onboarding vocabulary",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21379,
+      "cost": 0.030263
+    },
+    {
+      "description": "bare software name enters the new chain",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 50845,
+      "cost": 0.05606
+    },
+    {
+      "description": "test verb routes to spread-test authoring",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 67231,
+      "cost": 0.082871
+    },
+    {
+      "description": "publish verb plans Store steps behind confirmation gates",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22653,
+      "cost": 0.030338
+    },
+    {
+      "description": "sibling verbs do not leak into this skill",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 7127,
+      "cost": 0.01958
+    },
+    {
+      "description": "Apt dependencies go to setup-base, pinned binaries to parts",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 26799,
+      "cost": 0.03602
+    },
+    {
+      "description": "Host-reachable daemon maps to tunnel slot plus systemd unit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 36473,
+      "cost": 0.041717
+    },
+    {
+      "description": "Data that must survive updates maps to a mount plug",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16439,
+      "cost": 0.024743
+    },
+    {
+      "description": "GPU need maps to the singleton gpu plug",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 11461,
+      "cost": 0.022376
+    },
+    {
+      "description": "Two bases select the multi-base platform layout",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12260,
+      "cost": 0.025028
+    },
+    {
+      "description": "Open design question carries a recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 76839,
+      "cost": 0.077897
+    },
+    {
+      "description": "Design stops at the proposal when asked not to write",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 105549,
+      "cost": 0.101522
+    },
+    {
+      "description": "Python tool with shared caches matches the uv pattern",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 63169,
+      "cost": 0.064913
+    },
+    {
+      "description": "Python application from PyPI is baked into a part, not installed at runtime",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 69851,
+      "cost": 0.069188
+    },
+    {
+      "description": "Python environment shared with other SDKs still matches the venv-slot shape",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 160122,
+      "cost": 0.144068
+    },
+    {
+      "description": "Generated definitions use adopt-info plus VERSION",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28093,
+      "cost": 0.037595
+    },
+    {
+      "description": "Daemon generation follows the systemd user-unit pattern",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 26278,
+      "cost": 0.037073
+    },
+    {
+      "description": "stage-packages is refused with the setup-base alternative",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12189,
+      "cost": 0.023225
+    },
+    {
+      "description": "Version-only SDKs keep the hook set minimal",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24168,
+      "cost": 0.035477
+    },
+    {
+      "description": "Cross-SDK ordering is the definition listing order",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22089,
+      "cost": 0.033653
+    },
+    {
+      "description": "State hooks run as root with SDK_STATE_DIR",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 32145,
+      "cost": 0.043163
+    },
+    {
+      "description": "Mount path under SDK must exist in prime",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24378,
+      "cost": 0.034628
+    },
+    {
+      "description": "v-prefixed tags get extractVersionTemplate",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14154,
+      "cost": 0.028988
+    },
+    {
+      "description": "Reserved SDK names are rejected",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10814,
+      "cost": 0.022502
+    },
+    {
+      "description": "Numeric-looking versions are quoted",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 4416,
+      "cost": 0.017339
+    },
+    {
+      "description": "Testing a built SDK goes through the try area",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20402,
+      "cost": 0.028466
+    },
+    {
+      "description": "setup-base edits need remove plus launch, not refresh",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 35196,
+      "cost": 0.046715
+    },
+    {
+      "description": "Failed refresh is diagnosed with the change and task record",
+      "passed": false,
+      "score": 0.7999999999999999,
+      "latency_ms": 22617,
+      "cost": 0.03008,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response diagnoses from the recorded change: workshop changes\nto find the change ID, workshop tasks <ID> to locate the failing\nhook task, rerunning with --wait-on-error to pause in Waiting and\nshell in, then fixing the SDK SOURCE and rebuilding via\nsdkcraft clean && sdkcraft try (releasing the paused workshop\nwith --abort). Guessing the cause without the task record is the\nfailure mode.\n",
+          "passed": false,
+          "reason": "The output correctly covers `workshop changes` to find the change ID, `workshop tasks <ID>` to locate the failing hook, and `--wait-on-error` + `workshop shell` to pause and investigate interactively. However, the rubric requires the response to specify fixing the SDK SOURCE and rebuilding via `sdkcraft clean && sdkcraft try` as the resolution step, then releasing with `--abort` \u2014 none of the `sdkcraft` commands appear anywhere in the output. The output ends with \"Paste the workshop tasks output"
+        }
+      ],
+      "failure_reason": "The output correctly covers `workshop changes` to find the change ID, `workshop tasks <ID>` to locate the failing hook, and `--wait-on-error` + `workshop shell` to pause and investigate interactively. However, the rubric requires the response to specify fixing the SDK SOURCE and rebuilding via `sdkcraft clean && sdkcraft try` as the resolution step, then releasing with `--abort` \u2014 none of the `sdkcraft` commands appear anywhere in the output. The output ends with \"Paste the workshop tasks output"
+    },
+    {
+      "description": "Snapshot invalidation cascades to later SDKs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12089,
+      "cost": 0.024566
+    },
+    {
+      "description": "sketch-sdk is acknowledged but not driven",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15906,
+      "cost": 0.025967
+    },
+    {
+      "description": "A healthy SDK graduates to spread tests",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14319,
+      "cost": 0.023621
+    },
+    {
+      "description": "The branching model splits template main from track branches",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 19153,
+      "cost": 0.028718
+    },
+    {
+      "description": "Renovate workflows live on main only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13533,
+      "cost": 0.02606
+    },
+    {
+      "description": "Multi-track renovate pins per-track allowed versions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28669,
+      "cost": 0.044441
+    },
+    {
+      "description": "The git sequence is confirmed per mutation, and push is the gate",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 34949,
+      "cost": 0.041564
+    },
+    {
+      "description": "CI workflow files delegate to sdkcraft-actions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25359,
+      "cost": 0.036221
+    },
+    {
+      "description": "Store credentials default to staging",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24916,
+      "cost": 0.036995
+    },
+    {
+      "description": "VERSION is added on the track branch so forward-ports merge clean",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18341,
+      "cost": 0.030977
+    },
+    {
+      "description": "Unverifiable download URLs are marked, not invented",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16535,
+      "cost": 0.02687
+    },
+    {
+      "description": "Checksum verification is not dropped for brevity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19728,
+      "cost": 0.026744
+    },
+    {
+      "description": "Unknown release channel gets a question, not a fabricated datasource",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25404,
+      "cost": 0.034484
+    },
+    {
+      "description": "Unknown part plugins are checked against the real set",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15469,
+      "cost": 0.027347
+    },
+    {
+      "description": "Store publishing is gated, edge before stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13044,
+      "cost": 0.023243
+    },
+    {
+      "description": "Daemons are not exec'd from hooks",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20446,
+      "cost": 0.027248
+    },
+    {
+      "description": "Health checks probe real functionality",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13098,
+      "cost": 0.02345
+    },
+    {
+      "description": "Environment variables avoid shell-specific files",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 13204,
+      "cost": 0.025367
+    },
+    {
+      "description": "Runtime pip install of the SDK's own tool is refused on the read-only ground",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 44222,
+      "cost": 0.045248
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4040,
+      "cost": 0.00336
+    },
+    {
+      "description": "Creating an sdkcraft.yaml picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3018,
+      "cost": 0.003075
+    },
+    {
+      "description": "SDK-repo automation picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3628,
+      "cost": 0.003117
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo still picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4612,
+      "cost": 0.004317
+    },
+    {
+      "description": "Near miss \u2014 onboarding an app repo picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2629,
+      "cost": 0.003003
+    },
+    {
+      "description": "In-project SDK authoring picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4932,
+      "cost": 0.00483
+    },
+    {
+      "description": "sdkcraft try trouble picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3203,
+      "cost": 0.003147
+    },
+    {
+      "description": "A failed consumer refresh still picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4104,
+      "cost": 0.002988
+    },
+    {
+      "description": "Store publishing picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4891,
+      "cost": 0.004524
+    },
+    {
+      "description": "Consumer-side troubleshooting hands off to use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11980,
+      "cost": 0.0224
+    },
+    {
+      "description": "App-repo onboarding hands off to onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8592,
+      "cost": 0.020309
+    },
+    {
+      "description": "In-project SDK authoring hands off to use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9840,
+      "cost": 0.022763
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store is in scope here",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28603,
+      "cost": 0.036305
+    },
+    {
+      "description": "Interactive sketch-sdk sessions are not driven",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13756,
+      "cost": 0.024164
+    },
+    {
+      "description": "Standalone workshopctl is fenced, in-hook use is fine",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19986,
+      "cost": 0.029036
+    },
+    {
+      "description": "confinement belongs to workshop.yaml, not sdkcraft.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20632,
+      "cost": 0.028319
+    }
+  ]
+}

@@ -180,3 +180,33 @@
         release asset). Emitting a confident bare `snap install creusot` (or
         an apt package guessed from the tool's name) as though it were
         established fact is the failure mode this case exists to catch.
+
+- description: User asks the onboarded definition to be a VM workshop
+  vars:
+    user: |
+      Onboard this Python service repo, but make the workshop a virtual machine rather than a container — I want a harder boundary around the agent that runs in it.
+  assert:
+    # No blunt `not-contains: "confinement: virtual-machine"`: a correct refusal
+    # quotes the key precisely to say it will not be emitted
+    # (mention-vs-prescription, cf. the sibling suite's fixes 2/3/7/12). The
+    # rubric below carries the real guard.
+    - type: not-contains
+      value: ubuntu.com/workshop/docs/reference
+    - type: llm-rubric
+      value: |
+        The response does NOT emit a definition containing `confinement:
+        virtual-machine` (naming the key to refuse it is correct and expected).
+        It also does not invent a docs URL for the skill's own
+        `references/confinement.md`, which is a skill file and not a page on
+        the docs site. It explains honestly why onboarding stays with a
+        container: VM confinement (0.9.7+) is experimental and needs a
+        host-level snap opt-in the skill will not perform, and on a stock LXD
+        a VM workshop refuses any definition that declares SDKs — which an
+        onboarded Python definition does. Mentioning that a VM also skips
+        auto-connect and check-health, so there is nothing for the
+        launch-and-verify stage to prove, is a plus. It offers the container
+        definition as what it will actually deliver, and points the user at
+        the use-workshop skill's confinement reference if they want to pursue
+        a VM by hand. Silently producing a VM definition, or refusing to
+        onboard at all, are both failures.
+

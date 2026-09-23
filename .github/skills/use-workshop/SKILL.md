@@ -10,13 +10,13 @@ argument-hint: "[init|run|actions|sdk|connect|worktrees|ide|multi|debug|purge] [
 <essential_principles>
 Five rules that always apply to operating Workshop. These come first; every workflow assumes them.
 
-1. **The workshop is an isolation boundary.** Processes running inside a workshop cannot reach host resources except through declared interface connections. State this when relevant; do not assume any specific workload runs inside.
+1. **The workshop is an isolation boundary.** Processes running inside a workshop cannot reach host resources except through declared interface connections. State this when relevant; do not assume any specific workload runs inside. The boundary is an LXD container by default; `confinement: virtual-machine` (0.9.7+, experimental) makes it a full VM with different rules — see `references/confinement.md` before answering anything about VM workshops.
 
 2. **State changes are async.** Every mutating command produces a numbered `change` composed of `tasks`. To diagnose what happened, use `workshop changes` then `workshop tasks <ID>` — never guess.
 
 3. **Refresh is non-destructive; prefer it to remove+launch.** If `workshop refresh` errors, rerun with `--wait-on-error` to pause in `Waiting`, investigate via `workshop shell`, then `--continue` (after fixing) or `--abort` (to revert). Constraint: `--wait-on-error` is single-workshop only.
 
-4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch. If the user wants those, schedule the `connect` step — once, not per refresh: manual connections persist across `workshop refresh` (0.9.5+) and are re-wired only after `workshop restore` or remove+launch.
+4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch. If the user wants those, schedule the `connect` step — once, not per refresh: manual connections persist across `workshop refresh` (0.9.5+) and are re-wired only after `workshop restore` or remove+launch. Exception: under VM confinement auto-connect is skipped entirely and nothing persists across a refresh — re-wire every time (`references/confinement.md`).
 
 5. **The project directory is mounted at `/project/`.** Any path that needs to be visible to the workshop must be reachable under `/project/`. Working directories passed via `workshop exec --cwd` or `workshop run --cwd` use workshop paths.
 </essential_principles>
@@ -78,7 +78,8 @@ route them via the paraphrase table below.
 | `worktrees` | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | `ide` | "VS Code", "JetBrains", "remote IDE", "SSH into the workshop", "ssh the workshop", "remote-SSH", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | `multi` | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
-| `debug` | "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update" | `workflows/troubleshoot.md` |
+| — | "VM workshop", "virtual machine", "confinement", "`--vm`", "experimental-vms", "harder isolation than a container" | `references/confinement.md` (read it directly; no dedicated workflow) |
+| `debug` | "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update", "workshop too old", "confinement changed", "confinement is experimental", "SDKs are currently unavailable for virtual machines" | `workflows/troubleshoot.md` |
 | `purge` | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 | — | "build an SDK", "package X as an SDK", "sdkcraft", "sdkcraft.yaml", "publish to the SDK Store", "SDK repo CI/renovate" | `design-sdk` skill — do not improvise `sdkcraft` here |
 </routing>
@@ -93,6 +94,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `states-and-transitions.md` | Status diagram (Off, Ready, Stopped, Pending, Waiting, Error) and which commands work in each |
 | `definition-file.md` | Workshop YAML anatomy: keys, SDK entries, plug/slot definitions, action format |
 | `interfaces.md` | Seven interface types, auto-connect vs manual table, wiring decision tree |
+| `confinement.md` | Container vs `virtual-machine` confinement (0.9.7+, experimental): the opt-in, `--vm`, and the four VM limitations |
 | `sdk-types.md` | System / Store / in-project / sketch / try SDKs and when to reach for each |
 | `in-project-sdk.md` | `sdk.yaml` schema, hook taxonomy, filesystem layout, execution context for in-project SDKs |
 | `async-and-recovery.md` | Change/task model, `--wait-on-error`/`--continue`/`--abort` recovery, `--no-wait` |

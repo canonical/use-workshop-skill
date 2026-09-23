@@ -8,7 +8,7 @@ Core conceptual model an agent must hold to operate Workshop fluently. These are
 <core_terms>
 
 <term name="workshop (lowercase)">
-A container-based, isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
+An isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it) — an LXD container by default, or a full virtual machine when the definition says `confinement: virtual-machine` (0.9.7+, experimental). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
 </term>
 
 <term name="project">
@@ -16,11 +16,15 @@ The directory on the host that contains workshop definition file(s). The project
 </term>
 
 <term name="workshop definition">
-A YAML file describing how a workshop should be assembled: `name`, `base` image, `sdks:` list, optional `connections:`, optional `actions:`. Either `workshop.yaml` / `.workshop.yaml` at project root (single-workshop project), or `.workshop/<name>.yaml` files (multi-workshop project — names must match filenames). Cannot mix the two layouts.
+A YAML file describing how a workshop should be assembled: `name`, `base` image, optional `confinement:`, `sdks:` list, optional `connections:`, optional `actions:`. Either `workshop.yaml` / `.workshop.yaml` at project root (single-workshop project), or `.workshop/<name>.yaml` files (multi-workshop project — names must match filenames). Cannot mix the two layouts.
 </term>
 
 <term name="base">
-The underlying OS image of the workshop, declared as `base: ubuntu@<release>` (currently `20.04`, `22.04`, `24.04`, or `26.04`).
+The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. Supported as of 0.9.7: `22.04`, `24.04`, `26.04`. **`20.04` is deprecated, not removed** — the validator still accepts it and `workshop init --base ubuntu@20.04` still succeeds, but every launch and refresh raises the warning `workshops with "base: ubuntu@20.04" are no longer supported; refresh to 22.04+ before the next release of Workshop`, and it is slated to stop working in the next release. Never propose `20.04` for a new definition; when a user already has one, tell them to move to `22.04`+ rather than claiming it is rejected today.
+</term>
+
+<term name="confinement">
+How the workshop is sandboxed, declared as the top-level `confinement:` key: `container` (the default; omitting the key selects it) or `virtual-machine` (0.9.7+, **experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1`). Confinement is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on stock LXD, auto-connect, and `check-health`. Full model and the exact errors: `references/confinement.md`.
 </term>
 
 <term name="workshop hostname (DNS)">
@@ -63,6 +67,7 @@ A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/
 </core_terms>
 
 <gotchas>
+- A workshop on `base: ubuntu@20.04` still launches but warns on every launch and refresh; it breaks in the release after 0.9.7. Treat the warning as a migration deadline, not noise.
 - Two projects with the same workshop `name:` are independent workshops, not a shared one. `workshop list --global` shows the project path.
 - `cp -r` of a project directory does not duplicate the workshop. The copy is silent until you launch in the new directory; then you have two independent workshops with the same name.
 - Deleting a project directory without `workshop remove` first orphans the workshop — `workshop list --global` shows `Error` with a `missing-project` note. Recreate the directory at the same absolute path to remove it cleanly (or restore its content to keep it); see the `purge-and-recover` workflow.

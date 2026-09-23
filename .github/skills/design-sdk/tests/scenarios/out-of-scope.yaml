@@ -91,3 +91,24 @@
         Emitting workshopctl set-health inside a check-health hook being
         authored IS in scope, and the response may show that instead —
         but it does not fake health from the host.
+
+- description: confinement belongs to workshop.yaml, not sdkcraft.yaml
+  vars:
+    user: |
+      Workshop 0.9.7 added confinement. Do I need to add `confinement: virtual-machine` to my sdkcraft.yaml so my SDK works in VM workshops?
+  assert:
+    # No blunt `not-contains: "confinement: virtual-machine"`: a correct answer
+    # quotes the key precisely to say where it DOES belong
+    # (mention-vs-prescription, cf. the sibling suite's fixes 2/3/7/12). The
+    # rubric below carries the real guard.
+    - type: llm-rubric
+      value: |
+        The response says clearly that `sdkcraft.yaml` has no `confinement:`
+        key and never gains one — confinement is a top-level key in the
+        *workshop* definition (the consumer side), with values `container` and
+        `virtual-machine`. Quoting the key while placing it in workshop.yaml is
+        correct and expected; what fails is adding it to sdkcraft.yaml, or
+        inventing a build-time confinement field or per-platform equivalent.
+        Noting that VM workshops cannot carry SDKs at all on a stock LXD, so
+        there is nothing for the SDK author to opt into, is a plus.
+

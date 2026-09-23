@@ -8,11 +8,20 @@
   assert:
     - type: contains
       value: workshop run
+    # "prescribes", not "performs": this is the TOOL-LESS routing lane, so the
+    # candidate cannot execute anything. The earlier wording ("the response runs
+    # EVERY...") was satisfied by candidates that emitted fake tool calls and
+    # invented their output — i.e. it rewarded fabrication. Real execution is
+    # the agentic suite's job (agentic/tasks/onboard-mini-node.yaml proves every
+    # action for real against LXD).
     - type: llm-rubric
       value: |
-        The response runs EVERY generated action via workshop run inside the
-        workshop (with server actions started, probed, and stopped) — YAML
-        validity or a successful launch alone is explicitly not enough.
+        The response prescribes running EVERY generated action via workshop run
+        inside the workshop (with server actions started, probed, and stopped),
+        and says plainly that YAML validity or a successful launch alone is not
+        enough. Describing the procedure is correct and expected here; the
+        response has no tools and must not claim to have executed anything or
+        present invented command output as real.
 
 - description: Verification triplet after launch
   vars:

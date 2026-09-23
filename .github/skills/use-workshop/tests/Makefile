@@ -18,9 +18,10 @@ AGENTIC_SH   := scripts/run-agentic.sh
 BUNDLE_SH    := scripts/regenerate-bundle.sh
 SOURCE_DOCS_SH := $(TESTLIB)/check-source-docs.sh
 YAML_KEYS_PY := $(TESTLIB)/check-yaml-keys.py
+SCENARIOS_PY := $(TESTLIB)/check-scenarios.py
 MANIFEST_SH  := scripts/update-docs-manifest.sh
 
-.PHONY: help check check-yaml check-yaml-keys check-shell check-source-docs \
+.PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
         update-docs-manifest eval-bundle eval-routing eval-routing-subscription \
         eval-routing-sweep eval-agentic eval-clean
 
@@ -28,6 +29,7 @@ help:
 	@echo "use-workshop eval targets:"
 	@echo "  check                    all free static checks: source-docs + bundle regen + YAML parse + YAML keys + shellcheck (CI entry point)"
 	@echo "  check-source-docs        assert every cited upstream doc path exists in docs-manifest.txt (offline; subsumes the retired check-doc-paths)"
+	@echo "  check-scenarios          assert every scenarios/*.yaml is registered in every promptfooconfig*.yaml (offline)"
 	@echo "  check-yaml-keys          lint skill YAML snippets/templates against the upstream schema key allowlists (offline)"
 	@echo "  update-docs-manifest     regenerate docs-manifest.txt + allowed-keys.json from a Workshop checkout (needs WORKSHOP_REPO; maintainer-only)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
@@ -41,7 +43,7 @@ help:
 # (check-doc-paths was retired 2026-08-20: the shared manifest contains only
 # the four combined CLI pages, so check-source-docs already rejects any other
 # reference/cli/ path — the onboard suite reasoned this out first.)
-check: check-source-docs eval-bundle check-yaml check-yaml-keys check-shell
+check: check-source-docs eval-bundle check-yaml check-yaml-keys check-scenarios check-shell
 	@test -s skill-bundle.md || { echo "error: skill-bundle.md is empty" >&2; exit 1; }
 	@echo "ok: all static checks passed"
 
@@ -50,6 +52,9 @@ check-yaml:
 files = sorted(glob.glob('scenarios/*.yaml') + glob.glob('../templates/*.yaml') + glob.glob('agentic/tasks/*.yaml')); \
 [yaml.safe_load(open(f)) for f in files]; \
 print('ok: %d YAML file(s) parsed' % len(files))"
+
+check-scenarios:
+	python3 $(SCENARIOS_PY) --tests-dir $(CURDIR)
 
 check-yaml-keys:
 	python3 $(YAML_KEYS_PY) --skill-root $(CURDIR)/.. --allowed-keys $(CURDIR)/allowed-keys.json

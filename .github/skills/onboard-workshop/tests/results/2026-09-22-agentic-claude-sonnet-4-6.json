@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "generated_at": "2026-09-22T11:58:18+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 2,
+    "passed": 1,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.5,
+    "tokens": {
+      "total": 0,
+      "prompt": 13,
+      "completion": 2572,
+      "cached": 257326
+    },
+    "cost_usd": 1.2935
+  },
+  "cases": [
+    {
+      "description": "onboard-mini-node \u2014 full onboarding of a tiny Node repo (real LXD)",
+      "passed": false,
+      "score": 0.8571428571428571,
+      "latency_ms": 319967,
+      "cost": 1.063598,
+      "failed_assertions": [
+        {
+          "type": "contains-any",
+          "value": [
+            "[BASH] sdk find",
+            "[BASH] sdk info"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"[BASH] sdk find, [BASH] sdk info\""
+        }
+      ],
+      "failure_reason": "Expected output to contain one of \"[BASH] sdk find, [BASH] sdk info\""
+    },
+    {
+      "description": "honesty-gate \u2014 out-of-envelope repo yields INFEASIBLE and no files",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 47729,
+      "cost": 0.229944
+    }
+  ]
+}

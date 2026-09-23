@@ -10,6 +10,7 @@ Diagnose and recover from a failed `workshop launch`/`refresh`/`start` (or any o
 2. `references/states-and-transitions.md` — what the workshop's current status implies
 3. `references/command-cheatsheet.md` — `changes`, `tasks`, `info`, `warnings`, `okay`
 4. `references/anti-patterns.md` — what NOT to do under stress
+5. `references/confinement.md` — ONLY when the symptom mentions a VM, `confinement:`, or `--vm`
 </required_reading>
 
 <process>
@@ -52,6 +53,14 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |
+| `confinement "virtual-machine" is experimental` on launch | VM confinement is opt-in (0.9.7+). Run BOTH commands the error names: `sudo snap set workshop workshop.experimental-vms=1` then `sudo snap restart workshop.workshopd`. The restart is part of the opt-in |
+| `confinement changed from "<X>" to "<Y>"` on refresh | Confinement is fixed at launch (0.9.7+). `workshop remove <name>` + `workshop launch <name>` — refresh cannot do it. Warn that this drops manual `connect`/`remount` wiring |
+| `SDKs are currently unavailable for virtual machines` | The host's LXD offers shifted disk mounts to containers only. Either drop `sdks:` from the VM definition, or install LXD from `latest/edge`. Probe with `lxc query /1.0/metadata/configuration \| jq -r '.configs["device-disk"]["device-conf"].keys[] \| select(has("shift")) \| .shift.condition'` — `container` means container-only. See `references/confinement.md` |
+| A VM workshop is `Ready` but its plugs are all disconnected, or they disconnect again after every refresh | Expected: VM confinement skips auto-connect at launch and refresh, and restores nothing. Re-wire with `workshop connect` each time. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all |
+| A VM workshop reports no SDK health notes in `workshop info` | Expected: `check-health` is skipped under VM confinement. Don't wait on a health signal that never arrives |
+| `cannot start "<name>": workshop too old: use "workshop remove …" and "workshop launch …" to update it` | Format guard (0.9.6+) — the workshop predates the current snapshot format. Unlike the 0.9.5 `restore`/`--continue` guard, a `workshop refresh` does NOT clear this; follow the message verbatim |
+| `upgrade Workshop and remove all workshops before downgrading again` | The snap was downgraded (0.9.6+ guard) and the daemon is degraded. Re-install the newer Workshop, remove every workshop, then downgrade if you truly must. Never prescribe a downgrade as a fix |
+| `workshop warnings` shows `workshops with "base: ubuntu@20.04" are no longer supported` | Deprecation, not a failure — the workshop still launches. Move `base:` to `ubuntu@22.04`+ and `workshop refresh`; it stops working in the release after 0.9.7 |
 | `workshop` reports LXD missing, outdated, or unreachable | Follow the actionable error (0.9.3+): install/refresh/restart LXD — minimum LXD **6.8**, remedy `sudo snap refresh --channel=6/stable lxd` (install: `sudo snap install --channel=6/stable lxd`). `workshopd` sits in a degraded state and recovers on its own once LXD is available — no daemon restart needed |
 | Every command fails with `other changes in progress`; a change is stuck in `Doing` | Daemon-level stall, not a task failure — see Step 7 |
 
@@ -78,7 +87,7 @@ workshop okay              # acknowledge what was just listed
 
 **Step 6. `No space left on device` — the LXD storage pool is full.**
 
-This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL). Workshop only enforces a 5 GiB *minimum* when the pool is first created — otherwise LXD's own default of ~20% of free disk applies — and the pool **never grows on its own**. So it can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation. Since 0.9.3 the daemon monitors the pool and, at **90% usage**, proactively enters a degraded state with an actionable message *before* writes start failing — treat that message the same way: grow the pool. One caveat: the daemon's message suggests `lxc storage volume set workshop size=…`, a *volume*-level command at the wrong layer; the pool-level command below is the right one.
+This is almost never your host disk. Workshop keeps its data in an LXD storage pool named `workshop` (ZFS on Linux, Btrfs on WSL). Workshop only enforces a 5 GiB *minimum* when the pool is first created — otherwise LXD's own default of ~20% of free disk applies — and the pool **never grows on its own**. So it can fill up while the host disk still has terabytes free. Workshop does not manage the pool size for you — resizing is a deliberate, manual LXD operation. Since 0.9.3 the daemon monitors the pool and, at **90% usage**, enters **degraded mode**: it rejects state-changing commands (launching a workshop, for instance) and reports pool usage instead of letting writes fail opaquely, recovering on its own once space frees up. Treat that message the same way: free space or grow the pool. Note on older installs: the daemon's hint was fixed in 0.9.7 to name the pool-level `lxc storage set workshop size=<N>GiB`; 0.9.6 and earlier wrongly suggested the volume-level `lxc storage volume set …`, so correct that if the user pastes an older message.
 
 Diagnose (confirm it's the pool, not the host):
 ```
@@ -164,5 +173,6 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 - `how-to/fix-workshops/fix-installation.md`
 - `explanation/workshops/changes-tasks.md`
 - `reference/cli/workshop.md` (changes, tasks, launch, refresh, warnings, okay sections)
-- `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing and how to resize; the backward-compatibility policy behind the post-update refusals)
+- `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing, degraded mode, and how to resize; the backward- and forward-compatibility policy behind the post-update refusals)
+- `release-notes/v0.9.7.md` (VM confinement errors and the corrected storage-pool hint)
 </source_docs>

@@ -21,7 +21,23 @@ Nothing to install and nothing to declare. On distros with `/etc/ssh/ssh_config.
 2. Point the IDE's remote-SSH facility at that hostname, user `workshop`.
 3. Smoke test from a host terminal: `ssh <workshop>.<project>.wp`.
 
-Migration caveat: workshops launched before 0.9.5 must be **removed and launched again** (a refresh is not enough) to gain the automatic SSH configuration. The `vscode-remote` SDK is deprecated (0.9.5) — this built-in path replaces its reason to exist; a dedicated VS Code Workshop extension is taking over the remaining VS Code-server caching duties. Do not build an sshd-inside-the-workshop + tunnel rig for SSH access — that ritual is obsolete.
+Migration caveat: workshops launched before 0.9.5 must be **removed and launched again** (a refresh is not enough) to gain the automatic SSH configuration. The `vscode-remote` SDK is deprecated (0.9.5) — this built-in path replaces its reason to exist. Do not build an sshd-inside-the-workshop + tunnel rig for SSH access — that ritual is obsolete.
+
+**Step 1a. VS Code specifically: prefer the extension, but stay honest about what it is.**
+
+There is now a first-party extension, `canonical.workshop` (`code --install-extension canonical.workshop`). It needs VS Code 1.90+, Workshop 0.9.5+, and pulls in `ms-vscode-remote.remote-ssh`; the documented UI matches extension version 0.5.2. It is a convenience layer over the same CLI this skill already teaches — every one of its actions maps to a command you can run yourself, which is what to fall back on when the extension misbehaves:
+
+| Extension action | CLI equivalent |
+|------------------|----------------|
+| Add New Workshop | `workshop init` (the wizard prints the exact line in its `Workshop` output channel) |
+| Reopen in Workshop | `workshop launch` if never launched, else `workshop start`, then SSH to the workshop's hostname |
+| Refresh and Reopen | `workshop refresh --wait-on-error`, then the SSH connection again |
+| Continue Refresh / Abort Refresh | `workshop refresh --continue` / `workshop refresh --abort` |
+| Turn Off… | `workshop remove` |
+| (expanded workshop row) | `workshop info` |
+| Reopen Locally / Open Definition File | no equivalent — these only move the VS Code window |
+
+Two limits worth stating unprompted: the Add-New-Workshop wizard lists only Canonical's reference SDKs, so any other SDK goes into the definition by hand; and plain Remote-SSH to `<workshop>.<project>.wp` (Step 1) still works with no extension at all. Recommend the extension when the user is already in VS Code; don't make it a prerequisite.
 
 **Step 2. Non-SSH services: identify the direction.**
 - A workshop service the host needs (HTTP dev server, WebSocket, Jupyter) → pattern A below.
@@ -116,7 +132,7 @@ nc -zv localhost <host-port>                  # quick port liveness check from t
 </success_criteria>
 
 <source_docs>
-- `how-to/develop-with-workshops/connect-vscode.md`, `how-to/develop-with-workshops/run-jetbrains-gateway.md`, `how-to/develop-with-workshops/run-jupyterlab-in-browser.md` — worked examples for specific IDEs/tools; surface the matching page when the user names a vendor.
+- `how-to/develop-with-workshops/connect-vscode.md` (the extension-first VS Code guide, incl. the action-to-command table), `how-to/develop-with-workshops/run-jetbrains-gateway.md`, `how-to/develop-with-workshops/run-jupyterlab-in-browser.md` — worked examples for specific IDEs/tools; surface the matching page when the user names a vendor.
 - `explanation/architecture/components.md` (Network — the SSH certificate authority and `*.wp` resolution)
 - `release-notes/v0.9.5.md` (automatic OpenSSH config; remove-and-relaunch migration caveat)
 - `how-to/customize-workshops/forward-ports.md`

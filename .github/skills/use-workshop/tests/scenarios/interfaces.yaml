@@ -207,8 +207,8 @@
         The response says NO re-connect is needed (Workshop 0.9.5+):
         manual `workshop connect` connections are preserved across
         `workshop refresh`, as long as the plug and slot still exist in the
-        new definition. It correctly identifies what DOES reset the wiring —
-        `workshop restore`, or `workshop remove` + `launch` — rather than
-        refresh. A response prescribing a routine post-refresh re-connect
+        new definition. It correctly identifies something that DOES reset the
+        wiring — `workshop restore`, or `workshop remove` + `launch`; naming
+        either one suffices — rather than refresh. A response prescribing a routine post-refresh re-connect
         ritual FAILS; mentioning the pre-0.9.5 behavior as historical
         context is acceptable.

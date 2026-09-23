@@ -124,6 +124,7 @@ Borrowed from the sibling (load by relative path):
 | `../use-workshop/references/sdk-types.md` | SDK kinds; store-first decision tree |
 | `../use-workshop/references/in-project-sdk.md` | sdk.yaml schema; hook taxonomy |
 | `../use-workshop/references/interfaces.md` | Interface semantics; auto vs manual connect |
+| `../use-workshop/references/confinement.md` | Container vs VM confinement — read only if the user asks for a VM workshop (it is out of envelope) |
 | `../use-workshop/references/command-cheatsheet.md` | Verbatim command signatures |
 | `../use-workshop/references/async-and-recovery.md` | Change/task model; recovery flags |
 </reference_index>

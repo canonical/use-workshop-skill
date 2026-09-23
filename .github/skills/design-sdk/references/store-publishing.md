@@ -7,6 +7,13 @@ Store-side publishing: pack → register → upload → release. Everything past
 the CLI commands, so each Store mutation is confirmed with the user before
 running. CI automation of this loop is `onboarding-ci.md`'s territory; this
 file covers the commands and the channel model.
+
+Version note: SDKcraft and Workshop are released independently and their
+version numbers no longer match (they shared a number only up to Workshop
+0.9.1). SDKcraft 0.9.3 is the build that pairs with Workshop 0.9.5, 0.9.6, and
+0.9.7. Never infer one tool's version from the other, and never tell a user
+their SDKcraft is out of date because it trails Workshop —
+`release-notes/index.md` carries the authoritative pairing table.
 </overview>
 
 <pack_vs_try>
@@ -60,4 +67,5 @@ Channel shape: `[<TRACK>/]<RISK>[/<BRANCH>]`.
 - `how-to/develop-sdks/publish-an-sdk.md` (the four-step flow, credentials, channels, guardrails)
 - `reference/cli/sdkcraft.md` (store subcommand signatures)
 - `explanation/sdks/lifecycle.md` (publish stage in the SDK lifecycle)
+- `release-notes/index.md` (the Workshop <-> SDKcraft version pairing table)
 </source_docs>
