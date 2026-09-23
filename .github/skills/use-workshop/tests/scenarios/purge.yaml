@@ -12,8 +12,17 @@
       value:
         - workshop list
         - confirm
-    - type: not-contains
-      value: snap remove
+    # No blunt `not-contains: snap remove`: a correct answer often names the
+    # snap purge precisely to warn it is NOT for removing one workshop
+    # (mention-vs-prescription, cf. BASELINE assertion fixes 2/3/7/12). The
+    # rubric below carries the real guard.
+    - type: llm-rubric
+      value: |
+        The response prescribes `workshop remove` as the way to remove the
+        workshop, and suggests confirming it is gone (e.g. `workshop list`).
+        It does NOT prescribe `snap remove workshop` (with or without
+        `--purge`) for this; naming the snap purge only to warn that it is a
+        last resort that wipes every workshop on the machine is fine.
 
 - description: Project deleted before workshop was removed (orphan)
   vars:
