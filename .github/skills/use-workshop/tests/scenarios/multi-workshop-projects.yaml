@@ -132,6 +132,7 @@
     - type: contains-any
       value:
         - "rejected"
+        - "reject"
         - "not allowed"
         - "does not allow"
         - "do not allow"
@@ -146,6 +147,7 @@
         - "only within a single workshop"
         - "within the same workshop"
         - "in the same workshop"
+        - "inside the same workshop"
         - "must both belong to the same workshop"
     - type: contains-any
       value:

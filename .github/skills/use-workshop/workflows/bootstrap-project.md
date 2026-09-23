@@ -51,6 +51,8 @@ workshop init <name> [--sdks <sdk1>,<sdk2>/<channel>] [--base <base>]
 ```
 This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). `--sdks` is optional (0.9.5+; bare `workshop init <name>` gives a base-only definition) and each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`) or reference an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). `--base` defaults to `ubuntu@24.04` and `--help` lists the supported bases. `--vm` (0.9.7+) scaffolds `confinement: virtual-machine` — see the confinement note in Step 2 before using it. Fast when the workshop is a base plus an SDK list. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or an in-project SDK's *directory* — add those by editing the generated file (or authoring `.workshop/<NAME>/`), or use Path B.
 
+When answering a question about what `init` can produce, state two things unprompted, because a reader otherwise assumes the opposite: `--base` defaults to `ubuntu@24.04` (so `workshop init <name>` alone is the bare form), and `--sdks project-<NAME>` writes only the *reference* — `init` never creates `.workshop/<NAME>/`, its `sdk.yaml` or its hooks, so the SDK directory has to exist or be authored separately.
+
 *Path B — copy a template (when you need more).* Copy `templates/workshop-minimal.yaml` (single SDK) or `templates/workshop-multi-sdk.yaml` (more); reach for `templates/workshop-with-actions.yaml` or `templates/workshop-with-connections.yaml` when the definition needs those. Save it as a root `workshop.yaml` (single-file layout) or `.workshop/<name>.yaml` (named layout), then replace placeholders.
 
 Either way, keep:

@@ -376,6 +376,11 @@ set -e
 #   legitimate long answer that merely truncates keeps full diversity and
 #   is NOT flagged (the 2026-08-13 migration verified truncated-but-valid
 #   answers exist).
+# - DROPPED RESULTS: promptfoo's stats can count a case its output file
+#   never lists (observed 2026-09-23 with two suites evaluating concurrently
+#   against the shared local promptfoo store: stats said 90+1, the file held
+#   90). The summary then reports an N-1 denominator as if it were whole.
+#   Any gap between the stats total and the listed results counts as errors.
 # Any of these would otherwise overwrite a canonical baseline with a
 # broken run.
 if [[ -f "${raw_json}" ]]; then
@@ -412,6 +417,9 @@ for c in (res.get("results") or []):
         if not (cr or {}).get("pass") and reason.startswith("API error:"):
             extra += 1
             break
+listed = len(res.get("results") or [])
+counted = sum(int(stats.get(k) or 0) for k in ("successes", "failures", "errors"))
+extra += max(0, counted - listed)
 print((e or 0) + extra)' "${raw_json}" 2>/dev/null || echo -1)"
 else
   error_count=-1

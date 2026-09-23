@@ -52,8 +52,13 @@
         on 0.9.5+ via the automatic OpenSSH client configuration, with no
         sshd install and no tunnel. Acknowledging the user's named tool and
         naming the exact host the user should enter is expected. MAY note
-        that the old `vscode-remote` SDK is deprecated (0.9.5) and/or that a
-        dedicated VS Code Workshop extension is taking over server caching.
+        that the old `vscode-remote` SDK is deprecated (0.9.5) and/or
+        recommend the first-party VS Code extension. These extension facts
+        are DOCUMENTED, not fabricated: its id is `canonical.workshop`
+        (`code --install-extension canonical.workshop`), it needs VS Code
+        1.90+ and Workshop 0.9.5+, and its actions include "Add New
+        Workshop", "Reopen in Workshop", "Refresh and Reopen" and "Turn
+        Off…". Plain Remote-SSH with no extension must remain a valid path.
         The response does NOT fabricate vendor-specific config files (e.g.,
         it does NOT invent VS Code `settings.json` entries, extension
         settings, or vendor-internal commands the docs do not document), and
