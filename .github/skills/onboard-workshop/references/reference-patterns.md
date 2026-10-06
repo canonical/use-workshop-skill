@@ -59,7 +59,8 @@ pinned interpreter (22.04 → 3.10, 24.04 → 3.12). Otherwise the in-project SD
 owns the shared venv instead — a mount SLOT with `workshop-source:` (a plug is
 private and cannot be shared), created in `setup-base` the way `uv` does it
 (before any connection, with `uv` listed above it) via `uv venv --python
-<pin>`, and the consumer wired to `project-<name>:venv`. No upstream SDK ships
+<pin>`, and the consumer wired to `<name>:venv` (listed as `project-<name>`
+under `sdks:`; connections take the bare name). No upstream SDK ships
 that second shape: propose it try-loop-verified, not settled, and say so.
 </pattern>
 

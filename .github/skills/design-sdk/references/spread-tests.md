@@ -100,6 +100,35 @@ Always ship the `launch` job; add one job per advertised capability:
   the workshop status that every SDK's `check-health` rolls up into.
   `okay` is only what the hook reports through `workshopctl set-health`;
   `workshop info` never prints it, and there is no per-SDK health line.
+- Slot for consumers (a mount slot other SDKs plug into): give the job a
+  throwaway in-project consumer SDK and wire it explicitly — a regular-SDK
+  mount slot never auto-connects. The task directory holds the rendered
+  `workshop.yaml`, so it is the project root: the consumer lives at
+  `tests/main/<job>/.workshop/<name>-consumer/`, not at the repo root.
+  `try-`/`project-` go in `sdks:` only; `connections:` names both SDKs bare
+  (a prefixed reference fails as a reserved SDK name). Probe the plug's
+  target, e.g. `workshop exec -- ls /opt/<name>`.
+
+```yaml
+# tests/main/<job>/.workshop/<name>-consumer/sdk.yaml
+name: <name>-consumer
+plugs:
+  <name>:
+    interface: mount
+    workshop-target: /opt/<name>
+```
+
+```yaml
+# tests/main/<job>/workshop.yaml.in
+name: test-<name>
+base: ${BASE}
+sdks:
+  - name: try-<name>
+  - name: project-<name>-consumer
+connections:
+  - plug: <name>-consumer:<name>
+    slot: <name>:<slot>
+```
 
 Keep the suite small and fast — these run in CI on every PR via the shared
 build workflow.
@@ -119,4 +148,5 @@ Report results per job, quoting the failing job's output verbatim.
 - `how-to/develop-sdks/build-an-sdk.md` (test layout, starter job, smoke example)
 - `reference/cli/sdkcraft.md` (`sdkcraft test` behavior and flags)
 - `explanation/sdks/concepts.md` (try area mechanics the harness relies on)
+- `how-to/develop-sdks/share-content-between-sdks.md` (wiring a slot to a consumer; prefixes in `sdks:` only)
 </source_docs>

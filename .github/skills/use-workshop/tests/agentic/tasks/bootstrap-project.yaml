@@ -24,10 +24,10 @@
     # Skill was loaded and the agent ran the canonical bootstrap path.
     - type: contains
       value: "[BASH] workshop launch"
-    - type: contains-any
-      value:
-        - "[BASH] workshop info"
-        - "[BASH] workshop list"
+    # Anywhere on a [BASH] line: a compound `workshop warnings && workshop
+    # info <name>` counts as printing the state.
+    - type: javascript
+      value: /^\[BASH\] .*\bworkshop (info|list)\b/m.test(output)
     # SDK discovery is the skill's recommended first step before authoring.
     - type: contains-any
       value:

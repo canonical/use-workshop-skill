@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "generated_at": "2026-10-06T14:25:14+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 8,
+    "passed": 7,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.875,
+    "tokens": {
+      "total": 0,
+      "prompt": 114,
+      "completion": 22234,
+      "cached": 2941416
+    },
+    "cost_usd": 2.5734
+  },
+  "cases": [
+    {
+      "description": "bootstrap-project \u2014 greenfield Python workshop",
+      "passed": false,
+      "score": 0.8333333333333334,
+      "latency_ms": 58184,
+      "cost": 0.356704,
+      "failed_assertions": [
+        {
+          "type": "contains-any",
+          "value": [
+            "[BASH] workshop info",
+            "[BASH] workshop list"
+          ],
+          "passed": false,
+          "reason": "Expected output to contain one of \"[BASH] workshop info, [BASH] workshop list\""
+        }
+      ],
+      "failure_reason": "Expected output to contain one of \"[BASH] workshop info, [BASH] workshop list\""
+    },
+    {
+      "description": "daily-ops \u2014 launch workshop and run a defined action",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 36014,
+      "cost": 0.226584
+    },
+    {
+      "description": "customize-actions \u2014 add a new action and run it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 45456,
+      "cost": 0.218519
+    },
+    {
+      "description": "author-in-project-sdk \u2014 write .workshop/ruff/ with setup-project, launch, verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 51490,
+      "cost": 0.284
+    },
+    {
+      "description": "manage-interfaces \u2014 wire an HTTP service tunnel from workshop to host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 176935,
+      "cost": 0.575068
+    },
+    {
+      "description": "ide-integration \u2014 verify out-of-the-box SSH access for a remote-SSH IDE workflow",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 46069,
+      "cost": 0.248978
+    },
+    {
+      "description": "multi-workshop-projects \u2014 migrate to multi-workshop layout and add a second workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 160913,
+      "cost": 0.419898
+    },
+    {
+      "description": "troubleshoot \u2014 diagnose a failed launch and recover to Ready",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 50150,
+      "cost": 0.24363
+    }
+  ]
+}

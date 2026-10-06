@@ -33,7 +33,7 @@ Each entry under `sdks:` is an object:
 
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
-| `name` | yes | string | SDK name. `system` for the system SDK; `project-<NAME>` for in-project SDKs; `try-<NAME>` for try SDKs. Length caps: 40 bare, 44 with `try-`, 48 with `project-`; `try-system`, `try-sketch`, `project-system`, `project-sketch` are rejected as reserved |
+| `name` | yes | string | SDK name. `system` for the system SDK; `project-<NAME>` for in-project SDKs; `try-<NAME>` for try SDKs. Length caps: 40 bare, 44 with `try-`, 48 with `project-`; `try-system`, `try-sketch`, `project-system`, `project-sketch` are rejected as reserved. **The prefix exists only here**: it says where the SDK comes from, and Workshop strips it. Everywhere else (`connections:`, `bind:`, `workshop connect`, `workshop info`) the SDK is its bare `<NAME>`. Bare names must be unique: `try-mir` next to `mir` or `project-mir` fails as `"mir" SDK must only be included once` |
 | `channel` | optional | string | snap-like format `<TRACK>/<RISK>/<BRANCH>` — all three parts optional, at least one present; default `latest/stable`. Only for Store SDKs. **Quote values that look numeric** (`channel: "1.26"`, `"24"`) or YAML parses them as numbers and validation fails |
 | `plugs` | optional | map | Plug bindings or new plug definitions on this SDK |
 | `slots` | optional | map | New slot definitions on this SDK |
@@ -47,7 +47,7 @@ sdks:
       <plug-name>:
         bind: <sdk-a>:<plug-name>
 ```
-Bind constraints: the target must be a plug on a **non-system** SDK (a `system` plug can neither be bound nor be a bind target); a bound plug carries **no other attributes**; binds cannot chain (a bind target must be a real plug definition) or self-reference; a bound plug cannot also appear in `connections:`.
+Bind constraints: the target must be a plug on a **non-system** SDK (a `system` plug can neither be bound nor be a bind target); a bound plug carries **no other attributes**; binds cannot chain (a bind target must be a real plug definition) or self-reference; a bound plug cannot also appear in `connections:`. The bind target names the bare SDK (`bind: cache:dir`, never `project-cache:dir`).
 
 **Plug definition** (graft a plug onto an SDK in the workshop scope):
 ```yaml
@@ -80,6 +80,16 @@ connections:
     slot: <sdk-b>:<slot>
 ```
 Both endpoints must use the same interface. The `<SDK>` part of a reference may be empty to mean the system SDK (`slot: :mount`). Use this when auto-connect would not pick the right slot, or when you want a non-default wiring.
+
+**References use the bare SDK name, whatever the SDK's source.** `try-` and `project-` belong in `sdks[].name` only; a prefixed reference fails at launch/refresh with `"try-mir:install" is not a valid plug or slot reference: "try-mir" is a reserved SDK name`. The schema does not catch this. Wiring an in-project consumer to a try SDK's slot:
+```yaml
+sdks:
+  - name: try-mir
+  - name: project-mir-consumer
+connections:
+  - plug: mir-consumer:mir   # not project-mir-consumer:mir
+    slot: mir:install        # not try-mir:install
+```
 
 **A `connections:` entry still has to satisfy the interface's auto-connection policy** — it steers auto-connect, it does not override it. Interfaces that block auto-connection outright (camera, desktop, ssh-agent, custom-device, non-loopback tunnels) yield **no** connection when listed here; they need a `workshop connect` after launch (which then persists across refresh, 0.9.5+).
 </connections_entry>
@@ -209,6 +219,7 @@ After `workshop refresh`, run: `workshop connect <workshop>/<consumer-sdk>:svc <
 - `explanation/workshops/concepts.md`
 - `explanation/interfaces/plugs-and-slots.md` (`bind:` vs top-level `connections:`)
 - `how-to/develop-sdks/declare-plugs-slots.md`
+- `how-to/develop-sdks/share-content-between-sdks.md` (prefixes in `sdks:` only; bare names in `connections:`)
 - `how-to/develop-sdks/configure-mount.md` (mount ownership defaults)
 - `how-to/customize-workshops/add-actions.md`
 - `how-to/customize-workshops/add-mounts.md`

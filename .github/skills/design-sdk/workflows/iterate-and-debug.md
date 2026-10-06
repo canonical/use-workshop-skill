@@ -47,7 +47,9 @@ try area.
 `templates/test-workshop.yaml`: `base` matching a packed platform, the SDK
 listed as `- name: try-<NAME>`. Tunnel plugs graft onto the system SDK in
 the test definition when the SDK exposes a service (shape in the template's
-comments).
+comments). The `try-` prefix lives in that `sdks:` entry only: a
+`connections:` entry names the SDK bare (`slot: <NAME>:<slot>`), and
+`try-<NAME>:<slot>` fails the launch as a reserved SDK name.
 
 **Step 3. First run, fail fast.**
 `workshop launch --verbose --wait-on-error` (single-workshop constraint —

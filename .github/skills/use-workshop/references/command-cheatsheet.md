@@ -106,7 +106,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 </workshop_execution>
 
 <workshop_interfaces>
-**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+); `workshop restore` drops them.
+**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. `<SDK>` is the bare name, also for try and in-project SDKs (`dev/mir:install`, not `dev/try-mir:install`). Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+); `workshop restore` drops them.
 - If the second argument is omitted, target is `<WORKSHOP>/system:<PLUG>`.
 - If only `:<SLOT>`: target is `<WORKSHOP>/system:<SLOT>`.
 - If the second argument names only `<WORKSHOP>/<SDK>` (no `:<SLOT>`), the slot is chosen by matching the plug's interface — errors if several slots share that interface.

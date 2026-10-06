@@ -21,6 +21,33 @@
         fail fast. Verification via workshop changes/tasks/info follows.
         Publishing before a healthy try run is the failure mode.
 
+- description: Test workshop wires a consumer to the try SDK's slot by bare names
+  vars:
+    user: |
+      My SDK `mir` exposes a mount slot `install`. Write the spread test's workshop.yaml.in that consumes the try build and wires a small in-project consumer SDK, `mir-consumer`, to that slot through its `mir` plug.
+  assert:
+    - type: contains
+      value: try-mir
+    - type: contains
+      value: "mir:install"
+    # A prefixed reference is a reserved-name launch error (issue #25).
+    # Anchored on the YAML key, so prose naming the wrong form still passes.
+    - type: javascript
+      value: >-
+        !/^\s*(?:-\s*)?(?:plug|slot|bind):\s*['"]?(?:try|project)-/m.test(output)
+    - type: llm-rubric
+      value: |
+        The response's workshop.yaml.in lists `try-mir` and
+        `project-mir-consumer` under sdks:, and its connections: entry
+        pairs `mir-consumer:mir` with `mir:install` — bare SDK names,
+        because the try-/project- prefixes belong in the sdks: list only
+        and a prefixed reference fails the launch as a reserved SDK name.
+        Writing `try-mir:install` or `project-mir-consumer:mir` in
+        connections: is the failure mode. Placing the consumer under the
+        job's own directory (tests/main/<job>/.workshop/mir-consumer/)
+        and showing its sdk.yaml with a mount plug are pluses, NOT
+        required.
+
 - description: setup-base edits need remove plus launch, not refresh
   vars:
     user: |

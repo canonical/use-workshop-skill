@@ -35,7 +35,11 @@ by update-docs-manifest.sh in use-workshop/tests and SHARED by both suites):
               legitimately show snippets rooted at `parts:`/`platforms:`).
 
 Only TOP-LEVEL keys are checked; placeholders like <NAME> only ever appear as
-values, so snippets parse cleanly. A snippet that fails to parse is also an
+values, so snippets parse cleanly. One value check rides along on workshop and
+fragment blocks: a `connections[].plug`/`.slot` or `sdks[].plugs.*.bind`
+reference must name the bare SDK. The try-/project- prefixes belong in
+`sdks[].name` only, and Workshop rejects them in a reference as a reserved SDK
+name (issue #25). A snippet that fails to parse is also an
 error (templates are additionally parsed by `make check-yaml`). API-free and
 offline — part of the free CI gate.
 
@@ -44,7 +48,8 @@ Usage:
                      [--templates-recursive] [--classify-sdk-template]
                      [--classify-sdkcraft-template]
 
---templates-recursive globs templates/**/*.yaml instead of templates/*.yaml;
+--templates-recursive globs templates/**/*.yaml (and *.yaml.in) instead of
+templates/*.yaml;
 --classify-sdk-template classifies a template basename `sdk.yaml` under the
 sdk allowlist. Both are used by the onboard-workshop suite, which ships an
 in-project SDK template tree the sibling does not.
@@ -97,13 +102,16 @@ FENCE_OPEN = re.compile(r"^(\s*)```ya?ml\s*$")
 FENCE_CLOSE = re.compile(r"^\s*```\s*$")
 PATH_COMMENT = re.compile(r"^#\s*(\S+\.ya?ml(?:\.in)?)\b")
 
+# SDK-source prefixes valid only in sdks[].name, never in a reference.
+RESERVED_REF_PREFIXES = ("try-", "project-")
+
 # Kinds with no upstream Workshop schema: parse-checked, never key-checked.
 PARSE_ONLY_BASENAMES = {"spread.yaml": "spread", "task.yaml": "spread"}
 
 
 def classify(block_lines, source_file):
     """Return (kind, allowlist) for a YAML block; allowlist None = parse-only."""
-    if source_file.endswith(".yaml"):  # a templates/ YAML file
+    if source_file.endswith((".yaml", ".yaml.in")):  # a templates/ YAML file
         basename = os.path.basename(source_file)
         if args.classify_sdk_template and basename == "sdk.yaml":
             return "sdk", SDK_KEYS
@@ -129,10 +137,33 @@ def classify(block_lines, source_file):
                     return PARSE_ONLY_BASENAMES[os.path.basename(path)], None
             if path.endswith("sdk.yaml"):
                 return "sdk", SDK_KEYS
-            if path.endswith("workshop.yaml") or re.search(r"\.workshop/[^/]+\.yaml$", path):
+            if path.endswith(("workshop.yaml", "workshop.yaml.in")) or re.search(
+                r"\.workshop/[^/]+\.yaml$", path
+            ):
                 return "workshop", WORKSHOP_KEYS
         break  # only the first non-blank line decides
     return "fragment", FRAGMENT_KEYS
+
+
+def prefixed_refs(data):
+    """Yield (where, ref) for each plug/slot/bind reference to a prefixed SDK."""
+    refs = []
+    connections = data.get("connections")
+    if isinstance(connections, list):
+        for i, conn in enumerate(connections):
+            if isinstance(conn, dict):
+                refs += [(f"connections[{i}].{side}", conn.get(side)) for side in ("plug", "slot")]
+    sdks = data.get("sdks")
+    if isinstance(sdks, list):
+        for entry in sdks:
+            plugs = entry.get("plugs") if isinstance(entry, dict) else None
+            if isinstance(plugs, dict):
+                for plug, spec in plugs.items():
+                    if isinstance(spec, dict):
+                        refs.append((f"sdks[{entry.get('name')}].plugs.{plug}.bind", spec.get("bind")))
+    for where, ref in refs:
+        if isinstance(ref, str) and ref.split(":", 1)[0].startswith(RESERVED_REF_PREFIXES):
+            yield where, ref
 
 
 def iter_blocks(path):
@@ -176,6 +207,12 @@ def check_file(rel, offenders):
         if not isinstance(data, dict):
             # A bare list/scalar has no top-level keys to police.
             continue
+        if kind in ("workshop", "fragment"):
+            for where, ref in prefixed_refs(data):
+                offenders.append(
+                    f"{rel}:{lineno}: {where} '{ref}' names a prefixed SDK; "
+                    "try-/project- belong in sdks[].name only, use the bare name"
+                )
         for key in data:
             if key not in allowlist:
                 offenders.append(
@@ -194,6 +231,7 @@ def main():
         + sorted(glob.glob(os.path.join(skill_root, "references", "*.md")))
         + sorted(glob.glob(os.path.join(skill_root, "workflows", "*.md")))
         + sorted(glob.glob(template_glob, recursive=args.templates_recursive))
+        + sorted(glob.glob(template_glob + ".in", recursive=args.templates_recursive))
     )
     rels = [os.path.relpath(f, skill_root) if os.path.isabs(f) else f for f in files]
 
@@ -203,7 +241,8 @@ def main():
         check_file(rel, offenders)
         count += 1
     if offenders:
-        print("error: skill YAML uses keys outside the upstream schema allowlists.", file=sys.stderr)
+        print("error: skill YAML uses keys outside the upstream schema allowlists,", file=sys.stderr)
+        print("or a plug/slot/bind reference names a try-/project- prefixed SDK.", file=sys.stderr)
         print("Allowlists come from the SHARED use-workshop/tests/allowed-keys.json", file=sys.stderr)
         print("(generated from the upstream JSON schemas). Fix the key, or regenerate", file=sys.stderr)
         print("the allowlist there if the schema genuinely changed. Offenders:", file=sys.stderr)

@@ -177,7 +177,8 @@ workshop info [<workshop>]    # confirm final status (Ready / Waiting / Error)
 Designing adds two checks on top:
 - After every `sdkcraft try`, confirm from its output that the try artifact
   landed, and that the test workshop's `sdks:` list consumes `try-<NAME>`
-  before launching or refreshing.
+  before launching or refreshing — while any `connections:` entry names the
+  bare `<NAME>` (`<NAME>:<slot>`; the prefix is for `sdks:` only).
 - After `sdkcraft test`, report the result per job (job name → pass/fail),
   never as a bare exit status.
 

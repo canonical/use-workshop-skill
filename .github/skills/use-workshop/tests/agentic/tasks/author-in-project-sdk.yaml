@@ -49,8 +49,8 @@
     # agent claimed.
     - type: javascript
       value: /"stdout":\s*"[^"]*Status:\s*Ready/i.test(output)
-    # The captured workshop info shows the SDK installed under its
-    # project-<name> identity.
+    # The definition lists the SDK as project-ruff (workshop info itself
+    # prints the bare name, so this matches the captured definition).
     - type: javascript
       value: /project-ruff/i.test(output)
     - type: llm-rubric

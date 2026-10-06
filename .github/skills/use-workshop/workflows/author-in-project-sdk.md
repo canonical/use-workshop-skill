@@ -73,6 +73,8 @@ sdks:
   - name: project-<NAME>     # mandatory project- prefix
 ```
 
+The prefix appears only in this `sdks:` entry. A `connections:` or `bind:` reference to the SDK, or a `workshop connect` argument, uses the bare `<NAME>` (`<NAME>:<plug>`); `project-<NAME>:<plug>` fails as a reserved SDK name.
+
 **Step 6. Apply: refresh.**
 
 ```
@@ -87,7 +89,7 @@ Use `--wait-on-error` on the FIRST install of an in-project SDK — hook bugs ar
 workshop changes               # newest change has Status: Done
 workshop tasks <ID>            # every task Done; the SDK install task
                                # log shows hook stdout/stderr
-workshop info                  # the SDK appears as project-<NAME>;
+workshop info                  # the SDK appears under its bare <NAME>;
                                # status: Ready
 workshop exec -- <a check>     # e.g., the tool the hook installed is on PATH
 ```
@@ -129,7 +131,7 @@ workshop info
 
 Plus a project-specific check (the hook's promised effect: e.g., `workshop exec -- <tool> --version`, or a smoke test).
 
-Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK project-<NAME> hooks ran: <list>. Verified: <smoke test result>."**
+Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK <NAME> hooks ran: <list>. Verified: <smoke test result>."**
 </verification>
 
 <anti_patterns>
@@ -143,7 +145,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK proj
 </anti_patterns>
 
 <success_criteria>
-- `workshop info` lists `project-<NAME>` as installed.
+- `workshop info` lists the SDK (under its bare `<NAME>`) as installed.
 - The hook's promised effect is verifiable via `workshop exec` (e.g., the installed tool resolves on `$PATH`).
 - `.workshop/<NAME>/` is committable: `sdk.yaml` plus `hooks/` scripts (executable bits set by convention).
 - For a `check-health`-using SDK, the workshop status reflects the hook's `set-health` call.

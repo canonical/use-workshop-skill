@@ -35,8 +35,8 @@ Each workshop has a friendly DNS name of the form `<WORKSHOP>.<PROJECT>.wp` (0.9
 A bundled, layered unit of code/data/configuration installed on top of the base. Several origins:
 - **Regular SDK**: from the SDK Store, versioned with `channel:`. Default channel is `latest/stable`.
 - **System SDK**: built into Workshop; named `system`; auto-installed first; provides default slots for camera, desktop, GPU, mount, ssh-agent. Cannot be removed.
-- **In-project SDK**: defined under `.workshop/<NAME>/sdk.yaml` in the project directory; referenced as `project-<NAME>` in the workshop definition.
-- **Try SDK**: locally available SDK produced by the SDK-authoring toolchain (out of scope here), referenced as `try-<NAME>` (no `channel`).
+- **In-project SDK**: defined under `.workshop/<NAME>/sdk.yaml` in the project directory; listed as `project-<NAME>` under the definition's `sdks:`; connections and CLI references use the bare `<NAME>`.
+- **Try SDK**: locally available SDK produced by the SDK-authoring toolchain (out of scope here), listed as `try-<NAME>` under `sdks:` (no `channel`); connections and CLI references use the bare `<NAME>`.
 - **Sketch SDK**: a transient, per-workshop, single-instance SDK opened in `$EDITOR` via `workshop sketch-sdk`. Stored under `$XDG_DATA_HOME/workshop/`. Can be ejected as an in-project SDK.
 </term>
 
