@@ -164,7 +164,7 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 - `workshop refresh` + `workshop connect <workshop>/<sdk>:<name> :custom-device` (never auto-connects).
 
 **User wants an SDK to read a mount from another (regular) SDK, not the host/system default:**
-- Add a top-level `connections:` entry pairing `consumer-sdk:<plug>` with `provider-sdk:<slot>` — a regular-SDK mount slot does not auto-connect.
+- Add a top-level `connections:` entry pairing `consumer-sdk:<plug>` with `provider-sdk:<slot>` — a regular-SDK mount slot does not auto-connect. Both references take the bare SDK name, even for a `try-`/`project-` SDK (see `definition-file.md`).
 
 **User wants to set ownership/permissions on a mounted directory:**
 - Add `uid`/`gid`/`mode`/`read-only` to the mount plug (see the mount section); they apply only when Workshop creates the target.

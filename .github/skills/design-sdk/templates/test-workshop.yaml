@@ -19,7 +19,9 @@ sdks:
   #      endpoint: <port>
 
 # Wire optional mount slot/plug pairs explicitly — policy default is the
-# system slot, and multi-eligible order is not guaranteed:
+# system slot, and multi-eligible order is not guaranteed. References take
+# the BARE SDK name: try-/project- prefixes belong in sdks: only, and
+# try-<name>:<slot> fails as a reserved SDK name:
 #connections:
 #  - plug: <consumer>:<plug>
-#    slot: <provider>:<slot>
+#    slot: <name>:<slot>

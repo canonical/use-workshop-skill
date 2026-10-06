@@ -26,6 +26,7 @@ handing anything to the try loop.
 | 13 | Assuming hardlinks work on mount-backed paths | Mounts cross filesystems | Configure a copy fallback (e.g. `UV_LINK_MODE=copy` in `~/.profile`, with a comment) |
 | 14 | Using the base (`24.04`) as a Store track, or expecting `check-health` to get >5 s | Tracks are for versions/variants — platforms are tracked automatically; the health runner times out at five seconds per attempt (waiting ×10 max) | Version-style tracks (`1.x`); report `waiting` while starting |
 | 15 | Installing the SDK's own software at runtime (`pip`/`uv`/`npm` from a hook into `~/…` or `$SDK/venv`) | The SDK tree is mounted read-only and version-locked; a runtime install lands in user-writable space where it can self-update outside Workshop's version management — and the packed SDK image is empty | Bake the deliverable into a part at build time (a Python application: the hermes pattern, interpreter bundled — the maintainers call the Python mechanism unsettled, so present it as try-loop-verified, not settled); runtime installs are only for shared environments (venv slot consumers) and apt |
+| 16 | `try-<NAME>:<slot>` or `project-<NAME>:<plug>` in a test workshop's `connections:` (or a `bind:` target) | The prefix only marks where an `sdks:` entry comes from; Workshop strips it, and a prefixed reference fails as `"try-<NAME>" is a reserved SDK name` | List `try-<NAME>` / `project-<NAME>` under `sdks:`, reference the bare `<NAME>:<slot>` everywhere else |
 </traps>
 
 <verification_habits>
@@ -41,5 +42,6 @@ handing anything to the try loop.
 - `explanation/sdks/best-practices.md` (services, parts-vs-hooks, env-var doctrine)
 - `explanation/sdks/runtime-hooks.md` (hook privileges, health timing, state semantics)
 - `explanation/interfaces/plugs-and-slots.md` (auto-connect policy, connections/bind exclusivity)
+- `how-to/develop-sdks/share-content-between-sdks.md` (prefixes in `sdks:` only; bare SDK names in `connections:`)
 - `how-to/develop-sdks/publish-an-sdk.md` (track naming caution)
 </source_docs>

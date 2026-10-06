@@ -25,7 +25,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 
 <type name="In-project SDK">
 **Origin:** defined inside the project directory.
-**YAML name:** `project-<NAME>` (mandatory prefix).
+**YAML name:** `project-<NAME>` (mandatory prefix, in the `sdks:` entry only; `connections:`, `bind:` and CLI references use the bare `<NAME>`).
 **File layout:** `.workshop/<NAME>/sdk.yaml` plus `.workshop/<NAME>/hooks/`.
 **Lifetime:** version-controlled with the project; installed at launch.
 **When to use:** project-specific tooling that doesn't belong in the public Store. Multiple workshops in the same `.workshop/` directory can share one in-project SDK by listing it under `sdks:`.
@@ -45,9 +45,9 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 
 <type name="Try SDK">
 **Origin:** locally available, produced by the SDK-authoring toolchain (the sibling `design-sdk` skill's territory).
-**YAML name:** `try-<NAME>`. No `channel`.
+**YAML name:** `try-<NAME>` (in the `sdks:` entry only; `connections:`, `bind:` and CLI references use the bare `<NAME>`). No `channel`.
 **Lifetime:** local only; not in the Store.
-**When to encounter:** if the user already has a try SDK on disk and wants to consume it from a workshop. Reference it as `try-<NAME>` in the `sdks:` list.
+**When to encounter:** if the user already has a try SDK on disk and wants to consume it from a workshop. List it as `try-<NAME>` in the `sdks:` list.
 </type>
 
 </sdk_types>
@@ -60,7 +60,7 @@ Five kinds of SDKs are referenced in workshop definitions and on the CLI. They d
 
 **User wants project-specific tooling (one or more workshops, hooks of their own):**
 - Author an in-project SDK at `.workshop/<NAME>/sdk.yaml` plus `.workshop/<NAME>/hooks/<HOOK>` scripts.
-- Reference it as `project-<NAME>` in each workshop definition.
+- List it as `project-<NAME>` under `sdks:` in each workshop definition; wire its plugs and slots by the bare `<NAME>`.
 - Full schema, hook taxonomy, and end-to-end procedure: see `references/in-project-sdk.md` and `workflows/author-in-project-sdk.md`.
 
 **User reports an SDK was "installed" but its tool isn't behaving as expected:**
