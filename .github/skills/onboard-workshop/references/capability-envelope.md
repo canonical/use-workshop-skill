@@ -23,7 +23,8 @@ The complete expressive surface of a workshop definition:
 | `sdks[].plugs` / `sdks[].slots` | Graft interface endpoints onto any listed SDK (incl. `system`) | Tunnels for dev servers; desktop/gpu/device access |
 | `connections` | Explicit plug↔slot wiring when auto-connect isn't enough | venv sharing, cross-SDK content |
 | `actions` | Named bash scripts (`errexit`+`pipefail`; args as `"$@"`); parsed at `workshop run` time, no refresh needed | The repo's build/test/lint/serve commands |
-| Interfaces | `tunnel` (ports/sockets; system-SDK plugs can't use ports 1–1023), `mount`, `gpu`, `camera`, `desktop`, `ssh-agent`, `custom-device` | Host resources |
+| Interfaces | `tunnel` (ports/sockets; system-SDK plugs can't use ports 1–1023), `mount`, `gpu`, `camera`, `desktop`, `ssh-agent`, `custom-device`, `secret` (0.9.8+) | Host resources |
+| Credentials | A `secret` slot under `system` (keyring lookup attributes only) for an SDK that declares a `secret` plug; **always** connected by the user with `workshop connect`, never by `connections:`; needs a desktop keyring session. Or no wiring at all: `workshop run --env NAME` filled from the host's store per run | Only when the dev loop needs an API key/token; never values, never in actions |
 | In-project SDK | `.workshop/<name>/sdk.yaml` + `hooks/` scripts (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`; `+x` is house style — Workshop runs hooks with bash regardless) | Repo-specific apt packages and setup |
 | Project mount | Host project directory appears at `/project/` inside the workshop | All actions run against it |
 </envelope>
@@ -40,6 +41,12 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
   keys.** The top-level keys are `name`, `base`, `runtime`, `sdks`,
   `connections`, `actions` — nothing else. Environment setup and daemons belong to SDKs;
   mounts are interface endpoints.
+- **No secret values, and no invented lookups.** A proposal never contains
+  an API key or token, a placeholder that looks like one, a `--env NAME=<value>`
+  line, or keyring attributes the user hasn't chosen — and never claims a
+  `secret` connection was made or verified. The skill cannot store the value
+  or connect the plug; it names the variable and hands the user those two
+  steps.
 - **No non-Ubuntu bases.** No Alpine, Fedora, Debian, or arbitrary images.
 - **No non-Linux toolchains.** Workshops are Ubuntu LXD instances: no macOS
   (Xcode/iOS), Windows (MSVC/.NET Framework), or BSD-only builds.
@@ -186,6 +193,7 @@ Fallback offered:              # only for low-confidence PARTIAL
 - `reference/definition-files/schema.json`
 - `explanation/interfaces/tunnel-interface.md`
 - `explanation/interfaces/custom-device-interface.md`
+- `explanation/interfaces/secret-interface.md` (secret slots on `system` only, never auto-connected)
 - `explanation/sdks/concepts.md`
 - `explanation/workshops/projects.md`
 </source_docs>

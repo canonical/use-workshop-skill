@@ -27,3 +27,12 @@ name: <sdk-name>
 # plugs:
 #   desktop:
 #     interface: desktop
+#
+# A credential the dev loop needs on every run (Workshop 0.9.8+) — only when
+# the user asked for it; the default is `workshop run --env NAME`. No
+# attributes, never a value: the user adds a `secret` slot under `system`
+# and runs `workshop connect <ws>/<sdk-name>:api-key <ws>/system:<slot>`.
+# Inside the workshop it is read with
+# `workshopctl get-secret <sdk-name>.api-key` (bare name, no `project-`):
+#   api-key:
+#     interface: secret
