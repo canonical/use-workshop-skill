@@ -201,3 +201,47 @@
         standalone tool to symlink into /usr/local/bin, and it does not
         invent a sharing mechanism outside the mount interface or claim
         the slot auto-connects.
+
+- description: An API key the user supplies maps to a secret plug, not a mount (0.9.8)
+  vars:
+    user: |
+      Design an SDK for the `acme` CLI. It needs the user's Acme API key at runtime and reads it only from the ACME_API_KEY environment variable. Users shouldn't have to paste the key into files.
+  assert:
+    - type: contains
+      value: "interface: secret"
+    - type: contains
+      value: workshopctl get-secret
+    - type: llm-rubric
+      value: |
+        The response maps the credential to a `secret` plug (Workshop
+        0.9.8+ / SDKcraft 0.9.4+) declared in sdkcraft.yaml with no
+        attributes, and — because the tool only reads an environment
+        variable — an SDK-shipped wrapper that runs `workshopctl get-secret
+        acme.<plug>` per invocation and exports ACME_API_KEY only for the
+        tool process, giving an ACME_API_KEY already set in the
+        environment precedence. The wrapper (not the raw binary) goes on
+        PATH via setup-base. It states the consumer's manual steps (store
+        the key, add a `secret` slot under `system`, `workshop connect`)
+        for the README. Failure modes: a mount plug for a key file, a hook
+        that fetches the key and writes it to /etc/profile.d or
+        ~/.profile, attributes or a value on the plug in sdkcraft.yaml, or
+        claiming the plug auto-connects.
+
+- description: A tool with a credential-helper setting uses get-secret as the helper
+  vars:
+    user: |
+      My SDK packages a CLI that supports an `apiKeyHelper`-style setting: it runs a command and uses its stdout as the API key. How should the SDK feed it the user's key?
+  assert:
+    - type: contains
+      value: workshopctl get-secret
+    - type: llm-rubric
+      value: |
+        The response recommends configuring the tool's credential helper
+        to run `workshopctl get-secret <SDK>.<PLUG>` for a `secret` plug,
+        because the tool then fetches the key only when needed and the
+        key never enters the environment of the commands the tool runs.
+        Enabling the helper only when the secret is actually readable (or
+        otherwise handling an unconnected plug gracefully, since a failing
+        helper may not fall back to other logins) is a plus. It does NOT
+        export the key from a hook or profile.d, and does NOT store it in a
+        mounted file.

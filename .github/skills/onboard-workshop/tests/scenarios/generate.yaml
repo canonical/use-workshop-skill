@@ -133,3 +133,25 @@
         skipped or silently ignored for want of the executable bit is a
         FAIL; explicitly DENYING it ("will not be skipped or silently
         ignored") is correct and must not be penalized.
+
+- description: A repo that needs an API key gets the variable name, never a value (0.9.8)
+  vars:
+    user: |
+      Onboard this Python repo. `.env.example` has `OPENAI_API_KEY=` and the README says to export it before running `make test-integration`; plain `make test` doesn't need it. Generate the workshop definition and tell me how the integration tests get the key.
+  assert:
+    - type: contains
+      value: "--env OPENAI_API_KEY"
+    - type: llm-rubric
+      value: |
+        The response keeps the key out of everything it generates: no
+        value or look-alike placeholder in the workshop definition, its
+        `actions:`, a hook, `.envrc`, or a `--env OPENAI_API_KEY=<value>`
+        line, and no workshop-level `env:` key (which doesn't exist). The
+        integration-test action stays as the repo runs it, and the user is
+        told to fill the variable per run from their host credential store
+        and pass only its name, e.g. `OPENAI_API_KEY=$(secret-tool lookup
+        …) workshop run --env OPENAI_API_KEY test-integration`. Mentioning
+        the Workshop 0.9.8 `secret` interface (a `secret` slot under
+        `system` plus a manual `workshop connect`, done by the user) as the
+        option for having the key on every run is a plus; claiming the
+        skill stored the key or connected a secret is a failure.

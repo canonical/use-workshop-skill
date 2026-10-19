@@ -49,6 +49,7 @@ tests:
   - file://scenarios/runtime.yaml
   - file://scenarios/daily-ops.yaml
   - file://scenarios/interfaces.yaml
+  - file://scenarios/secrets.yaml
   - file://scenarios/parallel-envs.yaml
   - file://scenarios/troubleshoot.yaml
   - file://scenarios/troubleshoot-multiturn.yaml

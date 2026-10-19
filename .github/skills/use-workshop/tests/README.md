@@ -117,7 +117,7 @@ Rules of the road for the HTTP lane, when it runs again:
 
 ## What the suites test
 
-### Routing (91 cases across 14 scenario files)
+### Routing (105 cases across 15 scenario files)
 
 Each test case puts a real user prompt in front of the skill (loaded as
 the system message) and asserts on the model's response with three
@@ -132,7 +132,7 @@ kinds of checks:
   (e.g., "the response defers SDK authoring to the docs and does not
   improvise `sdkcraft` commands").
 
-### Agentic E2E (8 tasks across 8 of 10 skill workflows)
+### Agentic E2E (9 tasks across 8 of 10 skill workflows)
 
 Each task spawns `claude -p` in a fresh tmp sandbox where the
 `use-workshop` skill is the only one installed, and asserts on the
@@ -142,7 +142,10 @@ independently after the agent stops (`workshop info`,
 `workshop list --global`, `lxc list --all-projects`).
 
 `agentic/README.md` documents the harness, permission posture, fixture
-layout, and how to author new tasks.
+layout, and how to author new tasks. `provide-secret` (0.9.8) needs an
+unlocked desktop keyring on the machine running the suite: its `setup_cmd`
+stores a throwaway item and its `teardown_cmd` clears it, and the task fails
+if that value ever appears in the transcript.
 
 ## Files
 

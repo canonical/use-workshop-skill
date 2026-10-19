@@ -48,7 +48,10 @@ agentic/
 The shared `../../../_testlib/provider-agentic.js` does the work:
 
 1. Creates a fresh tmp sandbox dir.
-2. Copies the task's fixture (if any) into the sandbox.
+2. Copies the task's fixture (if any) into the sandbox, then runs the
+   task's `setup_cmd` (if any) on the host in the sandbox dir — for state
+   the task assumes the user already has, such as a throwaway keyring item.
+   A failing `setup_cmd` errors the case before the agent starts.
 3. Copies the configured skill(s) from `.github/skills/` into the sandbox's
    `.claude/skills/` (so the CLI auto-loads them and ONLY them).
 4. Spawns `claude -p` with `--output-format stream-json --verbose`, the
@@ -62,7 +65,8 @@ The shared `../../../_testlib/provider-agentic.js` does the work:
 6. Captures post-state independently of the agent: `workshop list --global`,
    `workshop info <name>`, `workshop changes`, `lxc list --all-projects`.
 7. Tears down: `workshop remove --force <name>` for every name in
-   `cleanup_workshops`, then `rm -rf` the sandbox.
+   `cleanup_workshops`, the task's `teardown_cmd` (always, once — even when
+   the run throws), then `rm -rf` the sandbox.
 8. Returns `{ output: "<transcript>\n--- WORKSHOP STATE AFTER ---\n..." ,
    metadata: {...} }` so promptfoo's text-based asserts (`contains`,
    `llm-rubric`) work against the transcript and `javascript` asserts
@@ -71,7 +75,7 @@ The shared `../../../_testlib/provider-agentic.js` does the work:
 ## Running
 
 ```sh
-ANTHROPIC_API_KEY=... bash ../scripts/run-agentic.sh
+bash ../scripts/run-agentic.sh   # subscription login; no API key
 ```
 
 Filter to one task:
