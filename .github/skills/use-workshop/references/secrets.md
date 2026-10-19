@@ -109,6 +109,7 @@ The keyring lives in the user's **desktop session**: a headless host, an SSH ses
 - Removing the plug from the SDK, or the slot from the definition, drops the connection. `workshop restore` drops it too (like every manual connection).
 - Each request is a fresh lookup: a value changed in the keyring takes effect on the next request, with no refresh.
 - Disconnecting stops new requests; it cannot take back a value a process already received.
+- The `Retrieve secret` changes show that a request happened, never the value — and they are pruned like any other change. Troubleshooting history, **not an audit trail**: don't promise the user they can review after the fact everything that read the secret.
 </lifecycle>
 
 <exposure>

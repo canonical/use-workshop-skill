@@ -37,7 +37,7 @@ There is now a first-party extension, `canonical.workshop` (`code --install-exte
 | (expanded workshop row) | `workshop info` |
 | Reopen Locally / Open Definition File | no equivalent — these only move the VS Code window |
 
-Two limits worth stating unprompted: the Add-New-Workshop wizard lists only Canonical's reference SDKs, so any other SDK goes into the definition by hand; and plain Remote-SSH to `<workshop>.<project>.wp` (Step 1) still works with no extension at all. Recommend the extension when the user is already in VS Code; don't make it a prerequisite.
+Two limits worth stating unprompted: the Add-New-Workshop wizard lists only Canonical's reference SDKs, so any other SDK goes into the definition by hand; and plain Remote-SSH to `<workshop>.<project>.wp` (Step 1) still works with no extension at all. Recommend the extension when the user is in VS Code — they named it, or asked about it; don't make it a prerequisite. For a vendor-neutral question ("my IDE", "a remote IDE"), answer with Step 1 alone, plus at most one line that VS Code users also have an extension — no VS Code section, version requirements, or install commands the user didn't ask for.
 
 **Step 2. Non-SSH services: identify the direction.**
 - A workshop service the host needs (HTTP dev server, WebSocket, Jupyter) → pattern A below.
