@@ -22,7 +22,7 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
 | `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted, but warns on every launch/refresh and breaks in the release after 0.9.7 |
-| `confinement` | optional | string | `container` (default when the key is absent) or `virtual-machine` (0.9.7+, experimental and snap-gated). Fixed at launch. See `references/confinement.md` |
+| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/edge`). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key is silently ignored. See `references/runtime.md` |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |
 | `actions` | optional | map | Named bash scripts invoked via `workshop run` |
@@ -139,11 +139,11 @@ actions:
 
 <minimal_examples>
 
-**VM confinement (0.9.7+, experimental — needs the snap opt-in; no SDKs on stock LXD):**
+**VM runtime (experimental — needs the snap opt-in; no SDKs on LXD `6/stable`):**
 ```yaml
 name: dev
 base: ubuntu@24.04
-confinement: virtual-machine
+runtime: lxd-vm
 actions:
   <action>: |
     <command>

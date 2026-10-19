@@ -107,7 +107,7 @@ The `manual` note appears in `workshop connections`.
 
 **Persistence (0.9.5+):** a manual connection survives `workshop refresh` for as long as its plug and slot still exist in the definition — no re-connect ritual after each refresh. What resets wiring to the definition's auto-connect defaults is `workshop restore` (drops manual connects, re-establishes manual disconnects regardless of `--forget`, resets remount sources) — or `workshop remove` + `launch`, which starts from scratch.
 
-**VM confinement is the exception (0.9.7+).** A `confinement: virtual-machine` workshop skips auto-connect at launch *and* at refresh and restores nothing, so every connection is manual and every refresh loses it — re-run `workshop connect` after each one. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) don't work in a VM at all, and on a stock LXD a VM cannot carry SDKs, so it has no plugs to wire. Check `workshop info`'s `confinement:` line before diagnosing "my connections keep vanishing". See `references/confinement.md`.
+**The VM runtime is the exception.** A `runtime: lxd-vm` workshop skips auto-connect at launch *and* at refresh and restores nothing, so every connection is manual and every refresh loses it — re-run `workshop connect` after each one. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) don't work in a VM at all, and on LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire. Check `workshop info`'s `runtime:` line before diagnosing "my connections keep vanishing". See `references/runtime.md`.
 
 **Step 5. Reassign a mount source.**
 ```

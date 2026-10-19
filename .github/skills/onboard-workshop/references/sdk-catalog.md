@@ -21,7 +21,7 @@ Regenerate via `tests/scripts/update-sdk-catalog.sh` (maintainer-only).
 
 <catalog>
 <!-- catalog:start -->
-Generated from canonical/reference-sdks @ 070f581d on 2026-09-22 (hand-curated v1)
+Generated from canonical/reference-sdks @ 5f07cedc on 2026-10-19 (hand-curated v1)
 — fallback only; always prefer live `sdk find`.
 
 | SDK | Provides | Typical channels | Matching repo signals |
@@ -47,7 +47,7 @@ Generated from canonical/reference-sdks @ 070f581d on 2026-09-22 (hand-curated v
 | `direnv` | direnv | `latest/stable` | `.envrc` |
 | `vscode-remote` | VS Code remote server prerequisites — **deprecated (0.9.5)**: automatic OpenSSH config makes it obsolete and the `canonical.workshop` VS Code extension has taken over; still published, but do NOT propose for new definitions — steer to the extension or plain Remote-SSH via `<ws>.<project>.wp` | `latest/stable` | user wants VS Code attach (legacy repos may still list it) |
 | `github-runner` | Self-hosted GitHub Actions runner | `latest/stable` | act/runner workflows |
-| `claude-code`, `codex`, `copilot`, `opencode`, `agy` | AI coding agents (`agy` = Antigravity CLI, 0.9.4+) | `latest/stable` | user asks for agent tooling |
+| `claude-code`, `codex`, `copilot`, `opencode`, `agy`, `pi` | AI coding agents (`agy` = Antigravity CLI, 0.9.4+; `pi` = Pi Coding Agent, listed 2026-10). Before proposing one, read `sdk info <name>`'s publisher mark and the agent-security caveats (see `use-workshop/references/runtime.md`) | `latest/stable` | user asks for agent tooling |
 <!-- catalog:end -->
 </catalog>
 

@@ -13,7 +13,7 @@ A workshop is a graph of capabilities wired through two named endpoints that bot
 </model>
 
 <auto_vs_manual>
-**VM confinement (0.9.7+) voids this whole table.** A `confinement: virtual-machine` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On stock LXD a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/confinement.md`.
+**The VM runtime voids this whole table.** A `runtime: lxd-vm` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/runtime.md`.
 
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|

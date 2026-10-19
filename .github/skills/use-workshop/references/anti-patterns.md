@@ -91,15 +91,21 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 </anti_pattern>
 
 <anti_pattern name="Refreshing to switch a launched workshop between container and VM">
-**Wrong:** editing `confinement:` in the definition of a launched workshop and running `workshop refresh` to apply it.
-**Why it's bad:** confinement is fixed at launch. The refresh fails with `confinement changed from "container" to "virtual-machine"` and nothing changes — the snapshot is keyed on confinement, so the daemon cannot reproduce the workshop under the other sandbox.
-**Right:** `workshop remove <NAME>` then `workshop launch <NAME>`. This is one of the few places where remove+launch is correct rather than the anti-pattern at the top of this file. Warn the user first that it discards manual `connect`/`remount` wiring. See `references/confinement.md`.
+**Wrong:** editing `runtime:` in the definition of a launched workshop and running `workshop refresh` to apply it.
+**Why it's bad:** the runtime is fixed at launch. The refresh fails with `runtime changed from "lxd-container" to "lxd-vm"` and nothing changes — the snapshot is keyed on the runtime, so the daemon cannot reproduce the workshop under the other sandbox.
+**Right:** `workshop remove <NAME>` then `workshop launch <NAME>`. This is one of the few places where remove+launch is correct rather than the anti-pattern at the top of this file. Warn the user first that it discards manual `connect`/`remount` wiring. See `references/runtime.md`.
+</anti_pattern>
+
+<anti_pattern name="Carrying a 0.9.7 `confinement:` key into 0.9.8">
+**Wrong:** writing `confinement: virtual-machine` (the 0.9.7 keyword) in a definition for Workshop 0.9.8+, or reading a definition that has it as "this is a VM".
+**Why it's bad:** 0.9.8 renamed the key to `runtime:`, and the workshop definition is not strictly validated — the old key is silently ignored. The workshop launches as an ordinary container with no error and no warning, so the user believes they have a VM boundary they don't have.
+**Right:** `runtime: lxd-vm` (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
 </anti_pattern>
 
 <anti_pattern name="Promising SDKs, interfaces, or health checks in a VM workshop">
-**Wrong:** proposing a `confinement: virtual-machine` definition that carries `sdks:`, `connections:`, or a tunnel, and treating it like a container with a stronger wall.
-**Why it's bad:** on a stock LXD a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need an LXD that can mount shifted disks into a VM, i.e. `latest/edge`. Even where SDKs do work, a VM skips auto-connect at launch *and* refresh, has no proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device), and never runs `check-health`, so `workshop info` shows no SDK health notes.
-**Right:** default to container confinement. Only reach for a VM when the user explicitly needs the harder boundary or nested virtualization, and when you do, say up front what it gives up and check the LXD capability first. See `references/confinement.md`.
+**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:`, `connections:`, or a tunnel, and treating it like a container with a stronger wall.
+**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/edge`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM skips auto-connect at launch *and* refresh, has no proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device), and never runs `check-health`, so `workshop info` shows no SDK health notes. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
+**Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up and what the LXD switch costs. See `references/runtime.md`.
 </anti_pattern>
 
 <anti_pattern name="Offering `workshop refresh` for every post-update refusal">
@@ -122,5 +128,7 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `explanation/workshops/concepts.md`
 - `reference/cli/workshop.md` (launch, refresh sections)
 - `reference/workshops.md` (backward- and forward-compatibility policy)
-- `release-notes/v0.9.7.md` (VM confinement and its limits)
+- `release-notes/v0.9.7.md` (VM workshops introduced, and their limits)
+- `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`)
+- `how-to/customize-workshops/use-virtual-machines.md` (VM prerequisites and limitations)
 </source_docs>
