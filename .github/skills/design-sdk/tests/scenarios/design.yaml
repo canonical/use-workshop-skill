@@ -207,8 +207,14 @@
     user: |
       Design an SDK for the `acme` CLI. It needs the user's Acme API key at runtime and reads it only from the ACME_API_KEY environment variable. Users shouldn't have to paste the key into files.
   assert:
-    - type: contains
-      value: "interface: secret"
+    # The design workflow is interview-first: a correct answer can name the
+    # secret plug in prose and defer the YAML to the proposal, so no literal
+    # `interface: secret` token is required (first 0.9.8 run, 2026-10-19).
+    - type: icontains-any
+      value:
+        - "interface: secret"
+        - secret plug
+        - "`secret` plug"
     - type: contains
       value: workshopctl get-secret
     - type: llm-rubric
