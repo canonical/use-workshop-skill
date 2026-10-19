@@ -101,7 +101,7 @@ lxc query /1.0/metadata/configuration | jq -r '.configs["device-disk"]["device-c
 
 `container` means container-only. Workshop probes this at runtime, so the restriction disappears on its own once LXD is new enough. A workshop that declares no SDKs is unaffected.
 
-**3. Interfaces are not auto-connected.** Launching a VM skips the auto-connect step entirely, and so does refreshing one — the connection persistence that holds for containers does **not** apply here. Wire what you need with `workshop connect`, and re-wire after every refresh. Interfaces backed by LXD proxy devices — tunnel, desktop, ssh-agent, camera, custom-device — are unavailable in a VM regardless. The `workshopctl` binary is still installed inside a VM, but the socket it talks to is not created, so don't read its presence as proof the interface machinery is live.
+**3. Interfaces are not auto-connected.** Launching a VM skips the auto-connect step entirely, and so does refreshing one — the connection persistence that holds for containers does **not** apply here. Wire what you need with `workshop connect`, and re-wire after every refresh. Interfaces backed by LXD proxy devices — tunnel, desktop, ssh-agent, camera, custom-device — are unavailable in a VM regardless. The `workshopctl` binary is still installed inside a VM, but the socket it talks to is not created, so don't read its presence as proof the interface machinery is live — and don't promise `workshopctl get-secret` (the `secret` interface, `references/secrets.md`) in a VM either.
 
 **4. SDK health checks do not run.** `check-health` is skipped after launch and refresh, so `workshop info` reports no SDK health notes for a VM. Do not wait for a health signal that will not arrive.
 

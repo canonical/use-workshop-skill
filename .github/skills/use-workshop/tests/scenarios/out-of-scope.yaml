@@ -19,7 +19,7 @@
         Store) as long as such offers are clearly distinct from the
         handed-off publishing topic.
 
-- description: User asks about workshopctl
+- description: User asks about workshopctl (0.9.8 — set-health and get-secret)
   vars:
     user: |
       What is workshopctl and when do I use it?
@@ -28,26 +28,22 @@
       value: workshopctl
     - type: contains-any
       value:
-        - "out of scope"
-        - "this skill does not"
-        - "not covered"
-        - "in-workshop"
-        - "inside the workshop"
-        - "SDK hook"
-        - health
+        - set-health
+        - get-secret
     - type: llm-rubric
       value: |
-        The response identifies `workshopctl` as the in-workshop
-        health-reporting tool used by SDK hooks, tells the user that
-        driving it as a standalone CLI (from a terminal, outside a hook)
-        is out of scope / not something they normally do, and points to
-        the docs for the full CLI. Explaining or exemplifying
-        `workshopctl set-health` INSIDE a `check-health` hook the user
-        would author is in scope for this skill (hook authoring is
-        covered here) and must not be counted against the response —
-        the failure mode is presenting workshopctl as a general-purpose
-        CLI to drive from outside hooks, or omitting the
-        standalone-is-out-of-scope framing entirely.
+        The response identifies `workshopctl` as the CLI that runs INSIDE a
+        workshop and talks to the Workshop daemon, and names its two
+        documented uses: `workshopctl set-health` from an SDK's
+        `check-health` hook, and (Workshop 0.9.8+) `workshopctl get-secret
+        <SDK>.<PLUG>`, which reads a credential through a connected `secret`
+        plug — typically called by an SDK's wrapper or service, and by the
+        user via `workshop exec` to check a lookup. Naming both is ideal;
+        naming one with a pointer to the docs for the rest passes. It does
+        NOT present workshopctl as a general-purpose host CLI with other
+        invented subcommands, and if it shows `get-secret` it does not print
+        the value to "check" it (counting bytes or discarding output is the
+        right pattern).
 
 - description: User asks about sdkcraft pack vs workshop launch
   vars:

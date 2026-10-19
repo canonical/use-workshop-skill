@@ -31,6 +31,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - The runtime cannot change on a launched workshop: editing `runtime:` and refreshing fails with `runtime changed from "lxd-container" to "lxd-vm"`. The only path is `remove` + `launch` — the one case where that is the right answer rather than the anti-pattern.
 - In a VM workshop (`runtime: lxd-vm`), refresh skips auto-connect entirely and restores nothing, so the stickiness below does not apply — re-wire with `workshop connect` after every refresh.
 - Connection stickiness (0.9.5+): manual `workshop connect` connections are PRESERVED across refresh (as long as their plugs and slots still exist in the new definition), and a manual `workshop disconnect` made without `--forget` stays disconnected. Auto-connections are re-evaluated as usual. `workshop restore` is the reset, not refresh.
+- Connection maintenance (0.9.8+): a preserved manual connection is DROPPED when the refresh changes something it depends on — a tunnel plug's or slot's `endpoint`, a custom-device plug's filter attributes, a secret slot's `attributes`/`collection`. The refresh succeeds and prints `WARNING: There is 1 new warning. See "workshop warnings".`; the warning reads `disconnected "<WS>/<SDK>:<PLUG>" from "<WS>/<SDK>:<SLOT>" because its definition changed`. Reconnect to approve the new definition. Mount, camera, desktop, GPU and ssh-agent connections are always kept.
 - The recovery path for ANY hook failure during refresh is the diagnostic flow (`workshop changes` → `workshop tasks <ID>`) and `--wait-on-error` for live debug, NOT remove+launch. See `workflows/troubleshoot.md` and `references/async-and-recovery.md`.
 - Note for in-project SDK authors only: `setup-base` is a creation-only hook (it becomes part of the workshop snapshot at launch), so picking up edits to a `setup-base` *script* requires recreating the workshop. This is an authoring-time constraint, not a recovery prescription. See `references/in-project-sdk.md` for the full hook taxonomy.
 - Example: `workshop refresh --wait-on-error`
@@ -86,11 +87,19 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 **`workshop okay`** — Acknowledge all warnings printed by the previous `workshop warnings` call.
 </workshop_introspection>
 
+<workshopctl_in_the_workshop>
+`workshopctl` runs *inside* a workshop and talks to the daemon over a socket. Two subcommands exist; anything else about it is a docs pointer (`reference/cli/workshopctl.md`), not improvisation.
+
+**`workshopctl get-secret [--systemd] <SDK>.<secret>`** (0.9.8+) — Write the value of a secret, made available through a **connected** `secret` plug, to stdout. `<SDK>` is the bare SDK name (no `try-`/`project-`). Runs as the ordinary `workshop` user, from `workshop exec`, a shell, or an SDK's own wrapper. Exit codes: `0` success · `1` not found · `2` keyring locked · `3` plug not connected · `4` several items match · `255` anything else. Check a lookup without printing the value: `workshop exec <WORKSHOP> -- workshopctl get-secret <SDK>.<PLUG> | wc -c`. `--systemd` serves a systemd `LoadCredential=` request and is not for interactive use (an unconnected plug then exits `0` with an empty credential). Every call is logged as a `Retrieve secret "<WS>/<SDK>:<PLUG>"` change — never with the value. Full user-side model: `references/secrets.md`.
+
+**`workshopctl set-health <okay|waiting|error> [<message>]`** — only from an SDK's `check-health` hook; see `references/in-project-sdk.md`.
+</workshopctl_in_the_workshop>
+
 <workshop_execution>
 **`workshop exec [flags] [<WORKSHOP>] [--] <COMMAND>...`** — Run an arbitrary command in the workshop. Workshop must be `Ready` or `Waiting`.
 - Auto-detects interactive vs non-interactive based on stdin/stdout TTYs; force with `-i`/`--interactive` or `-I`/`--non-interactive`.
 - `--cwd, -w <PATH>` sets working directory in the workshop.
-- `--env KEY=VAL` (or `--env KEY` to inherit from CLI environment); repeatable. Shell completion offers the calling shell's variable names (0.9.6+, on both `exec` and `run`).
+- `--env KEY=VAL` (or `--env KEY` to inherit from CLI environment); repeatable. Shell completion offers the calling shell's variable names (0.9.6+, on both `exec` and `run`). For a **secret**, only ever the name form, filled from the host's store for that one command — `KEY=$(secret-tool lookup <attr> <value>…) workshop exec --env KEY <WORKSHOP> -- <COMMAND>` — never `--env KEY=<value>` (shell history, host process list). An unset `KEY` is skipped silently. See `references/secrets.md`.
 - `--uid <N>`, `--gid <N>` to run as a specific user/group inside the workshop.
 - `--timeout <DURATION>` (units: `ns`, `us`/`µs`, `ms`, `s`, `m`, `h`).
 - Use `--` to separate the workshop name from the command when there's ambiguity.
@@ -106,12 +115,12 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 </workshop_execution>
 
 <workshop_interfaces>
-**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. `<SDK>` is the bare name, also for try and in-project SDKs (`dev/mir:install`, not `dev/try-mir:install`). Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+); `workshop restore` drops them.
+**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. `<SDK>` is the bare name, also for try and in-project SDKs (`dev/mir:install`, not `dev/try-mir:install`). Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+) unless the plug's or slot's definition changed in a way that matters to the connection (0.9.8+: a secret slot's lookup, a tunnel endpoint, a custom-device filter) — then the refresh drops it with a warning; `workshop restore` drops them all. `secret` plugs connect ONLY this way (0.9.8+): never automatically, and a `connections:` entry doesn't do it either.
 - If the second argument is omitted, target is `<WORKSHOP>/system:<PLUG>`.
 - If only `:<SLOT>`: target is `<WORKSHOP>/system:<SLOT>`.
 - If the second argument names only `<WORKSHOP>/<SDK>` (no `:<SLOT>`), the slot is chosen by matching the plug's interface — errors if several slots share that interface.
 - `--no-wait`.
-- Example: `workshop connect nimble/go:mod-cache :mount`
+- Example: `workshop connect nimble/go:mod-cache :mount`; `workshop connect dev/<SDK>:<PLUG> dev/system:<SECRET-SLOT>`
 
 **`workshop disconnect <WORKSHOP>/<SDK>:<PLUG OR SLOT> [<WORKSHOP>/<SDK>]:[<SLOT>] [flags]`** — Disconnect a plug from its slot, or a slot from all its plugs. Same second-argument forms as `connect`.
 - `--forget` (semantics matter — easy to invert): WITHOUT it, disconnecting an auto-connected plug is sticky — it stays disconnected across `workshop refresh` (0.9.5+). WITH `--forget`, the disconnect is forgotten and auto-connect re-establishes the plug at the next refresh (i.e. a temporary off-switch). Either way, `workshop restore` reconnects it.
@@ -174,5 +183,6 @@ At ≥90% pool usage the daemon enters **degraded mode**: it rejects state-chang
 - `explanation/cli.md` — how the four CLIs (`workshop`, `sdk`, `sdkcraft`, `workshopctl`) divide the work
 - `reference/workshop-status.md` — state transition diagrams
 - `reference/workshops.md` — storage pools, degraded mode, and the backward/forward compatibility policy
-- `release-notes/v0.9.7.md`, `release-notes/v0.9.6.md` — the newest flags and behavior floors cited above
+- `reference/cli/workshopctl.md` — `get-secret` and `set-health`
+- `release-notes/v0.9.8.md`, `release-notes/v0.9.7.md`, `release-notes/v0.9.6.md` — the newest flags and behavior floors cited above
 </source_docs>

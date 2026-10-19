@@ -50,7 +50,8 @@ workshop exec --cwd /project/<subdir> --env <KEY>=<VALUE> -- <cmd>
 workshop run --env <KEY>=<VALUE> -- <action>
 ```
 - `--cwd` is a path INSIDE the workshop. The project is at `/project/`.
-- `--env KEY=VAL` is repeatable. `--env KEY` (no value) inherits from the calling shell.
+- `--env KEY=VAL` is repeatable. `--env KEY` (no value) inherits from the calling shell — and is skipped silently if the shell doesn't have it.
+- **Secrets (API keys, tokens): only the name form**, filled from the host's store for that one command — `KEY=$(secret-tool lookup <attr> <value>…) workshop exec --env KEY -- <cmd>` (or `op read …`, `bw get password …`). Never `--env KEY=<the value>`: it lands in shell history and the host process list. For an SDK that needs the credential every time, its `secret` plug is the better route — see `references/secrets.md`.
 
 **Step 4. Apply changes to the definition.**
 - **Edited `actions:`** → no refresh needed. Just `workshop run -- <action>`.

@@ -16,7 +16,7 @@ Five rules that always apply to operating Workshop. These come first; every work
 
 3. **Refresh is non-destructive; prefer it to remove+launch.** If `workshop refresh` errors, rerun with `--wait-on-error` to pause in `Waiting`, investigate via `workshop shell`, then `--continue` (after fixing) or `--abort` (to revert). Constraint: `--wait-on-error` is single-workshop only.
 
-4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch. If the user wants those, schedule the `connect` step — once, not per refresh: manual connections persist across `workshop refresh` (0.9.5+) and are re-wired only after `workshop restore` or remove+launch. Exception: in a VM workshop (`runtime: lxd-vm`) auto-connect is skipped entirely and nothing persists across a refresh — re-wire every time (`references/runtime.md`).
+4. **Auto-connect vs manual-connect differs by interface.** Mount and GPU auto-connect. Camera, desktop, ssh-agent, custom-device, `secret` (0.9.8+), and most tunnel cases require an explicit `workshop connect <plug-ref> [<slot-ref>]` after launch — a `connections:` entry does not do it for them. If the user wants those, schedule the `connect` step — once, not per refresh: manual connections persist across `workshop refresh` (0.9.5+) and are re-wired only after `workshop restore` or remove+launch, or (0.9.8+) when a refresh changes the definition the connection depends on (a tunnel endpoint, a custom-device filter, a secret slot's lookup) — then `workshop warnings` names the dropped connection and it needs one reconnect. Exception: in a VM workshop (`runtime: lxd-vm`) auto-connect is skipped entirely and nothing persists across a refresh — re-wire every time (`references/runtime.md`).
 
 5. **The project directory is mounted at `/project/`.** Any path that needs to be visible to the workshop must be reachable under `/project/`. Working directories passed via `workshop exec --cwd` or `workshop run --cwd` use workshop paths.
 </essential_principles>
@@ -52,7 +52,7 @@ Pick the matching workflow based on what the user wants to do:
 2. `run` — Day-to-day ops (run a command, refresh, restart)
 3. `actions` — Customize the workshop (add or edit `actions:`)
 4. `sdk` — Author an in-project SDK with hooks (`.workshop/<name>/`)
-5. `connect` — Wire interfaces (mount, GPU, tunnel, ssh-agent, etc.)
+5. `connect` — Wire interfaces (mount, GPU, tunnel, ssh-agent, secrets from the host keyring, etc.)
 6. `worktrees` — Run parallel environments (git worktrees per task)
 7. `ide` — Connect an IDE or remote tool via SSH/tunnel
 8. `multi` — Manage multiple workshops in one project
@@ -74,12 +74,12 @@ route them via the paraphrase table below.
 | `run` | "run a command", "execute", "shell in", "build inside", "lint", "test" | `workflows/daily-ops.md` |
 | `actions` | "add an action", "reusable script", "actions: block" | `workflows/customize-actions.md` |
 | `sdk` | "in-project SDK", "add a hook", "iterate on a hook", "iterate on the SDK", "setup-project", "setup-base", "check-health", "save-state", "restore-state", "set-health", "package-specific SDK", "tool wrapper", "install ruff in the workshop" | `workflows/author-in-project-sdk.md` |
-| `connect` | "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device" | `workflows/manage-interfaces.md` |
+| `connect` | "connect", "disconnect", "remount", "expose port", "forward port", "GPU", "ssh-agent", "tunnel", "mount", "plugs and slots", "mount ownership", "uid", "gid", "read-only mount", "serial device", "USB device", "/dev/", "custom-device", "API key", "token", "credential", "secret", "keyring", "secret-tool", "get-secret", "pass a key to the SDK" | `workflows/manage-interfaces.md` (+ `references/secrets.md`) |
 | `worktrees` | "two parallel runs", "compare side by side", "worktrees", "isolated copies", "agents in parallel" | `workflows/parallel-environments.md` |
 | `ide` | "VS Code", "JetBrains", "remote IDE", "SSH into the workshop", "ssh the workshop", "remote-SSH", "browser-accessible", "expose to my browser" | `workflows/ide-integration.md` |
 | `multi` | "multiple workshops", "frontend and backend", "two environments in one project", "cross-workshop", "reach another workshop by name", "workshop hostname", ".wp", "workshop DNS" | `workflows/multi-workshop-projects.md` |
 | — | "VM workshop", "virtual machine", "runtime", "lxd-vm", "`--runtime`", "confinement", "`--vm`", "experimental-vms", "harder isolation than a container" | `references/runtime.md` (read it directly; no dedicated workflow) |
-| `debug` | "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update", "workshop too old", "runtime changed", "runtime is experimental", "invalid runtime", "unknown flag: --vm", "SDKs are currently unavailable for virtual machines" | `workflows/troubleshoot.md` |
+| `debug` | "failed", "error", "broken", "won't refresh", "stuck", "what went wrong", "unknown SDK YAML fields", "unknown field", "no refresh in progress", "change is in progress", "no space left on device", "disk full", "out of space", "storage pool full", "resize storage", "storage quota", "quota", "other changes in progress", "stuck in Doing", "daemon", "after updating workshop", "cannot restore", "refused after update", "workshop too old", "runtime changed", "runtime is experimental", "invalid runtime", "unknown flag: --vm", "SDKs are currently unavailable for virtual machines", "secret provider is locked", "no secret found", "multiple secrets match", "secret plug is not connected", "because its definition changed", "connection gone after refresh" | `workflows/troubleshoot.md` |
 | `purge` | "remove all", "purge", "orphaned", "project deleted", "clean up", "lxc" | `workflows/purge-and-recover.md` |
 | — | "build an SDK", "package X as an SDK", "sdkcraft", "sdkcraft.yaml", "publish to the SDK Store", "SDK repo CI/renovate" | `design-sdk` skill — do not improvise `sdkcraft` here |
 </routing>
@@ -93,7 +93,8 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `concepts.md` | Vocabulary: workshop, project, SDK, plug/slot, change/task, action, hook |
 | `states-and-transitions.md` | Status diagram (Off, Ready, Stopped, Pending, Waiting, Error) and which commands work in each |
 | `definition-file.md` | Workshop YAML anatomy: keys, SDK entries, plug/slot definitions, action format |
-| `interfaces.md` | Seven interface types, auto-connect vs manual table, wiring decision tree |
+| `interfaces.md` | Eight interface types, auto-connect vs manual table, connection maintenance on refresh (0.9.8+), wiring decision tree |
+| `secrets.md` | Giving an SDK a credential (0.9.8+): keyring → `secret` slot → manual connect → `workshopctl get-secret`; the single-command `--env NAME` route; errors, exit codes, exposure |
 | `runtime.md` | `lxd-container` vs `lxd-vm` runtime (experimental VMs): the 0.9.7→0.9.8 `confinement:` rename, LXD `6/edge`, the opt-in, `--runtime lxd-vm`, the four VM limitations, and what a VM does not protect |
 | `sdk-types.md` | System / Store / in-project / sketch / try SDKs and when to reach for each |
 | `in-project-sdk.md` | `sdk.yaml` schema, hook taxonomy, filesystem layout, execution context for in-project SDKs |
@@ -108,7 +109,7 @@ Domain knowledge files in `references/`. Each workflow declares which to load vi
 | `daily-ops.md` | `run` | Run commands, edit, refresh, start/stop |
 | `customize-actions.md` | `actions` | Add reusable shell commands via `actions:` |
 | `author-in-project-sdk.md` | `sdk` | Write or update an in-project SDK at `.workshop/<name>/` with hooks |
-| `manage-interfaces.md` | `connect` | `connect`/`disconnect`/`remount`, plug binding, port forwarding |
+| `manage-interfaces.md` | `connect` | `connect`/`disconnect`/`remount`, plug binding, port forwarding, secrets from the host keyring |
 | `parallel-environments.md` | `worktrees` | Git worktrees + per-worktree workshops for any parallel workload |
 | `ide-integration.md` | `ide` | Remote IDE access patterns + browser-accessible services via tunnels |
 | `multi-workshop-projects.md` | `multi` | `.workshop/` layout, in-project SDKs, cross-workshop tunnels |
@@ -143,15 +144,15 @@ This skill DOES cover authoring in-project SDKs (under `.workshop/<name>/sdk.yam
 
 It does NOT cover:
 - `sdkcraft *` (build-time packaging/publishing of Store SDKs) → the sibling `design-sdk` skill. Designing `sdkcraft.yaml`, authoring packed-SDK hooks and spread tests, publishing to the SDK Store, and SDK-repo automation (version branches, CI, renovate) all live there — do not improvise `sdkcraft` invocations here.
-- `workshopctl` as a standalone CLI — driving it from outside a hook is out of scope. Emitting `workshopctl set-health <okay|waiting|error> [<message>]` *inside* a `check-health` hook script you are authoring IS in scope and is covered by `references/in-project-sdk.md` and `workflows/author-in-project-sdk.md`.
+- `workshopctl` beyond its two documented uses. IN scope: `workshopctl get-secret <SDK>.<PLUG>` (0.9.8+) to check or reproduce a secret lookup — run via `workshop exec`, output discarded or counted, never printed (`references/secrets.md`) — and emitting `workshopctl set-health <okay|waiting|error> [<message>]` *inside* a `check-health` hook script you are authoring (`references/in-project-sdk.md`, `workflows/author-in-project-sdk.md`). `get-secret --systemd` belongs to systemd, not to the user. Anything else about `workshopctl` is a docs pointer.
 - Interactive `workshop sketch-sdk` / `workshop sketches` flows. They require an `$EDITOR` session and cannot be driven by an agent. If a user asks for a sketch walkthrough, do NOT enumerate `workshop sketch-sdk` invocations or describe the editor-save-refresh loop step by step. Acknowledge the command as vocabulary, name the constraint (interactive `$EDITOR`), and route them to `workflows/author-in-project-sdk.md` (write `.workshop/<name>/` directly — that's the agent-drivable path to ship a custom SDK).
 
 For the non-sdkcraft items, point the user at the docs (resolve via `<base>` from `<docs>` above):
-- `<base>/reference/cli/workshopctl.md` for the standalone `workshopctl` CLI
+- `<base>/reference/cli/workshopctl.md` for `workshopctl` beyond `get-secret` and `set-health`
 - `<base>/tutorial/part-3-sketch-sdks.md` for hands-on sketch-SDK development
 - `<base>/reference/cli/workshop.md` (the `workshop sketch-sdk` section) — for the user's own reading, NOT to be summarized step-by-step in the skill's response
 
-Then stop. Do not improvise standalone `workshopctl` invocations or step-by-step sketch sessions.
+Then stop. Do not improvise other `workshopctl` invocations or step-by-step sketch sessions.
 </out_of_scope>
 
 <self_healing>

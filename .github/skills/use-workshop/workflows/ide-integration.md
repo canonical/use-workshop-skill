@@ -84,7 +84,7 @@ workshop connect <workshop>/<consumer-sdk>:<name> <workshop>/system:<name>
 ```
 workshop refresh
 ```
-For pattern B, also run `workshop connect ...` after the refresh — once connected, the manual connection persists across future refreshes (0.9.5+).
+For pattern B, also run `workshop connect ...` after the refresh — once connected, the manual connection persists across future refreshes (0.9.5+), unless a later edit changes either tunnel `endpoint` (0.9.8+: the refresh then drops it with a `workshop warnings` entry — connect again).
 
 **Step 5. Discover the address the user should point their tool at.**
 ```

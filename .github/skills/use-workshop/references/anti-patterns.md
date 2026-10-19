@@ -108,6 +108,18 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up and what the LXD switch costs. See `references/runtime.md`.
 </anti_pattern>
 
+<anti_pattern name="Writing a secret's value where the workshop can read it">
+**Wrong:** putting an API key or token into the workshop definition, an `actions:` script, a project file, `.envrc`, a shell profile, or an in-project SDK hook; passing it as `--env KEY=<value>`; or echoing it to "check" the setup.
+**Why it's bad:** all of those are plain files or command lines. The project directory — definition included — is visible inside the workshop and often lands in version control; a profile exports to every command; a typed `--env` value stays in shell history and the host process list; an echoed value lands in terminal scrollback and agent transcripts.
+**Right:** keep the value in the host keyring and give the SDK a `secret` slot plus a manual `workshop connect` (0.9.8+), or fill `--env KEY` from the store for one command (`KEY=$(secret-tool lookup …) workshop exec --env KEY …`). Verify with `workshopctl get-secret … | wc -c`, never by printing. See `references/secrets.md`.
+</anti_pattern>
+
+<anti_pattern name="Expecting `connections:` to connect a secret plug">
+**Wrong:** listing a `secret` plug and its `system` slot in the definition's `connections:` and treating the credential as provided.
+**Why it's bad:** the secret interface never auto-connects, and `connections:` only steers auto-connection — the pair is accepted without any error and stays unconnected. The first lookup then fails with `secret plug "<SDK>.<PLUG>" is not connected` (exit 3), often deep inside an SDK that reports it vaguely.
+**Right:** `workshop connect <WS>/<SDK>:<PLUG> <WS>/system:<SLOT>` after launch/refresh — once; it persists until the slot's lookup changes. See `references/secrets.md`.
+</anti_pattern>
+
 <anti_pattern name="Offering `workshop refresh` for every post-update refusal">
 **Wrong:** answering `cannot start "<NAME>": workshop too old` with "run `workshop refresh` first".
 **Why it's bad:** two different guards produce similar-sounding refusals with *different* remedies. The 0.9.5 back-compat guard (on `restore` / `launch --continue` / `refresh --continue`) is cleared by one `workshop refresh`. The 0.9.6 format guard on `workshop start` is not — the message itself names the remedy, and only remove+launch works.
@@ -129,6 +141,7 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `reference/cli/workshop.md` (launch, refresh sections)
 - `reference/workshops.md` (backward- and forward-compatibility policy)
 - `release-notes/v0.9.7.md` (VM workshops introduced, and their limits)
-- `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`)
+- `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`; the `secret` interface)
+- `how-to/develop-with-workshops/provide-secrets.md` (where a secret must never be written)
 - `how-to/customize-workshops/use-virtual-machines.md` (VM prerequisites and limitations)
 </source_docs>

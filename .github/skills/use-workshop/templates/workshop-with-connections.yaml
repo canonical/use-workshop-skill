@@ -44,7 +44,8 @@ sdks:
 # would not pick the right target (a regular-SDK mount slot never
 # auto-connects). Note: `connections:` entries still pass the interface's
 # auto-connect policy — manual-only interfaces (ssh-agent, camera, desktop,
-# custom-device) cannot be wired here and need `workshop connect`.
+# custom-device, secret) cannot be wired here and need `workshop connect`;
+# for `secret` the entry is accepted silently and still connects nothing.
 connections:
   - plug: <consumer-sdk>:data
     slot: <data-sdk>:data
