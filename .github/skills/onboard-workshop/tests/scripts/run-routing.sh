@@ -10,7 +10,8 @@
 # llm-rubric grading — $0, no API keys. (The 2026-08-13 GLM-5.2 diagnostic
 # measured 50/53 and the OpenRouter migration was rejected — see BASELINE.md;
 # the Anthropic+OpenAI API path this replaced cost ~$4/run and two keys.)
-# There is no HTTP lane here.
+# There is no HTTP lane here. `--copilot` runs the cross-vendor Copilot
+# candidate from the same config.
 
 set -euo pipefail
 

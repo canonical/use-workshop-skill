@@ -90,6 +90,14 @@ def main() -> int:
             and not ((c.get("gradingResult") or {}).get("componentResults"))
         )
 
+    # Copilot-lane cases carry their real spend in response metadata (premium
+    # allowance, not USD); total it so a row can quote what the run cost.
+    copilot_meta = [
+        (c.get("response") or {}).get("metadata") or {}
+        for c in cases
+        if ((c.get("response") or {}).get("metadata") or {}).get("auth") == "copilot"
+    ]
+
     summary = {
         "meta": {
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -110,6 +118,14 @@ def main() -> int:
         },
         "cases": [slim_case(c) for c in cases],
     }
+    if copilot_meta:
+        summary["meta"]["copilot"] = {
+            "served_models": sorted(
+                {m.get("served_model") for m in copilot_meta if m.get("served_model")}
+            ),
+            "premium_requests": sum(m.get("premium_requests") or 0 for m in copilot_meta),
+            "ai_credits": round(sum(m.get("ai_credits") or 0 for m in copilot_meta), 2),
+        }
 
     Path(args.out).write_text(json.dumps(summary, indent=2) + "\n")
     err_note = f", {errors} errored" if errors else ""

@@ -4,8 +4,10 @@
 # Eval suite for `design-sdk`
 
 Everything below Lane 0 here runs on the **$0 subscription lane** (local
-claude CLI login + local judge, no API keys) — this suite has no HTTP lane
-at all; see `TESTING.md` at the repo root for the three-lane doctrine.
+claude CLI login + local judge, no API keys), except the cross-vendor
+Copilot routing run (`make eval-routing-copilot`, premium allowance, same
+judge). This suite has no HTTP lane at all; see `TESTING.md` at the repo
+root for the lane doctrine.
 
 1. **Static checks** (`make check`, free, CI-gated): source-doc paths
    against the SHARED `../use-workshop/tests/docs-manifest.txt`; YAML

@@ -13,16 +13,20 @@ Two consumption patterns:
   suite's `Makefile` with argv flags (`--skill-root`, `--manifest`,
   `--allowed-keys`, `--tests-dir`, …). No per-suite copies.
 - **Drivers and providers** (`run-routing.sh`, `regenerate-bundle.sh`,
-  `provider-agentic.js`, `provider-routing-cli.js`, `provider-judge-cli.js`,
-  `claude-cli-core.js`) are reached through ~10-line wrappers in each suite's
+  `provider-agentic.js`, `provider-routing-cli.js`,
+  `provider-routing-copilot.js`, `provider-judge-cli.js`, with
+  `claude-cli-core.js`, `routing-prompt.js` and `copilot-preflight.js`
+  behind them) are reached through ~10-line wrappers in each suite's
   `scripts/` (or referenced by `file://` path from promptfoo configs). Suite
   deltas live in the wrapper env, not in forked copies.
 
 Auth for anything that shells the `claude` CLI is controlled by `EVAL_AUTH`
 (`subscription` default — no API key, bills nothing; `api` opt-in — requires
 `ANTHROPIC_API_KEY`). The reconstruction harness's legacy `RECON_AUTH` is
-accepted as an alias. See `TESTING.md` at the repo root for the three-lane
-doctrine.
+accepted as an alias. The Copilot routing candidate uses the stored Copilot
+login and the `@github/copilot-sdk` from the repo-root `package.json`
+(`make eval-deps`); it is graded by the same local claude judge. See
+`TESTING.md` at the repo root for the lane doctrine.
 
 History: extracted 2026-08-20 from ~1,200 lines of near-identical per-suite
 copies, which had already diverged enough to cause real bugs (a dead

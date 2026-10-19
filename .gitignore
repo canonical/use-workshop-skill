@@ -28,5 +28,8 @@
 .github/skills/onboard-workshop/tests/reconstruction/.cache/
 .github/skills/design-sdk/tests/reconstruction/.work/
 
+# Eval-harness npm dependencies (package.json at the repo root; `make eval-deps`)
+/node_modules/
+
 # Python bytecode from local py_compile checks
 __pycache__/

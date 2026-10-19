@@ -2,12 +2,12 @@
 # Copyright 2026 Canonical Ltd.
 
 description: |
-  Subscription-lane routing eval for the use-workshop skill: the same 84
-  cases as promptfooconfig.yaml, but the candidate is Sonnet via the local
-  claude CLI login (tool-less, single-turn) and the llm-rubric judge is the
-  local claude judge — $0, no API keys. This is the confirmation run on the
-  model family the skill is written for; the GLM-5.2 HTTP config stays the
-  fast CI gate.
+  Local-lane routing eval for the use-workshop skill: the same cases as
+  promptfooconfig.yaml, with two local candidates — Sonnet via the claude CLI
+  subscription login (the gate, $0) and a GPT model via the Copilot login (the
+  cross-vendor run). run-routing.sh --subscription / --copilot filters to one.
+  Both are tool-less and single-turn, and both are graded by the local claude
+  judge. The GLM-5.2 HTTP config is suspended (no OpenRouter budget).
 
   NOTE: keep the prompts/tests/defaultTest.vars sections in sync with
   promptfooconfig.yaml — the two configs must run the same suite.
@@ -24,11 +24,19 @@ providers:
     config:
       model: claude-sonnet-4-6
       timeout_ms: 240000
+  # Copilot SDK candidate (see _testlib/provider-routing-copilot.js: the bundle
+  # REPLACES Copilot's own system prompt; no tools; served model checked).
+  - id: file://../../_testlib/provider-routing-copilot.js
+    label: copilot:gpt-5.6-sol
+    config:
+      model: gpt-5.6-sol
+      timeout_ms: 240000
 
 defaultTest:
   options:
-    # Local claude judge — grading also runs on the subscription login. The
-    # driver additionally passes --grader with the same file, belt and braces.
+    # Local claude judge for both candidates — grading runs on the claude
+    # subscription login. The driver additionally passes --grader with the
+    # same file, belt and braces.
     # Scores from this judge are NOT comparable with the OpenRouter gpt-5.5
     # judge's: baselines are per (candidate, judge) pair.
     provider: file://../../_testlib/provider-judge-cli.js

@@ -7,7 +7,7 @@
 # behaviour is identical whether you run `make eval-routing` or
 # `bash scripts/run-routing.sh`. The scripts handle the bundle regen and
 # slim-summary post-processing. See TESTING.md at the repo root for the
-# three-lane doctrine (what runs when, and what each lane costs).
+# lane doctrine (what runs when, and what each lane costs).
 
 SHELL := /usr/bin/env bash
 
@@ -20,10 +20,11 @@ SOURCE_DOCS_SH := $(TESTLIB)/check-source-docs.sh
 YAML_KEYS_PY := $(TESTLIB)/check-yaml-keys.py
 SCENARIOS_PY := $(TESTLIB)/check-scenarios.py
 MANIFEST_SH  := scripts/update-docs-manifest.sh
+REPO_ROOT    := ../../../..
 
 .PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
-        update-docs-manifest eval-bundle eval-routing eval-routing-subscription \
-        eval-routing-sweep eval-agentic eval-clean
+        update-docs-manifest eval-deps eval-bundle eval-routing eval-routing-subscription \
+        eval-routing-copilot eval-routing-glm eval-routing-sweep eval-agentic eval-clean
 
 help:
 	@echo "use-workshop eval targets:"
@@ -32,10 +33,13 @@ help:
 	@echo "  check-scenarios          assert every scenarios/*.yaml is registered in every promptfooconfig*.yaml (offline)"
 	@echo "  check-yaml-keys          lint skill YAML snippets/templates against the upstream schema key allowlists (offline)"
 	@echo "  update-docs-manifest     regenerate docs-manifest.txt + allowed-keys.json from a Workshop checkout (needs WORKSHOP_REPO; maintainer-only)"
+	@echo "  eval-deps                install the Copilot lane's npm dependency (repo-root package.json; once per checkout)"
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
-	@echo "  eval-routing             run routing eval against GLM-5.2 via OpenRouter — the pinned gate (needs OPENROUTER_API_KEY only)"
-	@echo "  eval-routing-subscription  Sonnet confirmation via the local claude CLI login + local judge (\$$0, no keys; slow)"
-	@echo "  eval-routing-sweep       diagnostic sweep: GLM 4.7-flash + 5.1 + 5.2 and MiniMax-M2.7, the documented runner-up (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing             the routing gate: Sonnet via the local claude CLI login + local judge (\$$0, no keys)"
+	@echo "  eval-routing-subscription  alias of eval-routing"
+	@echo "  eval-routing-copilot     cross-vendor run: gpt-5.6-sol via the local Copilot login + local claude judge (premium allowance)"
+	@echo "  eval-routing-glm         SUSPENDED former gate: GLM-5.2 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-sweep       SUSPENDED diagnostic sweep over the OpenRouter tiers (needs OPENROUTER_API_KEY)"
 	@echo "  eval-agentic             run agentic E2E suite (slow, real LXD)"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
 
@@ -70,21 +74,35 @@ check-source-docs:
 update-docs-manifest:
 	bash $(MANIFEST_SH)
 
+# The Copilot lane's SDK, pinned in the repo-root package.json/package-lock.json
+# (kept out of .github/skills: the SDK's runtime ships its own SKILL.md files).
+eval-deps:
+	npm ci --prefix $(REPO_ROOT) --no-audit --no-fund
+
 eval-bundle:
 	bash $(BUNDLE_SH)
 
-# The pinned gate: GLM-5.2 via OpenRouter, judge routed through OpenRouter too,
-# so this needs OPENROUTER_API_KEY and nothing else (measured ~$1.41/run).
+# The gate since 2026-10-19: Sonnet via the local claude CLI login, local
+# claude judge, no API keys, $0. One CLI spawn per case (~25-45 min).
 eval-routing:
 	bash $(ROUTING_SH)
 
-# The $0 confirmation run on the model family the skill is written for:
-# Sonnet via the local claude CLI login, local claude judge, no API keys.
-# Slower than the gate (one CLI spawn per case; ~25-45 min) — run it before
-# shipping substantial content changes, not in the inner loop.
 eval-routing-subscription:
 	bash $(ROUTING_SH) --subscription
 
+# Cross-vendor run: a GPT model via the local Copilot login (Copilot SDK,
+# replace-mode system prompt, no tools), graded by the same local claude judge.
+# Draws on the account's monthly premium allowance; needs `make eval-deps`.
+eval-routing-copilot:
+	bash $(ROUTING_SH) --copilot
+
+# SUSPENDED (no OpenRouter budget since 2026-10-19): the former pinned gate,
+# GLM-5.2 via OpenRouter with the gpt-5.5 judge (~$1.41/run). Kept runnable so
+# the lane can resume; see TESTING.md.
+eval-routing-glm:
+	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-5.2
+
+# SUSPENDED with eval-routing-glm (OpenRouter).
 # Diagnostic sweep over every provider still declared in promptfooconfig.yaml:
 # the GLM family plus MiniMax-M2.7 (the documented runner-up candidate, kept
 # so a GLM deprecation has a measured fallback). run-sweep.sh CONTINUES past
