@@ -104,7 +104,7 @@ Tell the user to point their tool at the `from:` address (host side). Note the s
 **Step 6. For ssh-agent forwarding (e.g., to clone private repos from inside a remote IDE session):**
 - Add `plugs: ssh-agent: {}` to a regular SDK (or sketch).
 - Manual connect: `workshop connect <workshop>/<sdk>:ssh-agent` — persists across refreshes (0.9.5+).
-- Then ssh-agent forwarding works inside the workshop.
+- Then ssh-agent forwarding works inside the workshop. The private keys stay with the host agent and the host's SSH config isn't shared — but any process in the workshop can use the agent's identities while it's connected, so disconnect it before an autonomous coding agent runs there.
 
 </process>
 

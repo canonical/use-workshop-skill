@@ -162,10 +162,13 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 
 **`sdk find <QUERY> [flags]`** — Search the SDK Store for SDKs whose name/title/summary/description/publisher matches the query. Only the latest release per SDK is shown.
 - Combine multiple words: `sdk find <keyword> <other-keyword>`. `--no-headers`.
+- A mark after the publisher shows its Store validation (0.9.8 help text): `✓` verified (e.g. `Canonical✓`), `✪` starred, none = not validated. When the output isn't a UTF-8 terminal — piped, or in an agent's tool call — the marks print as `**` (verified) and `*` (starred), so `Canonical**` is a verified publisher, not a typo. Check the mark (and `sdk info`'s `publisher`, `license`, `website`) before proposing a third-party SDK.
+- `sdk find agent` lists the AI coding-agent SDKs (`claude-code`, `codex`, `copilot`, …). An agent SDK runs the agent as the `workshop` user like any command — read upstream's agent caveats (`reference/ai-agents.md`, `security.md`) before wiring one up, and see `references/runtime.md` `<boundary>`.
 
 **`sdk info <SDK> [flags]`** — Print the SDK's metadata, available Store channels, and workshops where the SDK is installed.
 - `--base <BASE>`: filter Store channels to a specific base (e.g., `ubuntu@24.04`).
 - `--arch <ARCH>` or `--arch all`: show channels for a different (or every) supported architecture.
+- In the `CHANNELS` table a `^` (UTF-8 terminals: `↑`) means the risk level has no revision of its own and follows the one above it.
 </sdk_cli>
 
 <storage_and_lxd>
@@ -184,5 +187,6 @@ At ≥90% pool usage the daemon enters **degraded mode**: it rejects state-chang
 - `reference/workshop-status.md` — state transition diagrams
 - `reference/workshops.md` — storage pools, degraded mode, and the backward/forward compatibility policy
 - `reference/cli/workshopctl.md` — `get-secret` and `set-health`
+- `reference/ai-agents.md` — agent SDKs, publisher marks, reading `sdk info`
 - `release-notes/v0.9.8.md`, `release-notes/v0.9.7.md`, `release-notes/v0.9.6.md` — the newest flags and behavior floors cited above
 </source_docs>

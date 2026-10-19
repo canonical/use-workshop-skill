@@ -21,7 +21,7 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
-| `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted, but warns on every launch/refresh and breaks in the release after 0.9.7 |
+| `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted (0.9.8 included), but warns on every launch/refresh; removal is announced, not dated |
 | `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/edge`). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key is silently ignored. See `references/runtime.md` |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |

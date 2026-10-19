@@ -149,10 +149,10 @@
         does NOT claim a container or VM fully isolates the project from the
         agent.
 
-- description: base ubuntu@20.04 is deprecated, not rejected (0.9.7)
+- description: base ubuntu@20.04 is deprecated, not rejected (0.9.8)
   vars:
     user: |
-      My workshop.yaml says `base: ubuntu@20.04`. I read that 20.04 was dropped in 0.9.7 — will my workshop stop launching?
+      My workshop.yaml says `base: ubuntu@20.04`. I read that 20.04 was dropped in 0.9.7 and I've just upgraded to 0.9.8 — will my workshop stop launching?
   assert:
     - type: contains-any
       value:
@@ -162,11 +162,12 @@
       value: "does not launch"
     - type: llm-rubric
       value: |
-        The response is accurate about the state of 20.04 in 0.9.7: the
+        The response is accurate about the state of 20.04: in 0.9.8 the
         workshop STILL launches and refreshes, but each of those raises a
         warning that 20.04 is no longer supported and that the user should
         move to 22.04+ before the next release of Workshop. It advises editing
         `base:` to a supported value (`ubuntu@22.04`, `ubuntu@24.04`, or
         `ubuntu@26.04`) and running `workshop refresh`. It does NOT claim the
         base is already rejected, that launch fails today, or that validation
-        errors out.
+        errors out, and it does NOT name a specific release in which 20.04
+        stops working (upstream hasn't).

@@ -17,7 +17,7 @@ The complete expressive surface of a workshop definition:
 | Construct | Limits | Onboarding use |
 |-----------|--------|----------------|
 | `name` | `^[a-z](?:-?[a-z0-9])*$`, max 40 chars; must match filename in `.workshop/<name>.yaml` layout | Default `dev` |
-| `base` | Exactly one of `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (`ubuntu@20.04` is deprecated as of 0.9.7 — still accepted, but warns on every launch/refresh and breaks next release) | Match the repo's CI runner / docs; default `ubuntu@24.04`; never propose `20.04` |
+| `base` | Exactly one of `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (`ubuntu@20.04` is deprecated since 0.9.7 — still accepted in 0.9.8, but warns on every launch/refresh, and removal is announced without a date) | Match the repo's CI runner / docs; default `ubuntu@24.04`; never propose `20.04` |
 | `runtime` | `lxd-container` (default; omit the key) or `lxd-vm` (experimental). 0.9.8 renamed it from `confinement:`, which is now silently ignored — never emit either key. Onboarding always emits a container — see `<not_in_envelope>` | Omit |
 | `sdks` | Store SDKs by name (+ snap-style `channel`), in-project SDKs as `project-<name>`, try SDKs as `try-<name>`, implicit `system` | Toolchains and runtimes |
 | `sdks[].plugs` / `sdks[].slots` | Graft interface endpoints onto any listed SDK (incl. `system`) | Tunnels for dev servers; desktop/gpu/device access |

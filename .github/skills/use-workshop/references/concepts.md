@@ -20,7 +20,7 @@ A YAML file describing how a workshop should be assembled: `name`, `base` image,
 </term>
 
 <term name="base">
-The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. Supported as of 0.9.7: `22.04`, `24.04`, `26.04`. **`20.04` is deprecated, not removed** — the validator still accepts it and `workshop init --base ubuntu@20.04` still succeeds, but every launch and refresh raises the warning `workshops with "base: ubuntu@20.04" are no longer supported; refresh to 22.04+ before the next release of Workshop`, and it is slated to stop working in the next release. Never propose `20.04` for a new definition; when a user already has one, tell them to move to `22.04`+ rather than claiming it is rejected today.
+The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. Supported as of 0.9.7 and 0.9.8: `22.04`, `24.04`, `26.04`. **`20.04` is deprecated, not removed** — the validator still accepts it and `workshop init --base ubuntu@20.04` still succeeds, but every launch and refresh raises the warning `workshops with "base: ubuntu@20.04" are no longer supported; refresh to 22.04+ before the next release of Workshop`, and it will stop working in a later release — the same warning shipped in 0.9.7 and 0.9.8, so upstream has not said which. Never propose `20.04` for a new definition; when a user already has one, tell them to move to `22.04`+ rather than claiming it is rejected today.
 </term>
 
 <term name="runtime">
@@ -67,7 +67,7 @@ A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/
 </core_terms>
 
 <gotchas>
-- A workshop on `base: ubuntu@20.04` still launches but warns on every launch and refresh; it breaks in the release after 0.9.7. Treat the warning as a migration deadline, not noise.
+- A workshop on `base: ubuntu@20.04` still launches (0.9.8 included) but warns on every launch and refresh; removal is announced but not dated. Treat the warning as a migration deadline, not noise.
 - Two projects with the same workshop `name:` are independent workshops, not a shared one. `workshop list --global` shows the project path.
 - `cp -r` of a project directory does not duplicate the workshop. The copy is silent until you launch in the new directory; then you have two independent workshops with the same name.
 - Deleting a project directory without `workshop remove` first orphans the workshop — `workshop list --global` shows `Error` with a `missing-project` note. Recreate the directory at the same absolute path to remove it cleanly (or restore its content to keep it); see the `purge-and-recover` workflow.
