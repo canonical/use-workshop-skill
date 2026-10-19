@@ -36,3 +36,8 @@ parts:
 #  <state-name>:
 #    interface: mount
 #    workshop-target: /home/workshop/.<name>
+#  # A credential the user supplies at runtime (Workshop 0.9.8+): no
+#  # attributes, never a value. Read it per invocation from a wrapper or the
+#  # tool's credential helper with `workshopctl get-secret <name>.api-key`.
+#  api-key:
+#    interface: secret

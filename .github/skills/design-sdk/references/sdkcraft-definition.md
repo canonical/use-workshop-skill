@@ -162,6 +162,7 @@ interface-specific attributes. The set is closed:
 | `desktop` | yes | no | Plug must be named `desktop` |
 | `gpu` | yes | no | Plug must be named `gpu` |
 | `mount` | yes | yes | Free name |
+| `secret` | yes | no | Free name; **no attributes** (SDKcraft 0.9.4+ / Workshop 0.9.8+). The slot is the user's, on their `system` SDK — see `secrets.md` |
 | `ssh-agent` | yes | no | Plug must be named `ssh-agent` (the interface is `ssh-agent` — there is no `ssh` interface) |
 | `tunnel` | yes | yes | Free name; auto-connect matches plug and slot by name |
 
@@ -185,6 +186,11 @@ Tunnel attributes: a single `endpoint` on both plug and slot —
 absolute `<PATH>` (with `$HOME`/`$XDG_RUNTIME_DIR` expansion) or abstract
 `@<STRING>`. Defaults to `localhost/tcp`. Endpoints starting with `[` or `@`
 must be quoted in YAML. The port may be omitted on at most one side.
+
+Secret plug: just `interface: secret` under a free name — the schema allows
+no other key, and there is never a lookup or a value in `sdkcraft.yaml`.
+Inside the workshop it is `<SDK>.<PLUG>` (bare SDK name, also under
+`sdkcraft try`), read with `workshopctl get-secret`; it never auto-connects.
 
 Shorthand: `gpu:` (null value) or `gpu: gpu` normalizes to
 `{interface: gpu}` — the full mapping form is house style for clarity.

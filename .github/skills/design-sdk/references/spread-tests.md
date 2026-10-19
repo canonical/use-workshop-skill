@@ -100,6 +100,13 @@ Always ship the `launch` job; add one job per advertised capability:
   the workshop status that every SDK's `check-health` rolls up into.
   `okay` is only what the hook reports through `workshopctl set-health`;
   `workshop info` never prints it, and there is no per-SDK health line.
+- Secret plug (0.9.8+): a runner has no desktop keyring, so never make a
+  job depend on a connected secret. Assert what holds without it — the
+  wrapper is what resolves on `PATH`
+  (`readlink -f "$(type -P <tool>)" | MATCH "/wrapper/<tool>$"`), the tool
+  starts, and an unconnected plug yields the tool's own "no credential"
+  message rather than a crash. Test the connected path by hand in the try
+  loop (`secrets.md` `<testing>`).
 - Slot for consumers (a mount slot other SDKs plug into): give the job a
   throwaway in-project consumer SDK and wire it explicitly — a regular-SDK
   mount slot never auto-connects. The task directory holds the rendered

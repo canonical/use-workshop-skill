@@ -14,7 +14,10 @@ ShellCheck-lints every hook (an error blocks the pack).
 Every hook runs as a non-interactive bash login session with `errexit` and
 `pipefail` set (plus `xtrace` under `workshop launch/refresh --verbose`).
 `$SDK` — the SDK's mount point `/var/lib/workshop/sdk/<SDK>/` — is in scope
-for every hook.
+for every hook, and so (0.9.8+) is `$SDK_SYSTEMD_SECRET_SOCKET`, the socket a
+unit's `LoadCredential=<sdk>.<plug>:${SDK_SYSTEMD_SECRET_SOCKET}` points at
+(`secrets.md`). No hook should fetch a secret itself: at `setup-base` time no
+connection exists yet, and `--verbose` turns on `xtrace`.
 
 | Hook | Runs as | Working dir | Extra env |
 |------|---------|-------------|-----------|

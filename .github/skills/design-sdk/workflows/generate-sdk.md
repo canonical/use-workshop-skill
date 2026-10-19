@@ -63,7 +63,9 @@ numeric-looking `version:` values; no reserved names (`agent`, `system`,
 `sketch`, `try-*`, `project-*`); singleton plug names for
 camera/desktop/gpu/ssh-agent; every mount path under `$SDK` exists in prime
 (or `override-prime: mkdir -p` it); `version:` XOR `adopt-info:`;
-`adopt-info` names a real part.
+`adopt-info` names a real part; no credential anywhere in the SDK, and a
+`secret` plug carries no attributes and is consumed only per invocation
+(helper, wrapper, or `LoadCredential=`) — never fetched in a hook.
 
 **Step 7. List every written file, then hand off** to
 `iterate-and-debug.md`. Generation without a try run is an unfinished

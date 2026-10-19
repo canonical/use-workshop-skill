@@ -29,6 +29,13 @@ plugs:
   data:
     interface: mount
     workshop-target: /home/workshop/.<name>
+  # Delete unless the service needs a credential the user supplies (API key,
+  # token). Never a lookup or a value here: the user adds a `system` secret
+  # slot and runs `workshop connect`. The unit reads it via
+  # LoadCredential=<name>.api-key:${SDK_SYSTEMD_SECRET_SOCKET} and must reject
+  # an empty credential (see references/secrets.md).
+  api-key:
+    interface: secret
 
 slots:
   <name>-server:

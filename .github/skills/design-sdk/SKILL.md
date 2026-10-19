@@ -49,7 +49,8 @@ Five rules that always apply to designing SDKs. Every workflow assumes them.
 
 5. **Interfaces follow policy, and the README says so.** Choose by the
    heuristic: mount = persistence/sharing, gpu = acceleration, tunnel =
-   network service, ssh-agent = remote auth. Know which connections happen
+   network service, ssh-agent = remote auth, secret = a credential the user
+   supplies at runtime (0.9.8+; never a file in a mount, never in the SDK). Know which connections happen
    automatically (gpu; mount to the system slot; qualifying tunnels) and
    which need `connections:` or `workshop connect`. When several slots are
    eligible for one plug, order is not guaranteed — write `connections:`.
@@ -140,6 +141,7 @@ Own references (in `references/`):
 | `spread-tests.md` | `sdkcraft test` mechanics, tests/ layout, the smoke-test menu |
 | `onboarding-ci.md` | Branching model, sdkcraft-actions workflows, renovate.json anatomy, the onboarding git sequence |
 | `store-publishing.md` | login/register/upload/release, channels and tracks, credentials |
+| `secrets.md` | `secret` plugs (0.9.8+): declaring one, the delivery patterns (credential helper, wrapper, systemd `LoadCredential=`), failure handling, exposure, testing |
 | `anti-patterns.md` | Design and generation traps (and the right alternative) |
 
 Borrowed from the sibling (load by relative path):
@@ -151,6 +153,7 @@ Borrowed from the sibling (load by relative path):
 | `../use-workshop/references/async-and-recovery.md` | Change/task model; `--wait-on-error`/`--continue`/`--abort` |
 | `../use-workshop/references/definition-file.md` | workshop.yaml anatomy for authoring test workshops |
 | `../use-workshop/references/sdk-types.md` | SDK kinds; where try SDKs fit |
+| `../use-workshop/references/secrets.md` | The consumer's side of a `secret` plug — store, slot, connect, errors — for the README and test workshops |
 </reference_index>
 
 <workflows_index>
@@ -222,10 +225,12 @@ A run of this skill is complete when:
   and cannot be driven by an agent. Acknowledge the command as vocabulary,
   name the constraint, and iterate by editing the SDK source plus the try
   loop instead (`workflows/iterate-and-debug.md`).
-- `workshopctl` as a standalone CLI. Emitting
+- `workshopctl` beyond its two SDK-side uses. IN scope: emitting
   `workshopctl set-health <okay|waiting|error> [<message>]` *inside* a
-  `check-health` hook you are authoring IS in scope and is covered by
-  `references/runtime-hooks.md`.
+  `check-health` hook you are authoring (`references/runtime-hooks.md`),
+  and calling `workshopctl get-secret <SDK>.<PLUG>` from an SDK's wrapper,
+  credential-helper setting, or (via `LoadCredential=`) systemd unit
+  (`references/secrets.md`). Anything else about it is a docs pointer.
 </out_of_scope>
 
 <self_healing>

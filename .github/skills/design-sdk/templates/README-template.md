@@ -75,6 +75,20 @@ Once the workshop is ready:
 - Workshop target: `[/path]`
 - Purpose: [one line — what this persists between workshop updates.]
 
+<!-- For a `secret` plug (Workshop 0.9.8+), replace the target line:
+### `[plug-name]`
+
+- Interface: `secret`
+- Purpose: [the credential it expects — e.g. "an OpenAI API key"]; read by
+  [the wrapper / the tool's credential helper / the service] with
+  `workshopctl get-secret [sdk-name].[plug-name]`. [`[ENV_VAR]` set in the
+  environment takes precedence.]
+- Connect it yourself — it never connects automatically: store the value
+  with `secret-tool store`, add a `secret` slot under `system` in your
+  workshop definition, then run
+  `workshop connect <workshop>/[sdk-name]:[plug-name] <workshop>/system:<slot>`.
+-->
+
 <!-- OR: This SDK doesn't define any plugs. -->
 
 ## Slots (resources this SDK provides)

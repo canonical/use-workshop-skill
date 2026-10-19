@@ -81,7 +81,12 @@ each plug/slot: interface type, name (singleton names for
 camera/desktop/gpu/ssh-agent), endpoint or target path, and — explicitly —
 whether it auto-connects, needs a `connections:` entry in the consumer's
 definition, or needs `workshop connect`. This story is carried verbatim
-into the README later. When several slots could serve one plug, the
+into the README later. If the tool needs a credential the user supplies
+(API key, token), that is a `secret` plug (0.9.8+) — say which delivery
+pattern consumes it (credential helper, wrapper, `LoadCredential=`; see
+`references/secrets.md`), what env var or setting the user can use instead,
+and that the consumer must store it, add a `system` slot, and
+`workshop connect` it. When several slots could serve one plug, the
 proposal says which `connections:` entry pins the topology.
 
 **Step 7. Pick the minimal hook set.** Only hooks that do real work:

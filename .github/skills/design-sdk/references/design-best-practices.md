@@ -80,8 +80,10 @@ host tools can reach it, and `check-health` polls the service (see below).
   exemplar to prove in the try loop, never as settled convention) from a
   *library/environment other SDKs consume* (the venv slot/plug shape in
   `<sdk_dependencies>`, where the runtime install IS the shared resource).
-  Mount plugs carry the tool's user data (config, credentials, sessions) —
-  never the tool itself.
+  Mount plugs carry the tool's user data (config, sessions, login state the
+  tool writes itself) — never the tool itself. A credential the *user*
+  supplies (API key, token) comes through a `secret` plug instead (0.9.8+;
+  `secrets.md`), not as a file the user drops into a mount.
 - Debian packages → `setup-base`, never parts: integrates with the image's
   apt cache and keeps distribution security updates flowing.
   `stage-packages`/`stage-snaps` are rejected by SDKcraft outright.
@@ -124,6 +126,10 @@ EOF
 - Never touch `~/.bashrc` or `~/.bash_profile` — Workshop supports multiple
   shell interpreters and shell-specific files are not sourced consistently.
 - Prefix variable names with the SDK name to avoid conflicts.
+- Never a credential. A hook that exports an API key into `/etc/profile.d`
+  or `~/.profile` writes it to disk and to every shell; a tool that reads
+  its key from an env var gets it from a wrapper that calls
+  `workshopctl get-secret` per invocation (`secrets.md`).
 </environment_variables>
 
 <health_checks>
