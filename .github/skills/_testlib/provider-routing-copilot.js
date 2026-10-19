@@ -46,7 +46,7 @@ const path = require('node:path');
 
 const { withHarnessNote, parseChatPrompt } = require('./routing-prompt.js');
 
-const DEFAULT_MODEL = 'gpt-5.6-sol';
+const DEFAULT_MODEL = 'gpt-6.1-sol';
 
 function loadSdk() {
   try {

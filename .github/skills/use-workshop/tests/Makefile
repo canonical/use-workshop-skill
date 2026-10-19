@@ -37,7 +37,7 @@ help:
 	@echo "  eval-bundle              regenerate skill-bundle.md from current SKILL.md/refs/workflows"
 	@echo "  eval-routing             the routing gate: Sonnet via the local claude CLI login + local judge (\$$0, no keys)"
 	@echo "  eval-routing-subscription  alias of eval-routing"
-	@echo "  eval-routing-copilot     cross-vendor run: gpt-5.6-sol via the local Copilot login + local claude judge (premium allowance)"
+	@echo "  eval-routing-copilot     cross-vendor run: gpt-6.1-sol via the local Copilot login + local claude judge (premium allowance)"
 	@echo "  eval-routing-glm         SUSPENDED former gate: GLM-5.2 via OpenRouter (needs OPENROUTER_API_KEY)"
 	@echo "  eval-routing-sweep       SUSPENDED diagnostic sweep over the OpenRouter tiers (needs OPENROUTER_API_KEY)"
 	@echo "  eval-agentic             run agentic E2E suite (slow, real LXD)"

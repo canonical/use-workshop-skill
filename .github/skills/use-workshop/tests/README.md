@@ -49,7 +49,7 @@ make check-source-docs          # assert every cited upstream doc path exists in
 make check-yaml-keys            # lint skill YAML snippets/templates against the upstream schema key allowlists (offline)
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
 make eval-routing               # routing gate: Sonnet 4.6 via the claude CLI subscription lane ($0)
-make eval-routing-copilot       # cross-vendor run: gpt-5.6-sol via the Copilot login (premium allowance)
+make eval-routing-copilot       # cross-vendor run: gpt-6.1-sol via the Copilot login (premium allowance)
 make eval-routing-glm           # SUSPENDED former gate: GLM-5.2 via OpenRouter
 make eval-agentic               # agentic E2E suite (slow, real LXD)
 make eval-deps                  # install the Copilot SDK (once per checkout)
@@ -85,7 +85,7 @@ local claude judge, so their rows differ by candidate model only.
 - **Gate — `make eval-routing`.** Sonnet 4.6 through the `claude` CLI on
   the local subscription login, $0. The model family the skill is written
   for. One CLI spawn per case (~25–45 min).
-- **Cross-vendor — `make eval-routing-copilot`.** `gpt-5.6-sol` through the
+- **Cross-vendor — `make eval-routing-copilot`.** `gpt-6.1-sol` through the
   Copilot SDK on the local Copilot login. The skills ship to Copilot users
   too; this run shows how a GPT model routes through them. The bundle
   *replaces* Copilot's own system prompt and every tool is disabled.
@@ -93,7 +93,8 @@ local claude judge, so their rows differ by candidate model only.
   `gpt-5.6-sol`), so the preflight checks the account lists the model and the
   provider errors on any served-model mismatch. Each case opens a fresh
   session and pays the cache-write rate on the whole bundle — measured
-  2026-10-19 at ~25 AI credits per case, ~2,300 per full run. The summary's
+  2026-10-19 at ~25 AI credits per case on `gpt-5.6-sol`; `gpt-6.1-sol` was
+  chosen at half that per-token price (see `BASELINE.md` for measured runs). The summary's
   `meta.copilot` block records the real spend; `cost_usd` stays 0.
 - **Suspended — `make eval-routing-glm`.** The former gate: GLM-5.2 plus the
   `gpt-5.5` judge via OpenRouter (`promptfooconfig.yaml`, ~$1.41/run). The
@@ -190,7 +191,7 @@ suite(s) to confirm nothing regressed:
    `claude-sonnet-4-6` + local-judge pair, investigate before merging.
 2. (Release rounds and substantial content changes) `make
    eval-routing-copilot` — the cross-vendor run. It spends Copilot premium
-   allowance (~2,300 AI credits per full run), so iterate on single cases
+   allowance (on the order of 1,300 AI credits per full run), so iterate on single cases
    with `--filter-pattern` and run it whole once the gate is green.
 3. (Optional, slow) `make eval-agentic` — the end-to-end check that
    matters for behaviour, not text. Run before shipping changes that

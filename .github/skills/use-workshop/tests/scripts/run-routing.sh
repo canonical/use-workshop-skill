@@ -8,7 +8,7 @@
 # Lanes for this suite:
 #   default / --subscription — Sonnet via the local claude CLI login, the
 #                    gate since 2026-10-19 ($0; promptfooconfig-subscription.yaml)
-#   --copilot      — gpt-5.6-sol via the local Copilot login, the cross-vendor
+#   --copilot      — gpt-6.1-sol via the local Copilot login, the cross-vendor
 #                    run (same config, premium allowance)
 #   --provider ... — any OpenRouter provider declared in promptfooconfig.yaml;
 #                    SUSPENDED (no OpenRouter budget), kept runnable

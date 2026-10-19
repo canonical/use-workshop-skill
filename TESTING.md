@@ -16,7 +16,7 @@ GitHub Copilot — and Anthropic/OpenAI API spend stays **zero by design**.
 | **0 — static** | `make check` in all three `tests/` dirs: source-doc paths vs the shared manifest, YAML parse + schema-key lint (incl. the sdkcraft classifier), scenario-file registration, bundle regen, shellcheck, catalog stamp, hooks exec bits, REUSE | $0 | none | CI, every push/PR |
 | **1 — OpenRouter gate (SUSPENDED)** | use-workshop's former gate: candidate `z-ai/glm-5.2`, judge `gpt-5.5`, both via OpenRouter, backend-pinned. Suspended 2026-10-19 (no budget); config, targets and CI job kept so it can resume. Last pin 92/92 (2026-10-06) | ~$1.41/run | `OPENROUTER_API_KEY` | `make eval-routing-glm`, CI `workflow_dispatch` (don't dispatch while suspended) |
 | **2 — claude subscription** | Everything that shells the `claude` CLI on the local subscription login: the routing **gate of all three suites** (`make eval-routing`, Sonnet 4.6), all three agentic E2E suites (`make eval-agentic`), the onboard reconstruction harness (`make eval-reconstruction[-full]`) and design-sdk's one-off SDK-reconstruction round. Local Claude judge for all llm-rubric grading | $0 | none | **Local only** — a CI runner has no CLI login |
-| **3 — Copilot** | The cross-vendor routing run of all three suites (`make eval-routing-copilot`): `gpt-5.6-sol` via the Copilot SDK on the local Copilot login, graded by the **same local Claude judge** as Lane 2. Needs `make eval-deps` once per checkout | Copilot premium allowance (~25 AI credits/case measured 2026-10-19) | none | **Local only** |
+| **3 — Copilot** | The cross-vendor routing run of all three suites (`make eval-routing-copilot`): `gpt-6.1-sol` via the Copilot SDK on the local Copilot login, graded by the **same local Claude judge** as Lane 2. Needs `make eval-deps` once per checkout | Copilot premium allowance (~12 AI credits/case on `gpt-6.1-sol`; ~25 on `gpt-5.6-sol`) | none | **Local only** |
 
 Lane 2 mechanics: the harness drops `--bare`, **unsets**
 `ANTHROPIC_API_KEY`/`ANTHROPIC_API_TOKEN` (a misconfigured run fails loudly
@@ -38,7 +38,9 @@ used. Copilot **silently remaps** model ids it doesn't serve (a `gpt-5.5`
 request was answered by `gpt-5.6-sol`), so `copilot-preflight.js` checks the
 account lists the model and the provider fails any case served by a
 different one. Each case opens a fresh session and pays the cache-write rate
-on the whole bundle; a full use-workshop run is ~2,300 AI credits. The
+on the whole bundle; a full three-suite round is ~2,700 AI credits on
+`gpt-6.1-sol` — chosen 2026-10-19 over `gpt-5.6-sol` (what a `gpt-5.5` request
+resolves to) at half the per-token price. The
 summary's `meta.copilot` block records served models, premium requests and
 AI credits; `cost_usd` stays 0.
 

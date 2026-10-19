@@ -360,7 +360,7 @@ sys.exit(1 if d.get("error") else 0)' "${probe}" 2>/dev/null; then
 fi
 
 # Filesystem-safe tag for result filenames (e.g. openrouter-z-ai-glm-5.2,
-# claude-cli-claude-sonnet-4-6, copilot-gpt-5.6-sol).
+# claude-cli-claude-sonnet-4-6, copilot-gpt-6.1-sol).
 tag="${effective_provider//:/-}"
 tag="${tag//\//-}"
 

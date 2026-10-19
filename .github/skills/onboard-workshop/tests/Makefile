@@ -40,7 +40,7 @@ help:
 	@echo "  eval-deps                 install the Copilot lane's npm dependency (repo-root package.json; once per checkout)"
 	@echo "  eval-bundle               regenerate skill-bundle.md + skill-selection-context.md"
 	@echo "  eval-routing              routing eval vs Sonnet 4.6 via the local claude CLI login + local judge (\$$0, no keys; slow)"
-	@echo "  eval-routing-copilot      cross-vendor routing run: gpt-5.6-sol via the local Copilot login + local claude judge (premium allowance)"
+	@echo "  eval-routing-copilot      cross-vendor routing run: gpt-6.1-sol via the local Copilot login + local claude judge (premium allowance)"
 	@echo "  eval-agentic              agentic E2E tasks (slow, real LXD; \$$0 on the claude CLI subscription login)"
 	@echo "  eval-reconstruction       guinea-pig reconstruction, offline tier (\$$0 on the subscription login; 4 pinned public repos)"
 	@echo "  eval-reconstruction-full  reconstruction incl. LXD launch + action proof (slow, manual)"

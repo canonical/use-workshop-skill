@@ -36,9 +36,9 @@ providers:
   # see _testlib/provider-routing-copilot.js: the bundle REPLACES Copilot's
   # own system prompt; no tools; served model checked). Same local judge.
   - id: file://../../_testlib/provider-routing-copilot.js
-    label: copilot:gpt-5.6-sol
+    label: copilot:gpt-6.1-sol
     config:
-      model: gpt-5.6-sol
+      model: gpt-6.1-sol
       timeout_ms: 240000
 
 defaultTest:
