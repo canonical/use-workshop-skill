@@ -26,7 +26,7 @@ Operational but not running. Container is shut down but still linked to the proj
 </state>
 
 <state name="Pending">
-Intermediate state during a state change. Only a few commands accepted. Usually transient — wait for `workshop changes` to show the change as `Done` or `Error`. Under VM confinement (0.9.7+) `Pending` legitimately runs longer: `start` allows 10 minutes for a VM against 5 for a container, and a VM's first launch on a given base downloads a separate VM image. Check `workshop changes` before calling it a stall.
+Intermediate state during a state change. Only a few commands accepted. Usually transient — wait for `workshop changes` to show the change as `Done` or `Error`. In a VM workshop (`runtime: lxd-vm`) `Pending` legitimately runs longer: `start` allows 10 minutes for a VM against 5 for a container, and a VM's first launch on a given base downloads a separate VM image. Check `workshop changes` before calling it a stall.
 </state>
 
 <state name="Waiting">

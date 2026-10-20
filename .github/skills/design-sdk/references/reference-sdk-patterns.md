@@ -73,11 +73,40 @@ jq]`; `override-pull` fetches the vendor manifest, extracts the platform
 checksum, validates its shape, downloads the binary, and verifies sha256
 before `override-build` installs it with `install -Dm755` into
 `$CRAFT_PRIME/bin/`; a `case "$CRAFT_ARCH_BUILD_FOR"` switch maps arch to
-the vendor's platform naming; a mount plug persists credentials
-(`/home/workshop/.claude`). Spread suite runs three bases as variants with
-`EXPECTED_VERSION` pulled from the host's `VERSION` file at parse time.
+the vendor's platform naming; a mount plug persists the tool's own state
+(`/home/workshop/.claude`: settings, sessions). Spread suite runs three
+bases as variants with `EXPECTED_VERSION` pulled from the host's `VERSION`
+file at parse time.
 Why: hand-rolled downloads verify integrity when upstream publishes
 checksums — never skip verification that is available.
+</pattern>
+
+<pattern name="agent credentials through secret plugs (claude-code, 0.9.8)">
+Merged upstream as canonical/claude-code-sdk #44 (2026-10-19). Two `secret`
+plugs next to the `claude-config` mount: `oauth-token` (a subscription token
+from `claude setup-token`) and `api-key` (an Anthropic Console key). A `dump`
+part ships `wrapper/claude`, and `setup-base` puts `$SDK/wrapper` — not
+`$SDK/bin` — on `PATH`. The wrapper:
+- exports `CLAUDE_CODE_OAUTH_TOKEN` from
+  `workshopctl get-secret claude-code.oauth-token 2>/dev/null` only when the
+  variable isn't already set and the token is non-empty (an intentional,
+  documented silent fallback to the other login methods);
+- for the API key, uses the tool's credential helper instead of the
+  environment: when `ANTHROPIC_API_KEY` is unset AND a probe
+  `workshopctl get-secret claude-code.api-key >/dev/null 2>&1` succeeds, it
+  passes `--settings '{"apiKeyHelper": "workshopctl get-secret claude-code.api-key"}'`
+  — enabled only after the probe because a failing helper doesn't fall back
+  to other logins, and the key then never enters the environment of the
+  commands Claude Code runs;
+- then `exec`s the pinned binary.
+The README documents each plug, what reads it, the env var that overrides it,
+and the subprocess-inheritance caveat. Spread checks only that the wrapper is
+what resolves on `PATH` (runners have no keyring).
+Why: the credential the user supplies goes through the secret interface,
+fetched per invocation; the state the tool writes for itself stays on a
+mount. The same shape is in progress for the copilot SDK
+(`github-token` secret → `COPILOT_GITHUB_TOKEN`, branch
+`feat/copilot-token-secret`, not merged as of 2026-10-19).
 </pattern>
 
 <pattern name="service on a shared environment (jupyter)">
@@ -105,8 +134,9 @@ to a path that is dead inside a workshop. `setup-base` symlinks ONLY the
 entrypoint (`ln -sf "$SDK/bin/<tool>" /usr/local/bin/<tool>`) — never
 `$SDK/bin` onto PATH (its `python` would shadow the system interpreter for
 every shell) and never `PYTHONPATH`. One mount plug for the tool's home
-(`~/.<tool>`: config, secrets, sessions) — user data only, never the
-installation. Native per-arch platforms, no cross-builds (compiled wheels).
+(`~/.<tool>`: config, sessions) — user data only, never the installation;
+a provider API key the user supplies belongs on a `secret` plug (0.9.8+),
+the claude-code shape above. Native per-arch platforms, no cross-builds (compiled wheels).
 Why: the SDK tree is read-only and version-locked, so the application is
 baked at build time rather than `pip install`ed from a hook into
 user-writable space; a bundled interpreter keeps one build shape across

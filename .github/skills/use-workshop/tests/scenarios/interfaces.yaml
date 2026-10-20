@@ -236,4 +236,31 @@
         wiring — `workshop restore`, or `workshop remove` + `launch`; naming
         either one suffices — rather than refresh. A response prescribing a routine post-refresh re-connect
         ritual FAILS; mentioning the pre-0.9.5 behavior as historical
-        context is acceptable.
+        context is acceptable. Mentioning the 0.9.8 exception — a refresh
+        that changes a tunnel endpoint, a custom-device filter, or a secret
+        slot's lookup drops THAT connection with a warning — is fine and
+        correct, as long as it does not claim the ssh-agent connection is
+        dropped (ssh-agent connections are always kept).
+
+- description: Editing a tunnel endpoint drops its manual connection (0.9.8)
+  vars:
+    user: |
+      I had `workshop connect dev/app:db dev/system:db` working (a tunnel to Postgres on my host). I changed both endpoints from 5432 to 5433 in the definition and ran `workshop refresh dev`. It said "refreshed" plus `WARNING: There is 1 new warning`, and now the app can't reach the database. Is the refresh broken?
+  assert:
+    - type: contains
+      value: workshop connect
+    - type: contains
+      value: workshop warnings
+    - type: llm-rubric
+      value: |
+        The response explains that this is expected Workshop 0.9.8
+        connection maintenance, not a broken refresh: a preserved manual
+        connection is dropped when the refresh changes a definition it
+        depends on — here the tunnel `endpoint` — and the warning (shown by
+        `workshop warnings`) names the dropped connection ("disconnected …
+        because its definition changed"). The fix is to run the same
+        `workshop connect dev/app:db dev/system:db` again; acknowledging the
+        warning with `workshop okay` is a plus. It does NOT prescribe
+        `workshop restore`, `workshop remove` + `launch`, or a daemon
+        restart, and does NOT claim manual connections never survive a
+        refresh.

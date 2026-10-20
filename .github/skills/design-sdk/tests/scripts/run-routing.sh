@@ -9,7 +9,8 @@
 # 4.6 as the candidate via the local claude CLI login, the local claude
 # judge for llm-rubric grading — $0, no API keys, the same pair as the
 # sibling gates so rates stay comparable across suites. There is no HTTP
-# lane here.
+# lane here. `--copilot` runs the cross-vendor Copilot candidate from the
+# same config.
 
 set -euo pipefail
 

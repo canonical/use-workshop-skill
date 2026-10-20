@@ -10,7 +10,7 @@ Diagnose and recover from a failed `workshop launch`/`refresh`/`start` (or any o
 2. `references/states-and-transitions.md` — what the workshop's current status implies
 3. `references/command-cheatsheet.md` — `changes`, `tasks`, `info`, `warnings`, `okay`
 4. `references/anti-patterns.md` — what NOT to do under stress
-5. `references/confinement.md` — ONLY when the symptom mentions a VM, `confinement:`, or `--vm`
+5. `references/runtime.md` — ONLY when the symptom mentions a VM, `runtime:`, `lxd-vm`, a leftover `confinement:` key, or `--vm`
 </required_reading>
 
 <process>
@@ -43,6 +43,12 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Multi-SDK conflict | Comment out SDKs one at a time, refresh, find the offending one |
 | Plug conflict (mount target already in use) | Bind one plug to the other (`bind: <SDK>:<PLUG>`) — see `manage-interfaces.md` |
 | Port already taken (tunnel) | Free the port on the host or change `endpoint:` to another port |
+| A tunnel, custom-device or secret connection is gone after a `workshop refresh`, and the refresh printed `WARNING: There is 1 new warning` | Connection maintenance (0.9.8+): the refresh changed what the manual connection depends on (endpoint, device filter, secret lookup) and dropped it — `workshop warnings` shows `disconnected "<plug>" from "<slot>" because its definition changed`. Expected, not a failure: `workshop connect` it again, `workshop okay` to acknowledge |
+| `secret plug "<SDK>.<PLUG>" is not connected` (exit 3) | The secret plug was never connected — usually because the pair was put in `connections:`, which can't connect a `secret` plug. `workshop connect <WS>/<SDK>:<PLUG> <WS>/system:<SLOT>`. See `references/secrets.md` |
+| `cannot retrieve secret for plug "<SDK>.<PLUG>": unlock the secret provider and try again` (exit 2) | The host keyring is locked. The user unlocks it in their desktop session and re-runs; Workshop never prompts for the password |
+| `no secret found for plug "<SDK>.<PLUG>"` (exit 1) | No keyring item carries all the slot's attributes (or the named `collection` doesn't exist). Compare with `secret-tool search <attr> <value>… >/dev/null`, fix the slot, `workshop refresh`, then connect again — the changed lookup disconnected it |
+| `multiple secrets match plug "<SDK>.<PLUG>"; refine the secret slot` (exit 4) | Several keyring items match. `secret-tool search --all <attr> <value>… >/dev/null`; add an attribute only the intended item carries, refresh, reconnect — or delete the extras |
+| An SDK silently runs without its credential | Check `workshop changes` for `Retrieve secret "<WS>/<SDK>:<PLUG>"` rows: none means nothing asked (the SDK didn't request it, or a pre-set env var took precedence); `Error` → `workshop tasks <ID>` names the cause. For `--env NAME`, an unset host variable is skipped without an error |
 | SDK YAML error: `unknown SDK YAML fields: <name> (line N, column M)` (sketch wording: `sketch SDK YAML contains unknown fields: …`) | A typo'd or misplaced key in an in-project `sdk.yaml` or a sketch SDK (strict validation, 0.9.2+; SDK YAML **only**). Fix the named key; don't retry the same file unchanged |
 | A `workshop.yaml` key seems ignored — an SDK not installed, a connection never proposed, an action missing | `workshop.yaml` gets **no** unknown-field validation: a typo'd top-level key there is silently ignored. Diff the file against `reference/definition-files/workshop-definition.md` (or lint against `schema.json`); there is no error string to hunt for |
 | `workshop restore` / `launch --continue` / `refresh --continue` refused right after a Workshop snap update | Back-compat guard (0.9.5+): the updated daemon won't run those ops on an old-format workshop. Run `workshop refresh <name>` once — that migrates it. No forward compat: never downgrade the snap to "fix" this (downgrade = snap remove + reinstall, which deletes every workshop and SDK) |
@@ -53,14 +59,17 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | Refresh failure where you want to investigate live | Re-run with `workshop refresh --wait-on-error <name>`; shell in; fix; `--continue` or `--abort` |
 | Hook in an in-project SDK exits non-zero | `workshop tasks <ID>` shows hook stdout/stderr; for live investigation, re-run with `--wait-on-error` and shell in. See `author-in-project-sdk.md` Step 9 |
 | `No space left on device` during unpack/install (or writes inside the workshop fail) | The LXD **storage pool** is full — not the host disk. Diagnose and grow it; see Step 6 |
-| `confinement "virtual-machine" is experimental` on launch | VM confinement is opt-in (0.9.7+). Run BOTH commands the error names: `sudo snap set workshop workshop.experimental-vms=1` then `sudo snap restart workshop.workshopd`. The restart is part of the opt-in |
-| `confinement changed from "<X>" to "<Y>"` on refresh | Confinement is fixed at launch (0.9.7+). `workshop remove <name>` + `workshop launch <name>` — refresh cannot do it. Warn that this drops manual `connect`/`remount` wiring |
-| `SDKs are currently unavailable for virtual machines` | The host's LXD offers shifted disk mounts to containers only. Either drop `sdks:` from the VM definition, or install LXD from `latest/edge`. Probe with `lxc query /1.0/metadata/configuration \| jq -r '.configs["device-disk"]["device-conf"].keys[] \| select(has("shift")) \| .shift.condition'` — `container` means container-only. See `references/confinement.md` |
-| A VM workshop is `Ready` but its plugs are all disconnected, or they disconnect again after every refresh | Expected: VM confinement skips auto-connect at launch and refresh, and restores nothing. Re-wire with `workshop connect` each time. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all |
-| A VM workshop reports no SDK health notes in `workshop info` | Expected: `check-health` is skipped under VM confinement. Don't wait on a health signal that never arrives |
+| `runtime "lxd-vm" is experimental` on launch | The VM runtime is opt-in. Run BOTH commands the error names: `sudo snap set workshop workshop.experimental-vms=1` then `sudo snap restart workshop.workshopd`. The restart is part of the opt-in. Say in the same answer that containers are the default and supported choice |
+| `runtime changed from "<X>" to "<Y>"` on refresh | The runtime is fixed at launch. `workshop remove <name>` + `workshop launch <name>` — refresh cannot do it. Warn that this drops manual `connect`/`remount` wiring |
+| `invalid runtime "<X>"; valid runtimes: lxd-container, lxd-vm` | A typo or a 0.9.7 value (`container`, `virtual-machine`) under the new key. Use `lxd-container` or `lxd-vm` |
+| `Error: unknown flag: --vm` from `workshop init` | 0.9.8 replaced `--vm` with `--runtime lxd-vm` |
+| A definition says `confinement: virtual-machine` but `workshop info` shows `runtime: lxd-container` | 0.9.8 renamed the key and silently ignores the old one, so the workshop is a container. Write `runtime: lxd-vm`, then remove + launch (the runtime is fixed at launch). See `references/runtime.md` |
+| `SDKs are currently unavailable for virtual machines` | The host's LXD (`6/stable`) offers shifted disk mounts to containers only. Either drop `sdks:` from the VM definition, or switch LXD to `6/edge` — host-wide and not reversible to `6/stable`, so say that first. Probe with `lxc query /1.0/metadata/configuration \| jq -r '.configs["device-disk"]["device-conf"].keys[] \| select(has("shift")) \| .shift.condition'` — `container` means container-only. See `references/runtime.md` |
+| A VM workshop is `Ready` but its plugs are all disconnected, or they disconnect again after every refresh | Expected: the VM runtime skips auto-connect at launch and refresh, and restores nothing. Re-wire with `workshop connect` each time. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all |
+| A VM workshop reports no SDK health notes in `workshop info` | Expected: `check-health` is skipped for the VM runtime. Don't wait on a health signal that never arrives |
 | `cannot start "<name>": workshop too old: use "workshop remove …" and "workshop launch …" to update it` | Format guard (0.9.6+) — the workshop predates the current snapshot format. Unlike the 0.9.5 `restore`/`--continue` guard, a `workshop refresh` does NOT clear this; follow the message verbatim |
 | `upgrade Workshop and remove all workshops before downgrading again` | The snap was downgraded (0.9.6+ guard) and the daemon is degraded. Re-install the newer Workshop, remove every workshop, then downgrade if you truly must. Never prescribe a downgrade as a fix |
-| `workshop warnings` shows `workshops with "base: ubuntu@20.04" are no longer supported` | Deprecation, not a failure — the workshop still launches. Move `base:` to `ubuntu@22.04`+ and `workshop refresh`; it stops working in the release after 0.9.7 |
+| `workshop warnings` shows `workshops with "base: ubuntu@20.04" are no longer supported` | Deprecation, not a failure — the workshop still launches. Move `base:` to `ubuntu@22.04`+ and `workshop refresh`; upstream has announced its removal without naming the release (it still works in 0.9.8) |
 | `workshop` reports LXD missing, outdated, or unreachable | Follow the actionable error (0.9.3+): install/refresh/restart LXD — minimum LXD **6.8**, remedy `sudo snap refresh --channel=6/stable lxd` (install: `sudo snap install --channel=6/stable lxd`). `workshopd` sits in a degraded state and recovers on its own once LXD is available — no daemon restart needed |
 | Every command fails with `other changes in progress`; a change is stuck in `Doing` | Daemon-level stall, not a task failure — see Step 7 |
 
@@ -174,5 +183,7 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 - `explanation/workshops/changes-tasks.md`
 - `reference/cli/workshop.md` (changes, tasks, launch, refresh, warnings, okay sections)
 - `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing, degraded mode, and how to resize; the backward- and forward-compatibility policy behind the post-update refusals)
-- `release-notes/v0.9.7.md` (VM confinement errors and the corrected storage-pool hint)
+- `release-notes/v0.9.7.md` (the corrected storage-pool hint)
+- `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`)
+- `how-to/customize-workshops/use-virtual-machines.md` (the VM runtime's errors and limitations)
 </source_docs>

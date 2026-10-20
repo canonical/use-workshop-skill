@@ -38,7 +38,14 @@
 //
 // Per-task vars (agentic/tasks/*.yaml): workshop_name, fixture, task,
 // timeout_ms, max_budget_usd, cleanup_workshops, extra_allowed_tools,
-// keep_sandbox, model.
+// keep_sandbox, model, setup_cmd, teardown_cmd.
+//
+// setup_cmd / teardown_cmd: optional bash run on the HOST in the sandbox dir,
+// before the agent starts and after it finishes. For state the task assumes
+// the user already has and the agent must not create — e.g. a throwaway
+// keyring item for the secret-interface task. A failing setup_cmd is a
+// run-level error (the task never starts); teardown_cmd always runs once,
+// even when the run throws, and its failure is reported in metadata.
 //
 // Transcript markers ([SYSTEM init], [BASH], [FINAL TEXT],
 // --- WORKSHOP STATE AFTER ---, --- GENERATED FILES ---) are preserved
@@ -136,6 +143,12 @@ class AgenticProvider {
     // 1. Set up sandbox dir.
     const sandboxPrefix = String(cfg.sandbox_prefix || 'agentic-eval-');
     const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), sandboxPrefix));
+    let teardownPending = Boolean(vars.teardown_cmd);
+    const runTeardown = () => {
+      teardownPending = false;
+      const r = core.runCmd('bash', ['-c', String(vars.teardown_cmd)], sandbox, 120_000);
+      return r.status === 0 ? null : `teardown_cmd (rc=${r.status}): ${r.stderr || r.error || ''}`.trim();
+    };
     try {
       // 1a. Copy fixture into sandbox if specified.
       if (vars.fixture) {
@@ -144,6 +157,14 @@ class AgenticProvider {
           throw new Error(`fixture not found: ${fixSrc}`);
         }
         core.copyDir(fixSrc, sandbox);
+      }
+
+      // 1a'. Host-side setup the task assumes is already in place.
+      if (vars.setup_cmd) {
+        const r = core.runCmd('bash', ['-c', String(vars.setup_cmd)], sandbox, 120_000);
+        if (r.status !== 0) {
+          return { error: `setup_cmd failed (rc=${r.status}): ${(r.stderr || r.error || '').slice(-1500)}` };
+        }
       }
 
       // 1b. Install the configured skills so the CLI auto-loads them.
@@ -220,6 +241,7 @@ class AgenticProvider {
 
       // 6. Best-effort teardown.
       const cleanupError = core.teardownWorkshops(sandbox, cleanupNames);
+      const teardownError = teardownPending ? runTeardown() : null;
 
       return {
         output,
@@ -232,6 +254,7 @@ class AgenticProvider {
           digest,
           workshop_state: workshopState,
           cleanup_error: cleanupError,
+          teardown_error: teardownError,
           sandbox_dir: sandbox,
           transcript_path: transcriptPath,
         },
@@ -239,6 +262,7 @@ class AgenticProvider {
         cost: digest.cost,
       };
     } finally {
+      if (teardownPending) runTeardown();
       if (!vars.keep_sandbox) {
         try { fs.rmSync(sandbox, { recursive: true, force: true }); }
         catch (_) { /* noop */ }

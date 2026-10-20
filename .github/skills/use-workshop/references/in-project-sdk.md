@@ -17,7 +17,7 @@ Minimal `sdk.yaml` shape:
 ```yaml
 # .workshop/<NAME>/sdk.yaml
 name: <NAME>           # matches the directory; the ONLY required key
-# plugs: {}            # optional; interface plugs the SDK requests
+# plugs: {}            # optional; interface plugs the SDK requests (incl. `secret`, 0.9.8+)
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
@@ -56,7 +56,9 @@ Exactly five hook names are recognized: `setup-base`, `setup-project`, `check-he
 
 **Interpreter and the executable bit.** Workshop runs every hook as a **bash** script — a non-interactive bash login session with `errexit` and `pipefail` set — so bash is the interpreter regardless of any shebang, and a hook written for another language will not work by shebang alone. Because Workshop invokes bash rather than exec'ing the file, an in-project hook does NOT need `chmod +x` to run; real in-project SDKs ship hooks at `0644`, some without a shebang at all. Setting `+x` plus a `#!/bin/bash` shebang is still the house style here — it keeps the file runnable by hand and self-documenting — and it becomes a hard requirement only if the SDK is later packed for the Store (out of scope here). Treat `+x` as convention, not as the reason a hook did or did not run.
 
-**Hook environment.** Every hook gets `SDK=<the SDK's install dir>`; `setup-project` additionally gets `$HOME`/`$XDG_RUNTIME_DIR`/`$DBUS_SESSION_BUS_ADDRESS`, and `save-state`/`restore-state` get `$SDK_STATE_DIR`. `errexit` and `pipefail` are always set (a non-zero exit or pipe stage fails the hook); `--verbose` on `launch`/`refresh` adds `xtrace`. Reference SDK-shipped binaries by full path (`"$SDK/bin/<BINARY>"`) — the SDK's `bin/` is not on `PATH` inside the hook unless `setup-base` puts it there (e.g. via `/etc/profile.d`).
+**Secrets (0.9.8+).** An in-project SDK may declare a `secret` plug (`plugs: <name>: {interface: secret}`, no attributes — verified on 0.9.8). Its identifier is `<NAME>.<PLUG>` with the bare directory name, not `project-<NAME>`. The user provides the value through a `system` secret slot and a manual `workshop connect` (`references/secrets.md`); the SDK reads it at runtime with `workshopctl get-secret <NAME>.<PLUG>` from a wrapper the user runs — **never** inside `setup-base`/`setup-project` to write it into a file or profile (the value would then sit in the workshop's filesystem, and hooks run before the user has connected the plug anyway). A failed lookup must fail the command, not be turned into a success-shaped empty value, and keep `set -x` off around it. For the full SDK-side delivery patterns (wrapper, credential helper, systemd `LoadCredential=`), see the sibling `design-sdk` skill's `references/secrets.md`.
+
+**Hook environment.** Every hook gets `SDK=<the SDK's install dir>` and (0.9.8+) `SDK_SYSTEMD_SECRET_SOCKET` — the socket a systemd unit's `LoadCredential=<sdk>.<plug>:${SDK_SYSTEMD_SECRET_SOCKET}` points at to receive a connected secret as a credential file; `setup-project` additionally gets `$HOME`/`$XDG_RUNTIME_DIR`/`$DBUS_SESSION_BUS_ADDRESS`, and `save-state`/`restore-state` get `$SDK_STATE_DIR`. `errexit` and `pipefail` are always set (a non-zero exit or pipe stage fails the hook); `--verbose` on `launch`/`refresh` adds `xtrace`. Reference SDK-shipped binaries by full path (`"$SDK/bin/<BINARY>"`) — the SDK's `bin/` is not on `PATH` inside the hook unless `setup-base` puts it there (e.g. via `/etc/profile.d`).
 
 **Failure semantics.** A non-zero exit from any hook fails the change. The workshop transitions to `Error` (or `Waiting`, if launched/refreshed with `--wait-on-error`).
 
@@ -121,5 +123,6 @@ fi
 - `tutorial/part-3-sketch-sdks.md` (working in-project SDK example after eject)
 - `explanation/sdks/concepts.md` (SDK concepts)
 - `reference/definition-files/sdk-definition.md` (`sdk.yaml` shape; an in-project SDK needs only `name`; the "Unknown keys" section covers strict-vs-lenient parsing and the built-SDKs-only fields)
-- `reference/cli/workshopctl.md` (`set-health` invocation, in-hook only)
+- `reference/cli/workshopctl.md` (`set-health` invocation, in-hook only; `get-secret`)
+- `how-to/develop-sdks/use-secrets.md` (declaring a `secret` plug and consuming it in an SDK)
 </source_docs>

@@ -165,6 +165,23 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
      in for evidence you do not have.
    - Private git dependencies (go.mod `replace` to private hosts, git+ssh in
      requirements) → `ssh-agent` plug.
+   - **A credential the dev loop needs** — `.env.example`/`.env.sample`
+     naming `*_API_KEY`/`*_TOKEN`, a README "export OPENAI_API_KEY=…" step,
+     tests that skip without a key. Record the variable NAMES only; never
+     read, copy, or propose a value, and never put one in `actions:`, a
+     hook, or `.envrc`. Default construct: nothing in the definition — the
+     action stays as the repo runs it, and the proposal tells the user to
+     fill the variable for that run from their host store
+     (`NAME=$(secret-tool lookup <attr> <value>…) workshop run --env NAME <action>`,
+     or `op read`/`bw get` — `--env` takes only the name). Only when the
+     user wants it available on every run does it become the `secret`
+     interface (Workshop 0.9.8+): an SDK with a `secret` plug (a Store SDK
+     that documents one, or a plug on the in-project SDK), a `secret` slot
+     under `system`, and a manual `workshop connect` — which needs a desktop
+     keyring session and is the user's step, never the skill's. See
+     `../use-workshop/references/secrets.md`. `${{ secrets.* }}` in CI
+     workflows are CI's own credentials (deploy, publish tokens) — out of
+     the local loop unless a local action demonstrably needs one.
 </detection_pass>
 
 <signal_to_construct_table>
@@ -187,6 +204,7 @@ Inspect in this order. All read-only — no writes, no workshop commands yet.
 | `libwayland-dev` + `libdrm-dev` + `libgbm-dev` in build-deps | draws on screen | `desktop` plug (manual connect) + `gpu` plug (auto) |
 | CI matrix over `ubuntu-22.04`/`ubuntu-24.04` | series set | one `.workshop/<series>.yaml` per series, shared in-project SDK |
 | Binary used by scripts, installed by nothing | need without route | hook line + inline `# UNVERIFIED:` + `Unverified:` entry + GAP |
+| `.env.example` / README naming `OPENAI_API_KEY` | variable name only | no definition change; proposal note: `OPENAI_API_KEY=$(secret-tool lookup …) workshop run --env OPENAI_API_KEY <action>`; `secret` slot + manual connect only on request |
 | snapcraft.yaml | packaging | out-of-loop note (not an action by default) |
 </signal_to_construct_table>
 
@@ -239,4 +257,5 @@ Debug/IDE: <launch.json entries, F5 flow — evidence> | none found
 - `how-to/develop-with-workshops/run-workshops-in-github-actions.md`
 - `how-to/develop-with-workshops/connect-vscode.md`
 - `how-to/develop-with-workshops/manage-python-environments.md`
+- `how-to/develop-with-workshops/provide-secrets.md` (credentials: `--env NAME` per run, or a `secret` slot + manual connect)
 </source_docs>

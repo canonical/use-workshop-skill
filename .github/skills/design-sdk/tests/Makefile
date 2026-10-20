@@ -14,6 +14,7 @@
 SHELL := /usr/bin/env bash
 
 TESTLIB           := ../../_testlib
+REPO_ROOT         := ../../../..
 ROUTING_SH        := scripts/run-routing.sh
 BUNDLE_SH         := scripts/regenerate-bundle.sh
 SOURCE_DOCS_SH    := $(TESTLIB)/check-source-docs.sh
@@ -23,7 +24,7 @@ RECONSTRUCTION_SH := reconstruction/run-sdk-reconstruction.sh
 SIBLING_TESTS     := ../../use-workshop/tests
 
 .PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
-        check-hooks-exec eval-bundle eval-routing eval-agentic \
+        check-hooks-exec eval-deps eval-bundle eval-routing eval-routing-copilot eval-agentic \
         eval-reconstruction eval-clean eval-clean-all
 
 help:
@@ -34,8 +35,10 @@ help:
 	@echo "  check-yaml-keys      YAML snippets/templates against the SHARED schema allowlists (offline)"
 	@echo "  check-hooks-exec     template hooks carry the executable bit — HARD failure here: sdkcraft"
 	@echo "                       packs hooks for the Store, where +x is enforced at pack time (offline)"
+	@echo "  eval-deps            install the Copilot lane's npm dependency (repo-root package.json; once per checkout)"
 	@echo "  eval-bundle          regenerate skill-bundle.md + skill-selection-context.md"
 	@echo "  eval-routing         routing eval vs Sonnet 4.6 via the local claude CLI login + local judge (\$$0, no keys; slow)"
+	@echo "  eval-routing-copilot cross-vendor routing run: gpt-6.1-sol via the local Copilot login + local claude judge (premium allowance)"
 	@echo "  eval-agentic         agentic E2E tasks (slow; \$$0 on the claude CLI subscription login; heaviest task uses real LXD)"
 	@echo "  eval-reconstruction  one-off SDK-reconstruction round vs local reference-SDK clones (\$$0 on the subscription login; not in CI)"
 	@echo "  eval-clean           remove generated bundles and raw outputs"
@@ -76,11 +79,20 @@ check-hooks-exec:
 	done; exit $$fail
 	@echo "ok: template hook exec bits present"
 
+# The Copilot lane's SDK, pinned in the repo-root package.json/package-lock.json.
+eval-deps:
+	npm ci --prefix $(REPO_ROOT) --no-audit --no-fund
+
 eval-bundle:
 	bash $(BUNDLE_SH)
 
 eval-routing:
 	bash $(ROUTING_SH)
+
+# Cross-vendor run: a GPT model via the local Copilot login, graded by the
+# same local claude judge. Draws on the account's premium allowance.
+eval-routing-copilot:
+	bash $(ROUTING_SH) --copilot
 
 eval-agentic:
 	bash scripts/run-agentic.sh

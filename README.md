@@ -152,19 +152,20 @@ refreshes the ground truth in one step.
 **Changes are eval-gated.** The bundled `tests/` directories are
 [promptfoo](https://promptfoo.dev) regression suites (routing + agentic
 E2E + reconstruction) with baselines pinned per (candidate, judge) pair in
-each `BASELINE.md`. Three lanes ([`TESTING.md`](TESTING.md)): free static
-checks in CI on every push/PR; the ~$1.41 GLM-5.2 routing gate
-(`make eval-routing`, also CI `workflow_dispatch`; the repo's only paid
-eval and only secret); and a $0 subscription lane — the `claude` CLI on a
-local login — for the Sonnet confirmation runs, the onboard routing gate,
-the agentic suites, and the reconstruction harness. A skill change that
-drops a pinned baseline must not merge. The eval surface is what keeps the
+each `BASELINE.md`. The lanes ([`TESTING.md`](TESTING.md)): free static
+checks in CI on every push/PR; a $0 subscription lane — the `claude` CLI on
+a local login — for every suite's routing gate (`make eval-routing`), the
+agentic suites, and the reconstruction harness; and a Copilot lane — a GPT
+model on a local Copilot login, same judge — for the cross-vendor routing
+runs (`make eval-routing-copilot`). The former OpenRouter GLM-5.2 gate is
+suspended but kept runnable. A skill change that drops a pinned baseline
+must not merge. The eval surface is what keeps the
 rest of these principles from drifting back into informality.
 
 ## Testing
 
-[`TESTING.md`](TESTING.md) is the doctrine: the three lanes, what runs
-when, costs, and the judge-comparability rule. Shared harness code lives in
+[`TESTING.md`](TESTING.md) is the doctrine: the lanes, what runs when,
+costs, and the judge-comparability rule. Shared harness code lives in
 `.github/skills/_testlib/`. When vendoring the skills into another repo,
 the `tests/` directories may be omitted — the suites run from this repo
 only.

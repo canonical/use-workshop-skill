@@ -6,25 +6,34 @@
 # scripts/run-routing.sh wrapper, which exports:
 #
 #   EVAL_TESTS_DIR            the suite's tests/ directory (required)
-#   EVAL_DEFAULT_LANE         'openrouter' or 'subscription' — what a bare
-#                             invocation runs
+#   EVAL_DEFAULT_LANE         'subscription', 'copilot' or 'openrouter' — what
+#                             a bare invocation runs
 #   EVAL_DEFAULT_PROVIDER     the declared provider id a bare invocation
 #                             targets when the default lane is 'openrouter'
 #   EVAL_HTTP_CONFIG          abs path of the HTTP-lane promptfooconfig
 #                             (empty = this suite has no HTTP lane)
-#   EVAL_SUBSCRIPTION_CONFIG  abs path of the subscription-lane config
+#   EVAL_SUBSCRIPTION_CONFIG  abs path of the local-lane config — it declares
+#                             both local candidates (claude-cli:* and
+#                             copilot:*); each lane filters to its own
 #
 # Lanes:
-#   HTTP (OpenRouter): candidate + judge over HTTP APIs. Needs
-#     OPENROUTER_API_KEY. Deterministic via --filter-providers against a
-#     DECLARED provider (config block preserved: temperature 0, max_tokens,
-#     backend pinning).
 #   Subscription: candidate = provider-routing-cli.js (local `claude` CLI on
 #     the subscription login, tool-less, $0), judge = provider-judge-cli.js
 #     (same CLI). No API keys — they are unset for the run so nothing can
-#     bill. Concurrency defaults to 2 (EVAL_ROUTING_CONCURRENCY overrides).
+#     bill.
+#   Copilot: candidate = provider-routing-copilot.js (Copilot SDK on the local
+#     Copilot login, tool-less, draws on the account's premium allowance),
+#     judge = the same local claude judge, so the two local lanes share one
+#     grading instrument. Needs `make eval-deps` (repo-root package.json).
+#   HTTP (OpenRouter): candidate + judge over HTTP APIs. Needs
+#     OPENROUTER_API_KEY. Deterministic via --filter-providers against a
+#     DECLARED provider (config block preserved: temperature 0, max_tokens,
+#     backend pinning). SUSPENDED since 2026-10-19 (no OpenRouter budget);
+#     kept so it can be resumed — see TESTING.md.
+#   Both local lanes default to concurrency 2 (EVAL_ROUTING_CONCURRENCY
+#   overrides).
 #
-# Common behavior (both lanes):
+# Common behavior (all lanes):
 # - Regenerates skill-bundle.md first, so the eval reflects current content.
 # - Writes raw JSON to tests/results/raw/ (gitignored); a slim summary to
 #   tests/results/<date>-routing-<tag>.json (committed) — unless the run is
@@ -34,12 +43,14 @@
 #
 # Usage (via wrapper):
 #   scripts/run-routing.sh                                  # suite default lane
-#   scripts/run-routing.sh --subscription                   # $0 confirmation lane
-#   scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1   # any declared provider
+#   scripts/run-routing.sh --subscription                   # claude CLI lane, $0
+#   scripts/run-routing.sh --copilot                        # Copilot lane
+#   scripts/run-routing.sh --provider openrouter:z-ai/glm-5.1   # any declared HTTP provider
 #   scripts/run-routing.sh --filter-pattern foo             # passes through to promptfoo
 #
 # --model was the retired Anthropic-HTTP selector and now errors: the Sonnet
-# confirmation run is `--subscription` (make eval-routing-subscription).
+# run is `--subscription`. Models for the local lanes come from
+# EVAL_ROUTING_MODEL (claude) and EVAL_COPILOT_MODEL (Copilot).
 #
 # Exit contract:
 #   0 = all assertions passed
@@ -51,7 +62,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tests_dir="$(cd "${EVAL_TESTS_DIR:?wrapper must export EVAL_TESTS_DIR}" && pwd)"
-default_lane="${EVAL_DEFAULT_LANE:-openrouter}"
+default_lane="${EVAL_DEFAULT_LANE:-subscription}"
 http_config="${EVAL_HTTP_CONFIG:-}"
 subscription_config="${EVAL_SUBSCRIPTION_CONFIG:-}"
 
@@ -69,6 +80,7 @@ bash "${tests_dir}/scripts/regenerate-bundle.sh"
 
 # Parse our own flags out of $@; everything else is forwarded to promptfoo.
 subscription=0
+copilot=0
 provider_override=""
 forwarded=()
 while (( $# > 0 )); do
@@ -77,10 +89,14 @@ while (( $# > 0 )); do
       subscription=1
       shift
       ;;
+    --copilot)
+      copilot=1
+      shift
+      ;;
     --model|--model=*)
       echo "error: --model targeted the retired Anthropic HTTP tiers." >&2
-      echo "       The Sonnet confirmation run is the subscription lane now:" >&2
-      echo "       scripts/run-routing.sh --subscription  (make eval-routing-subscription, \$0)" >&2
+      echo "       The Sonnet run is the subscription lane now:" >&2
+      echo "       scripts/run-routing.sh --subscription  (make eval-routing, \$0)" >&2
       exit 64
       ;;
     --provider)
@@ -98,12 +114,20 @@ while (( $# > 0 )); do
   esac
 done
 
-if (( subscription )) && [[ -n "${provider_override}" ]]; then
-  echo "error: --subscription and --provider are mutually exclusive" >&2
+if (( subscription + copilot + (${#provider_override} > 0) > 1 )); then
+  echo "error: --subscription, --copilot and --provider are mutually exclusive" >&2
   exit 64
 fi
-if (( ! subscription )) && [[ -z "${provider_override}" && "${default_lane}" == "subscription" ]]; then
-  subscription=1
+if (( ! subscription && ! copilot )) && [[ -z "${provider_override}" ]]; then
+  case "${default_lane}" in
+    subscription) subscription=1 ;;
+    copilot) copilot=1 ;;
+    openrouter) ;;
+    *)
+      echo "error: unknown EVAL_DEFAULT_LANE '${default_lane}'" >&2
+      exit 64
+      ;;
+  esac
 fi
 
 # --filter-providers takes a REGEX, and provider ids are interpolated into it.
@@ -113,38 +137,26 @@ fi
 # canonical baseline with an empty summary. Escape literally.
 re_escape() { python3 -c 'import re, sys; print(re.escape(sys.argv[1]))' "$1"; }
 
-if (( subscription )); then
-  # ---- Subscription lane ---------------------------------------------------
-  if [[ -z "${subscription_config}" || ! -f "${subscription_config}" ]]; then
-    echo "error: subscription-lane config not found (${subscription_config:-unset})" >&2
-    exit 2
-  fi
+# One tiny tool-less claude probe: a not-logged-in or rate-limited CLI
+# otherwise surfaces as every case erroring mid-run. Both local lanes need it —
+# the subscription lane for its candidate AND judge, the Copilot lane for the
+# judge.
+#
+# The probe also exercises --system-prompt-file, which the candidate provider
+# depends on and cannot work around: the use-workshop bundle is ~199 KB, far
+# over Linux's 128 KiB per-argv limit, so an inline --system-prompt is
+# impossible. No claude CLI VERSION is pinned anywhere (see TESTING.md) —
+# this capability check is what that pin used to stand in for, and it fails
+# once, loudly, instead of erroring every case with an opaque message.
+preflight_claude() {
+  local probe_model="$1" probe_system probe_out
   if ! command -v claude >/dev/null 2>&1; then
-    echo "error: 'claude' not found on PATH — the subscription lane shells the claude CLI" >&2
+    echo "error: 'claude' not found on PATH — this lane shells the claude CLI" >&2
     exit 2
   fi
-
-  # Nothing in this lane may bill an API key: unset them for the whole run
-  # (candidate and judge providers also scrub their own child envs).
-  unset ANTHROPIC_API_KEY ANTHROPIC_API_TOKEN
-  export EVAL_AUTH=subscription
-
-  model="${EVAL_ROUTING_MODEL:-claude-sonnet-4-6}"
-  provider_meta="claude-cli"
-  effective_provider="claude-cli:${model}"
-
-  # Preflight the CLI login with one tiny tool-less probe: a not-logged-in or
-  # rate-limited CLI otherwise surfaces as every case erroring mid-run.
-  #
-  # The probe also exercises --system-prompt-file, which the candidate provider
-  # depends on and cannot work around: the use-workshop bundle is ~151 KB, far
-  # over Linux's 128 KiB per-argv limit, so an inline --system-prompt is
-  # impossible. No claude CLI VERSION is pinned anywhere (see TESTING.md) —
-  # this capability check is what that pin used to stand in for, and it fails
-  # once, loudly, instead of erroring every case with an opaque message.
   probe_system="$(mktemp -t routing-preflight-XXXXXX.md)"
   printf 'Reply with the single word: ok\n' > "${probe_system}"
-  probe_out="$(printf 'ok' | claude -p --model "${model}" --tools "" \
+  probe_out="$(printf 'ok' | claude -p --model "${probe_model}" --tools "" \
       --setting-sources project --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
       --no-session-persistence --system-prompt-file "${probe_system}" \
       --output-format json 2>&1)" || {
@@ -167,15 +179,54 @@ sys.exit(1 if d.get("is_error") else 0)' 2>/dev/null; then :; else
     printf '       %s\n' "$(printf '%s' "${probe_out}" | tail -c 400)" >&2
     exit 2
   fi
+}
 
+if (( subscription || copilot )); then
+  # ---- Local lanes (subscription, Copilot) ----------------------------------
+  if [[ -z "${subscription_config}" || ! -f "${subscription_config}" ]]; then
+    echo "error: local-lane config not found (${subscription_config:-unset})" >&2
+    exit 2
+  fi
   config_file="${subscription_config}"
+
+  # Nothing in these lanes may bill an Anthropic API key: unset them for the
+  # whole run (candidate and judge providers also scrub their own child envs).
+  # The judge is the local claude judge in both lanes.
+  unset ANTHROPIC_API_KEY ANTHROPIC_API_TOKEN
+  export EVAL_AUTH=subscription
+  preflight_claude "${EVAL_JUDGE_MODEL:-claude-sonnet-4-6}"
+
+  if (( subscription )); then
+    model="${EVAL_ROUTING_MODEL:-claude-sonnet-4-6}"
+    provider_meta="claude-cli"
+    if [[ "${model}" != "${EVAL_JUDGE_MODEL:-claude-sonnet-4-6}" ]]; then
+      preflight_claude "${model}"
+    fi
+  else
+    if ! command -v node >/dev/null 2>&1; then
+      echo "error: 'node' not found on PATH — the Copilot lane runs the Copilot SDK" >&2
+      exit 2
+    fi
+    # GH_TOKEN/GITHUB_TOKEN/COPILOT_GITHUB_TOKEN take precedence over the
+    # stored Copilot login; the run must use the login the preflight checks.
+    unset GH_TOKEN GITHUB_TOKEN COPILOT_GITHUB_TOKEN
+    model="${EVAL_COPILOT_MODEL:-$(node -p "require('${script_dir}/provider-routing-copilot.js').DEFAULT_MODEL")}"
+    export EVAL_COPILOT_MODEL="${model}"
+    provider_meta="copilot"
+    node "${script_dir}/copilot-preflight.js" "${model}" || exit 2
+  fi
+  effective_provider="${provider_meta}:${model}"
+  # The config declares both local candidates; match this lane's by label
+  # prefix (the model inside the label can be overridden by env).
+  forwarded+=("--filter-providers" "^$(re_escape "${provider_meta}:")")
+
   # Belt and braces: the config pins the local judge, and the flag pins it
   # again (the flag mechanism is the one the 2026-08-13 $0 reconstruction run
   # empirically proved takes effect on promptfoo 0.121.x).
   forwarded+=("--grader" "file://${script_dir}/provider-judge-cli.js")
 
-  # Default concurrency 2: gentle on the subscription rate window; overrides
-  # win (user -j flag or EVAL_ROUTING_CONCURRENCY).
+  # Default concurrency 2: gentle on the subscription rate window and the
+  # Copilot allowance; overrides win (user -j flag or EVAL_ROUTING_CONCURRENCY).
   user_set_concurrency=0
   for arg in "${forwarded[@]}"; do
     case "${arg}" in
@@ -309,7 +360,7 @@ sys.exit(1 if d.get("error") else 0)' "${probe}" 2>/dev/null; then
 fi
 
 # Filesystem-safe tag for result filenames (e.g. openrouter-z-ai-glm-5.2,
-# claude-cli-claude-sonnet-4-6).
+# claude-cli-claude-sonnet-4-6, copilot-gpt-6.1-sol).
 tag="${effective_provider//:/-}"
 tag="${tag//\//-}"
 

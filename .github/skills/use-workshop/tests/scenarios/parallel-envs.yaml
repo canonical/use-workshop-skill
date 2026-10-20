@@ -77,4 +77,23 @@
         The response describes the worktree-per-task pattern with workshops as a generic capability,
         not as something specific to any particular agent or coding tool. It does not assume the
         user is using Claude, GitHub Copilot, or any other named product, except to acknowledge
-        the user's question.
+        the user's question. It is honest about the limits (Workshop 0.9.8 guidance): a shared
+        workshop does not isolate the agents from each other — each can change every worktree and
+        the root `.git` — and Git commands for a worktree run on the host, not inside its workshop.
+        Recommending a separate clone (or a separate workshop) per agent as the safer layout counts
+        in its favor; stating either limit is enough to pass.
+
+- description: git status fails inside a worktree's workshop
+  vars:
+    user: |
+      I made a worktree with `git worktree add ../hotfix`, launched a workshop in it, and now `workshop exec dev -- git status` says "fatal: not a git repository: /home/me/app/.git/worktrees/hotfix". Did the mount break?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response explains this is expected, not a broken mount: a worktree's `.git` is a file
+        that points into the main repository's `.git` directory, which lies outside the worktree
+        and is not mounted in the worktree's workshop. The fix is to run Git commands for the
+        worktree on the host. It does NOT tell the user to mount, bind or remount the main
+        repository's `.git` into the workshop as the fix (warning against doing so — because Git
+        runs hooks and configured commands from it on the host — is a plus), and it does NOT
+        prescribe `workshop remove`/`launch`, `workshop restore`, or re-creating the worktree.

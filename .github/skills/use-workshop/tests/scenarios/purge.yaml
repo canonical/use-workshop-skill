@@ -100,12 +100,15 @@
     user: |
       I accidentally deleted my project folder. workshop list --global shows the workshop as Error with a missing-project note. The container has state I care about — can I get the workshop back instead of deleting it?
   assert:
-    - type: contains-any
+    # icontains + "recreat"/"exact path": a correct 2026-10-19 answer said
+    # "recreating the directory at that exact path" and missed every token.
+    - type: icontains-any
       value:
         - same absolute path
         - same path
         - original path
-        - recreate
+        - exact path
+        - recreat
     - type: contains-any
       value:
         - git clone

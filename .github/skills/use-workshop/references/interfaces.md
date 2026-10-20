@@ -2,18 +2,18 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-The seven interface types and how to wire them. The most important distinction at the CLI level is **auto-connect vs manual-connect**: it determines whether the agent has to issue `workshop connect` after a `launch`/`refresh` for the user's stated goal to actually work.
+The eight interface types and how to wire them. The most important distinction at the CLI level is **auto-connect vs manual-connect**: it determines whether the agent has to issue `workshop connect` after a `launch`/`refresh` for the user's stated goal to actually work.
 </overview>
 
 <model>
 A workshop is a graph of capabilities wired through two named endpoints that both reference an **interface** type:
-- **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints. Concretely, a regular SDK may define slots for **`mount` and `tunnel` only** — slots for every other interface are built into the `system` SDK and cannot be added to it under another name.
+- **slot** = the provider end (exposes a capability of that interface type). Host-rooted capabilities (camera, a host directory, the host ssh-agent) can only be exposed by the **system SDK**; a regular SDK can expose only workshop-internal directories/endpoints. Concretely, a regular SDK may define slots for **`mount` and `tunnel` only** — slots for every other interface are built into the `system` SDK and cannot be added to it under another name. The exception is **`secret`** (0.9.8+): its slots exist only on the `system` SDK too, but the user *adds* them in the workshop definition, under any name, one per keyring lookup (see the `secret` section).
 - **plug** = the consumer end (declared on the SDK that wants the capability).
-- **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it with `workshop connect`. Persistence (0.9.5+): manual connections survive `workshop refresh` (while their plugs/slots still exist in the definition), and a manual `workshop disconnect` without `--forget` stays disconnected across refreshes; `workshop restore` resets everything to auto-connect defaults. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default; the pairing must still satisfy the interface's auto-connect policy, so manual-only interfaces cannot be wired this way). Full model: `explanation/interfaces/plugs-and-slots.md`.
+- **connection** = a plug joined to a slot. At launch/refresh Workshop auto-connects each plug to a same-interface slot **where the interface policy allows it** (see `<auto_vs_manual>`); otherwise you wire it with `workshop connect`. Persistence (0.9.5+): manual connections survive `workshop refresh` (while their plugs/slots still exist in the definition, and — 0.9.8+ — while the parts of their definition that the connection depends on stay the same: a tunnel's `endpoint`, a custom-device plug's filter, a secret slot's lookup; a change there drops the connection with a `workshop warnings` entry), and a manual `workshop disconnect` without `--forget` stays disconnected across refreshes; `workshop restore` resets everything to auto-connect defaults. Two YAML mechanisms shape the topology in the workshop definition (mutually exclusive for a given plug): an inline `bind:` (delegate one plug to another, resolving same-target conflicts) and a top-level `connections:` list (pair a specific plug with a specific slot — e.g. to reach a regular-SDK slot instead of the system default; the pairing must still satisfy the interface's auto-connect policy, so manual-only interfaces cannot be wired this way). Full model: `explanation/interfaces/plugs-and-slots.md`.
 </model>
 
 <auto_vs_manual>
-**VM confinement (0.9.7+) voids this whole table.** A `confinement: virtual-machine` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On stock LXD a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/confinement.md`.
+**The VM runtime voids this whole table.** A `runtime: lxd-vm` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/runtime.md`.
 
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|
@@ -23,6 +23,7 @@ A workshop is a graph of capabilities wired through two named endpoints that bot
 | **desktop** | No | Always |
 | **ssh-agent** | No | Always |
 | **custom-device** | No | Always (security) |
+| **secret** | **Never** — not even through `connections:` | Always (0.9.8+) |
 | **tunnel** | Conditionally (see below) | Otherwise |
 
 **Tunnel auto-connect** requires ALL of these:
@@ -33,7 +34,9 @@ A workshop is a graph of capabilities wired through two named endpoints that bot
 
 If any condition fails, you must `workshop connect <plug-ref> <slot-ref>` manually.
 
-For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device), Workshop refuses to connect them on its own. The user has to opt in explicitly.
+For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device, secret), Workshop refuses to connect them on its own. The user has to opt in explicitly — with `workshop connect`, since a `connections:` pair is still bound by this policy (for `secret` it is accepted without error and leaves the plug unconnected).
+
+**Connection maintenance (0.9.8+).** A refresh drops a preserved manual connection whose definition changed in a way that matters — tunnel: either end's `endpoint`; custom-device: the plug's filter attributes; secret: the slot's `attributes` or `collection`. It warns (`disconnected "<plug>" from "<slot>" because its definition changed`, via `workshop warnings`), and the fix is to connect again. Mount, camera, desktop, GPU and ssh-agent connections are always kept. So "my tunnel / secret stopped working after I edited the definition" is expected: reconnect.
 </auto_vs_manual>
 
 <interface name="mount">
@@ -85,6 +88,7 @@ For the security-sensitive interfaces (camera, desktop, ssh-agent, custom-device
 **Slot:** `system:ssh-agent` only.
 **Plug:** must be named `ssh-agent`, cannot belong to the system SDK.
 **Connect:** manual — and once connected it persists across `workshop refresh` (0.9.5+); no re-connect ritual after each refresh.
+**What it shares:** the host agent's *identities* — the private keys stay with the agent on the host, and the host's SSH configuration files are not shared. But **any process in the workshop** can ask the host agent to authenticate with those identities, not just the SDK that declared the plug. Disconnect it when it isn't needed, and always before an autonomous coding agent starts in the workshop.
 </interface>
 
 <interface name="custom-device">
@@ -133,6 +137,25 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 - The host port must be free before launch/refresh, or the tunnel fails to activate.
 </interface>
 
+<interface name="secret">
+**Use for:** giving an SDK a credential (API key, token) from the user's host keyring at runtime, without writing the value anywhere (0.9.8+). Full user-side procedure, errors and exposure: `references/secrets.md`.
+
+**Plug:** declared by a regular SDK (any name, no attributes) — the SDK's documentation names it. Never on the system SDK.
+**Slot:** added by the user under `system` in the workshop definition, any name, carrying only the keyring lookup — `attributes` (≥1 string-valued pair; must match exactly one item) and optional `collection`:
+```yaml
+sdks:
+  - name: system
+    slots:
+      openai-key:
+        interface: secret
+        attributes:
+          service: openai
+          account: work
+```
+**Connect:** always `workshop connect <WS>/<SDK>:<PLUG> <WS>/system:<SLOT>` (one argument when the slot has the plug's name). Never automatic; `connections:` can't do it. Survives refresh until the slot's lookup changes. Inside the workshop the secret is `<SDK>.<PLUG>` (bare SDK name) and is read with `workshopctl get-secret <SDK>.<PLUG>`.
+**Exposure:** a connected secret is available to the **whole workshop**, not just the declaring SDK. Needs a desktop keyring session on the host (Secret Service over D-Bus); not available in a VM workshop.
+</interface>
+
 <wiring_decision_tree>
 **User wants to expose a workshop service on the host:**
 - Add `slots: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` to the SDK that runs the service.
@@ -147,6 +170,11 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 - Add `plugs: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` to the consumer SDK.
 - Add `slots: <name>: { interface: tunnel, endpoint: localhost:<PORT> }` under `system`.
 - `workshop refresh` + `workshop connect <workshop>/<sdk>:<name> <workshop>/system:<name>`.
+
+**User wants an SDK to have an API key or token (OpenAI, GitHub, Anthropic…):**
+- If the SDK declares a `secret` plug: store the value with `secret-tool store …`, add a `secret` slot under `system` with matching `attributes`, `workshop refresh`, then `workshop connect <workshop>/<sdk>:<plug> <workshop>/system:<slot>` and check with `workshopctl get-secret … | wc -c`. See `references/secrets.md`.
+- For a one-off command, or an SDK without a secret plug: `KEY=$(secret-tool lookup …) workshop exec --env KEY <workshop> -- <command>`.
+- Never write the value into the definition, an action, `.envrc`, or a profile.
 
 **User asks for SSH-agent forwarding (e.g., to clone a private repo from inside):**
 - Ensure the SDK declares `plugs: ssh-agent`.
@@ -176,7 +204,9 @@ To find a device's attributes on the host: `udevadm info --query=property --prop
 <source_docs>
 - `explanation/interfaces/concepts.md`
 - `explanation/interfaces/plugs-and-slots.md` (plug/slot/connection model, auto-connection policy, `bind:` vs `connections:`)
-- `explanation/interfaces/{camera,custom-device,desktop,gpu,mount,ssh,tunnel}-interface.md`
+- `explanation/interfaces/{camera,custom-device,desktop,gpu,mount,secret,ssh,tunnel}-interface.md`
+- `how-to/develop-with-workshops/provide-secrets.md` (secret slot, manual connect, troubleshooting)
+- `release-notes/v0.9.8.md` (the `secret` interface; connections dropped when a definition changes)
 - `reference/definition-files/workshop-definition.md`
 - `how-to/develop-sdks/declare-plugs-slots.md`
 - `how-to/develop-sdks/configure-mount.md` (mount ownership: `uid`/`gid`/`mode`/`read-only`)

@@ -158,3 +158,43 @@
         loop rather than a settled SDKcraft convention. Writing the
         runtime-install hook, or asserting the Python mechanism as
         settled fact, are the failure modes.
+
+- description: A systemd service gets its secret through LoadCredential and rejects an empty one
+  vars:
+    user: |
+      My SDK runs a background service (a systemd unit installed by setup-base) that needs the user's API key. Can setup-base just run `workshopctl get-secret` and write the key into the unit's Environment=?
+  assert:
+    - type: contains
+      value: LoadCredential
+    - type: contains
+      value: SDK_SYSTEMD_SECRET_SOCKET
+    - type: llm-rubric
+      value: |
+        The response says no: the hook must not fetch the secret (at
+        setup-base time no connection exists yet, the value would be
+        written into the unit file on disk, and `--verbose` traces hooks).
+        Instead the unit declares
+        `LoadCredential=<sdk>.<plug>:${SDK_SYSTEMD_SECRET_SOCKET}` and the
+        service reads `$CREDENTIALS_DIRECTORY/<sdk>.<plug>`. It warns that
+        systemd starts the unit with an EMPTY credential when the plug
+        isn't connected (expected on first launch and after a refresh of
+        an updated SDK), so the service must reject an empty credential
+        and the unit needs a restart policy (or the user restarts it after
+        connecting). Failure modes: Environment= with the key, a hook
+        writing the key anywhere, or a service that runs on an empty key.
+
+- description: A default API key is never baked into the SDK
+  vars:
+    user: |
+      To make my SDK work out of the box, can I ship our team's shared API key as a default in sdkcraft.yaml or in the setup-base hook, and let users override it?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response refuses: a credential must never be in SDK content,
+        sdkcraft.yaml, hooks, shell profiles, the README, spread tests or
+        logs — the SDK is published and every file in it ships to every
+        user. It offers the supported shape instead: a `secret` plug the
+        user connects to their own keyring item (plus an environment
+        variable override through the wrapper), and documents the
+        expected credential in the README. It does NOT suggest obfuscating
+        or encrypting the shared key in the SDK as a compromise.

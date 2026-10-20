@@ -53,17 +53,18 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — Lane 1 of the three-lane doctrine (see TESTING.md): the
-  # only paid eval, so manual-only via workflow_dispatch. Compare the result
-  # against tests/BASELINE.md before merging skill-content changes.
+  # Routing eval — Lane 1 (see TESTING.md), SUSPENDED since 2026-10-19: the
+  # OpenRouter budget is gone. Kept runnable (manual-only via
+  # workflow_dispatch) so the lane can resume without archaeology; do not
+  # dispatch it until the OPENROUTER_API_KEY account is funded again.
   #
-  # use-workshop ONLY. That suite's gate runs GLM-5.2 as candidate and gpt-5.5
-  # as the llm-rubric judge, both through OpenRouter (~$1.41/run), so
-  # OPENROUTER_API_KEY is the only secret this job (and this repo) needs.
+  # use-workshop ONLY: GLM-5.2 as candidate and gpt-5.5 as the llm-rubric
+  # judge, both through OpenRouter (~$1.41/run). OPENROUTER_API_KEY is the
+  # only secret this job (and this repo) needs.
   #
-  # onboard-workshop and design-sdk are deliberately NOT here: their routing
-  # gates are the subscription lane (local claude CLI login + local judge,
-  # $0), and a CI runner has no CLI login — Lane 2 is local-only by design.
+  # The live gates are local-only by design — the claude subscription lane
+  # (all three suites' `make eval-routing`) and the Copilot lane
+  # (`make eval-routing-copilot`) need a CLI login a runner does not have.
   eval-routing:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -76,8 +77,8 @@ jobs:
         # Aligned with the locally-verified version (see TESTING.md) so CI
         # and local runs measure with the same client.
         run: npm install -g promptfoo@0.121.17
-      - name: Routing eval (use-workshop, GLM-5.2 gate)
-        run: make -C .github/skills/use-workshop/tests eval-routing
+      - name: Routing eval (use-workshop, GLM-5.2, suspended lane)
+        run: make -C .github/skills/use-workshop/tests eval-routing-glm
         env:
           # Covers both the candidate and the judge; run-routing.sh preflights
           # the judge and exits 2 if its provider's key is missing.

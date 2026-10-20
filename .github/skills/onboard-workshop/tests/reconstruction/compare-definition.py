@@ -21,7 +21,10 @@ import argparse
 import glob
 import json
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 
 import yaml
 
@@ -80,6 +83,23 @@ def read_text(path):
             return fh.read()
     except Exception:
         return ""
+
+
+def gitignore_covers(repo_dir, name):
+    """True when the repo's top-level .gitignore makes git ignore `name`.
+
+    Asks git rather than matching text: a broader pattern such as `*.lock`
+    covers `.workshop.lock` too. The .gitignore is copied into a scratch repo
+    so the enclosing checkout's ignore rules can't leak in.
+    """
+    src = os.path.join(repo_dir, ".gitignore")
+    if not os.path.isfile(src):
+        return False
+    with tempfile.TemporaryDirectory() as tmp:
+        shutil.copy(src, os.path.join(tmp, ".gitignore"))
+        subprocess.run(["git", "init", "-q", tmp], check=True)
+        open(os.path.join(tmp, name), "w").close()
+        return subprocess.run(["git", "-C", tmp, "check-ignore", "-q", name]).returncode == 0
 
 
 def store_sdks(definition):
@@ -205,7 +225,7 @@ def main():
                 p: h["executable"] for p, h in gen_hooks.items()
             },
         },
-        "gitignore_lock": ".workshop.lock" in read_text(os.path.join(args.repo_dir, ".gitignore")),
+        "gitignore_lock": gitignore_covers(args.repo_dir, ".workshop.lock"),
     }
 
     failures = []

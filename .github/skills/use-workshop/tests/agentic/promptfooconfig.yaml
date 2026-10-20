@@ -44,6 +44,7 @@ tests:
   - file://tasks/customize-actions.yaml
   - file://tasks/author-in-project-sdk.yaml
   - file://tasks/manage-interfaces.yaml
+  - file://tasks/provide-secret.yaml
   - file://tasks/ide-integration.yaml
   - file://tasks/multi-workshop-projects.yaml
   - file://tasks/troubleshoot.yaml

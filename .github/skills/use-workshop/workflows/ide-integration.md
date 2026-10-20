@@ -37,7 +37,7 @@ There is now a first-party extension, `canonical.workshop` (`code --install-exte
 | (expanded workshop row) | `workshop info` |
 | Reopen Locally / Open Definition File | no equivalent — these only move the VS Code window |
 
-Two limits worth stating unprompted: the Add-New-Workshop wizard lists only Canonical's reference SDKs, so any other SDK goes into the definition by hand; and plain Remote-SSH to `<workshop>.<project>.wp` (Step 1) still works with no extension at all. Recommend the extension when the user is already in VS Code; don't make it a prerequisite.
+Two limits worth stating unprompted: the Add-New-Workshop wizard lists only Canonical's reference SDKs, so any other SDK goes into the definition by hand; and plain Remote-SSH to `<workshop>.<project>.wp` (Step 1) still works with no extension at all. Recommend the extension when the user is in VS Code — they named it, or asked about it; don't make it a prerequisite. For a vendor-neutral question ("my IDE", "a remote IDE"), answer with Step 1 alone, plus at most one line that VS Code users also have an extension — no VS Code section, version requirements, or install commands the user didn't ask for.
 
 **Step 2. Non-SSH services: identify the direction.**
 - A workshop service the host needs (HTTP dev server, WebSocket, Jupyter) → pattern A below.
@@ -84,7 +84,7 @@ workshop connect <workshop>/<consumer-sdk>:<name> <workshop>/system:<name>
 ```
 workshop refresh
 ```
-For pattern B, also run `workshop connect ...` after the refresh — once connected, the manual connection persists across future refreshes (0.9.5+).
+For pattern B, also run `workshop connect ...` after the refresh — once connected, the manual connection persists across future refreshes (0.9.5+), unless a later edit changes either tunnel `endpoint` (0.9.8+: the refresh then drops it with a `workshop warnings` entry — connect again).
 
 **Step 5. Discover the address the user should point their tool at.**
 ```
@@ -104,7 +104,7 @@ Tell the user to point their tool at the `from:` address (host side). Note the s
 **Step 6. For ssh-agent forwarding (e.g., to clone private repos from inside a remote IDE session):**
 - Add `plugs: ssh-agent: {}` to a regular SDK (or sketch).
 - Manual connect: `workshop connect <workshop>/<sdk>:ssh-agent` — persists across refreshes (0.9.5+).
-- Then ssh-agent forwarding works inside the workshop.
+- Then ssh-agent forwarding works inside the workshop. The private keys stay with the host agent and the host's SSH config isn't shared — but any process in the workshop can use the agent's identities while it's connected, so disconnect it before an autonomous coding agent runs there.
 
 </process>
 

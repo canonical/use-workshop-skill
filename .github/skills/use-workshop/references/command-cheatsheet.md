@@ -4,16 +4,16 @@
 <overview>
 Dense reference for every `workshop` and `sdk` subcommand. One block per command: signature, purpose, key flags, single-line example. The most-loaded reference — read this first when you know roughly what you want and need to confirm the flag.
 
-All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The installed version comes from `workshop --version`/`-v` — there is no `workshop version` subcommand — or from `snap list workshop`, which also shows the tracked channel. Prefer the snap table when reading `sdkcraft`'s version: an edge build answers `--version` with a dev string (`0.0.post1.dev1+g<sha>`), and the two snaps track independently, so `sdkcraft` trailing `workshop` by a point release is normal. Every `(0.9.x+)` note below is a floor — check it before citing the behavior on an older install, and never `snap refresh`/`snap remove` on the user's behalf (see `references/anti-patterns.md` on forward compatibility and what a reinstall destroys). Upstream states explicitly (0.9.7 docs) that **the `workshop` and `sdk` CLI output format can change at any time** — the `workshopd` API is the stable surface, and only breaking changes to CLI *arguments* are announced in release notes. So match the named, documented lines this file calls out (`status:`, `hostname:`, `confinement:`) rather than column positions or field order, and don't build a parser on table layout. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them. The snap enables completion automatically; manual setup is `source <(workshop completion bash)` (also `zsh`/`fish`, and `sdk completion …`).
+All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The installed version comes from `workshop --version`/`-v` — there is no `workshop version` subcommand — or from `snap list workshop`, which also shows the tracked channel. Prefer the snap table when reading `sdkcraft`'s version: an edge build answers `--version` with a dev string (`0.0.post1.dev1+g<sha>`), and the two snaps track independently, so `sdkcraft` trailing `workshop` by a point release is normal. Every `(0.9.x+)` note below is a floor — check it before citing the behavior on an older install, and never `snap refresh`/`snap remove` on the user's behalf (see `references/anti-patterns.md` on forward compatibility and what a reinstall destroys). Upstream states explicitly (0.9.7 docs) that **the `workshop` and `sdk` CLI output format can change at any time** — the `workshopd` API is the stable surface, and only breaking changes to CLI *arguments* are announced in release notes. So match the named, documented lines this file calls out (`status:`, `hostname:`, `runtime:`) rather than column positions or field order, and don't build a parser on table layout. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them. The snap enables completion automatically; manual setup is `source <(workshop completion bash)` (also `zsh`/`fish`, and `sdk completion …`).
 
 **Workshop-name argument rule.** What matters is the *number* of workshops in the project, not the file layout. In a single-workshop project the workshop name is OPTIONAL and may be omitted on most subcommands — this holds whether the definition is a root `workshop.yaml` or a lone `.workshop/<NAME>.yaml` (e.g. one created by `workshop init`; tutorial part 1 runs `workshop launch`/`info`/`stop`/`start`/`refresh` with no name against `.workshop/dev.yaml`). In a multi-workshop project (two or more definitions under `.workshop/`) the workshop name is REQUIRED on every subcommand that takes one — bare `workshop refresh`, `workshop exec`, `workshop run`, etc. are rejected with a name-required error, NOT silently expanded across all workshops. Always surface this when diagnosing a multi-workshop "command complained" symptom.
 </overview>
 
 <workshop_lifecycle>
-**`workshop init <NAME> [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml`. Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`.
+**`workshop init <NAME> [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml` and reports `"<NAME>" workshop definition created at <path>` (0.9.8 wording). Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`. Shell completion covers `--base` and `--runtime` values (0.9.8+).
 - `--sdks` — optional (0.9.5+; bare `workshop init dev` scaffolds a base-only definition). Comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.26/stable`) and may be an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). Example: `--sdks go,project-tools`.
 - `--base` — base image; optional, defaults to `ubuntu@24.04`. `--help` lists the supported bases: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (0.9.7 dropped `ubuntu@20.04` from the list — the validator still accepts it, but it warns on every launch/refresh; never scaffold it).
-- `--vm` (0.9.7+) — scaffold `confinement: virtual-machine` instead of a container. Without it no `confinement:` line is written at all, which means `container`. VM confinement is experimental and snap-gated, and the launch will be refused until the host opts in — read `references/confinement.md` before proposing it.
+- `--runtime <lxd-container|lxd-vm>` (0.9.8+; default `lxd-container`) — `--runtime lxd-vm` scaffolds `runtime: lxd-vm`. Without it no `runtime:` line is written at all, which means `lxd-container`. The 0.9.7 `--vm` flag is gone (`Error: unknown flag: --vm`). The VM runtime is experimental, needs LXD `6/edge` for SDKs, and the launch is refused until the host opts in — read `references/runtime.md` before proposing it.
 - Scaffolds base + SDK list only. For `actions:`, `connections:`, or plug/slot grafts, edit the generated `.workshop/<NAME>.yaml` afterward (or start from a `templates/` file). An in-project SDK's *directory* (`.workshop/<NAME>/`) is still authored separately.
 - Example: `workshop init dev --sdks ollama/cpu/stable --base ubuntu@22.04`
 
@@ -23,14 +23,15 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - `--verbose` combines stdout+stderr from hooks.
 - Workshop name is optional if the project has only one workshop.
 - Launching an already-launched workshop fails with no effect — use `refresh` to update it.
-- A `confinement: virtual-machine` definition is refused here until the host opts in: `confinement "virtual-machine" is experimental` / `To opt in: "sudo snap set workshop workshop.experimental-vms=1 && sudo snap restart workshop.workshopd"` (0.9.7+). If it also declares SDKs on an LXD without shifted VM mounts: `SDKs are currently unavailable for virtual machines`. See `references/confinement.md`.
+- A `runtime: lxd-vm` definition is refused here until the host opts in: `runtime "lxd-vm" is experimental` / `To opt in: "sudo snap set workshop workshop.experimental-vms=1 && sudo snap restart workshop.workshopd"`. If it also declares SDKs on LXD `6/stable`: `SDKs are currently unavailable for virtual machines`. A bad value: `invalid runtime "<X>"; valid runtimes: lxd-container, lxd-vm`. See `references/runtime.md`.
 - Example: `workshop launch nimble jazzy`
 
 **`workshop refresh [<WORKSHOP>...] [flags]`** — Update existing workshops to match the current definition. Workshop must be `Ready`. Same `--wait-on-error`/`--continue`/`--abort`/`--no-wait`/`--verbose` flags as `launch`.
 - Use this — not `remove`+`launch` — for definition changes, including `base:`, `sdks:`, `connections:`, and `actions:`. (Action edits don't actually require it; everything else does.)
-- Confinement cannot change on a launched workshop (0.9.7+): editing `confinement:` and refreshing fails with `confinement changed from "container" to "virtual-machine"`. The only path is `remove` + `launch` — the one case where that is the right answer rather than the anti-pattern.
-- Under VM confinement, refresh skips auto-connect entirely and restores nothing, so the stickiness below does not apply — re-wire with `workshop connect` after every refresh.
+- The runtime cannot change on a launched workshop: editing `runtime:` and refreshing fails with `runtime changed from "lxd-container" to "lxd-vm"`. The only path is `remove` + `launch` — the one case where that is the right answer rather than the anti-pattern.
+- In a VM workshop (`runtime: lxd-vm`), refresh skips auto-connect entirely and restores nothing, so the stickiness below does not apply — re-wire with `workshop connect` after every refresh.
 - Connection stickiness (0.9.5+): manual `workshop connect` connections are PRESERVED across refresh (as long as their plugs and slots still exist in the new definition), and a manual `workshop disconnect` made without `--forget` stays disconnected. Auto-connections are re-evaluated as usual. `workshop restore` is the reset, not refresh.
+- Connection maintenance (0.9.8+): a preserved manual connection is DROPPED when the refresh changes something it depends on — a tunnel plug's or slot's `endpoint`, a custom-device plug's filter attributes, a secret slot's `attributes`/`collection`. The refresh succeeds and prints `WARNING: There is 1 new warning. See "workshop warnings".`; the warning reads `disconnected "<WS>/<SDK>:<PLUG>" from "<WS>/<SDK>:<SLOT>" because its definition changed`. Reconnect to approve the new definition. Mount, camera, desktop, GPU and ssh-agent connections are always kept.
 - The recovery path for ANY hook failure during refresh is the diagnostic flow (`workshop changes` → `workshop tasks <ID>`) and `--wait-on-error` for live debug, NOT remove+launch. See `workflows/troubleshoot.md` and `references/async-and-recovery.md`.
 - Note for in-project SDK authors only: `setup-base` is a creation-only hook (it becomes part of the workshop snapshot at launch), so picking up edits to a `setup-base` *script* requires recreating the workshop. This is an authoring-time constraint, not a recovery prescription. See `references/in-project-sdk.md` for the full hook taxonomy.
 - Example: `workshop refresh --wait-on-error`
@@ -60,7 +61,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - Example: `workshop list --global`
 
 **`workshop info [<WORKSHOP>] [flags]`** — Print workshop's settings, status, SDK details, and connected mount plugs as YAML.
-- A `confinement:` line (0.9.7+) follows `status:` and is always present: `container` or `virtual-machine`. This is the authoritative answer to "is this a VM?" — the definition file can have been edited after launch, and confinement is fixed at launch. Adding this key also widened the header block's column padding, so don't pin the indentation of `workshop info` output.
+- A `runtime:` line (0.9.8+; `confinement:` in 0.9.7) follows `status:` and is always present: `lxd-container` or `lxd-vm`. This is the authoritative answer to "is this a VM?" — the definition file can have been edited after launch, can carry a stale `confinement:` key that 0.9.8 ignores, and the runtime is fixed at launch. Don't pin the indentation of `workshop info` output; the header block's padding has changed between releases.
 - The `status:` line is lowercase (`status:   ready`) and carries the workshop status — `off`/`ready`/`stopped`/`pending`/`waiting`/`error`. It is the roll-up of every SDK's `check-health`: there is no per-SDK health line, and `okay`/`waiting`/`error` (the `workshopctl set-health` vocabulary) are not strings this output prints. Match `status:\s+ready`, never `status:\s+okay`.
 - Output includes a `hostname:` line (0.9.2+) with the workshop's DNS name `<WORKSHOP>.<PROJECT>.wp`; workshops in the same project can reach each other by that name (a short name where the base supports the DNS search domain). Existing workshops need one `workshop refresh` to populate it.
 - A `hostname-fallback` note (0.9.3+) means the preferred name couldn't be assigned (e.g. the project directory name isn't a valid DNS label); the `hostname:` line then carries a stable ID-based name — the `workshopd` log has the reason.
@@ -86,11 +87,19 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 **`workshop okay`** — Acknowledge all warnings printed by the previous `workshop warnings` call.
 </workshop_introspection>
 
+<workshopctl_in_the_workshop>
+`workshopctl` runs *inside* a workshop and talks to the daemon over a socket. Two subcommands exist; anything else about it is a docs pointer (`reference/cli/workshopctl.md`), not improvisation.
+
+**`workshopctl get-secret [--systemd] <SDK>.<secret>`** (0.9.8+) — Write the value of a secret, made available through a **connected** `secret` plug, to stdout. `<SDK>` is the bare SDK name (no `try-`/`project-`). Runs as the ordinary `workshop` user, from `workshop exec`, a shell, or an SDK's own wrapper. Exit codes: `0` success · `1` not found · `2` keyring locked · `3` plug not connected · `4` several items match · `255` anything else. Check a lookup without printing the value: `workshop exec <WORKSHOP> -- workshopctl get-secret <SDK>.<PLUG> | wc -c`. `--systemd` serves a systemd `LoadCredential=` request and is not for interactive use (an unconnected plug then exits `0` with an empty credential). Every call is logged as a `Retrieve secret "<WS>/<SDK>:<PLUG>"` change — never with the value. Full user-side model: `references/secrets.md`.
+
+**`workshopctl set-health <okay|waiting|error> [<message>]`** — only from an SDK's `check-health` hook; see `references/in-project-sdk.md`.
+</workshopctl_in_the_workshop>
+
 <workshop_execution>
 **`workshop exec [flags] [<WORKSHOP>] [--] <COMMAND>...`** — Run an arbitrary command in the workshop. Workshop must be `Ready` or `Waiting`.
 - Auto-detects interactive vs non-interactive based on stdin/stdout TTYs; force with `-i`/`--interactive` or `-I`/`--non-interactive`.
 - `--cwd, -w <PATH>` sets working directory in the workshop.
-- `--env KEY=VAL` (or `--env KEY` to inherit from CLI environment); repeatable. Shell completion offers the calling shell's variable names (0.9.6+, on both `exec` and `run`).
+- `--env KEY=VAL` (or `--env KEY` to inherit from CLI environment); repeatable. Shell completion offers the calling shell's variable names (0.9.6+, on both `exec` and `run`). For a **secret**, only ever the name form, filled from the host's store for that one command — `KEY=$(secret-tool lookup <attr> <value>…) workshop exec --env KEY <WORKSHOP> -- <COMMAND>` — never `--env KEY=<value>` (shell history, host process list). An unset `KEY` is skipped silently. See `references/secrets.md`.
 - `--uid <N>`, `--gid <N>` to run as a specific user/group inside the workshop.
 - `--timeout <DURATION>` (units: `ns`, `us`/`µs`, `ms`, `s`, `m`, `h`).
 - Use `--` to separate the workshop name from the command when there's ambiguity.
@@ -106,12 +115,12 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 </workshop_execution>
 
 <workshop_interfaces>
-**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. `<SDK>` is the bare name, also for try and in-project SDKs (`dev/mir:install`, not `dev/try-mir:install`). Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+); `workshop restore` drops them.
+**`workshop connect <WORKSHOP>/<SDK>:<PLUG> [<WORKSHOP>/<SDK>][:<SLOT>] [flags]`** — Connect a plug to a slot. `<SDK>` is the bare name, also for try and in-project SDKs (`dev/mir:install`, not `dev/try-mir:install`). Listed as `manual` in `workshop connections` output. Manual connections survive `workshop refresh` (0.9.5+) unless the plug's or slot's definition changed in a way that matters to the connection (0.9.8+: a secret slot's lookup, a tunnel endpoint, a custom-device filter) — then the refresh drops it with a warning; `workshop restore` drops them all. `secret` plugs connect ONLY this way (0.9.8+): never automatically, and a `connections:` entry doesn't do it either.
 - If the second argument is omitted, target is `<WORKSHOP>/system:<PLUG>`.
 - If only `:<SLOT>`: target is `<WORKSHOP>/system:<SLOT>`.
 - If the second argument names only `<WORKSHOP>/<SDK>` (no `:<SLOT>`), the slot is chosen by matching the plug's interface — errors if several slots share that interface.
 - `--no-wait`.
-- Example: `workshop connect nimble/go:mod-cache :mount`
+- Example: `workshop connect nimble/go:mod-cache :mount`; `workshop connect dev/<SDK>:<PLUG> dev/system:<SECRET-SLOT>`
 
 **`workshop disconnect <WORKSHOP>/<SDK>:<PLUG OR SLOT> [<WORKSHOP>/<SDK>]:[<SLOT>] [flags]`** — Disconnect a plug from its slot, or a slot from all its plugs. Same second-argument forms as `connect`.
 - `--forget` (semantics matter — easy to invert): WITHOUT it, disconnecting an auto-connected plug is sticky — it stays disconnected across `workshop refresh` (0.9.5+). WITH `--forget`, the disconnect is forgotten and auto-connect re-establishes the plug at the next refresh (i.e. a temporary off-switch). Either way, `workshop restore` reconnects it.
@@ -153,10 +162,13 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 
 **`sdk find <QUERY> [flags]`** — Search the SDK Store for SDKs whose name/title/summary/description/publisher matches the query. Only the latest release per SDK is shown.
 - Combine multiple words: `sdk find <keyword> <other-keyword>`. `--no-headers`.
+- A mark after the publisher shows its Store validation (0.9.8 help text): `✓` verified (e.g. `Canonical✓`), `✪` starred, none = not validated. When the output isn't a UTF-8 terminal — piped, or in an agent's tool call — the marks print as `**` (verified) and `*` (starred), so `Canonical**` is a verified publisher, not a typo. Check the mark (and `sdk info`'s `publisher`, `license`, `website`) before proposing a third-party SDK.
+- `sdk find agent` lists the AI coding-agent SDKs (`claude-code`, `codex`, `copilot`, …). An agent SDK runs the agent as the `workshop` user like any command — read upstream's agent caveats (`reference/ai-agents.md`, `security.md`) before wiring one up, and see `references/runtime.md` `<boundary>`.
 
 **`sdk info <SDK> [flags]`** — Print the SDK's metadata, available Store channels, and workshops where the SDK is installed.
 - `--base <BASE>`: filter Store channels to a specific base (e.g., `ubuntu@24.04`).
 - `--arch <ARCH>` or `--arch all`: show channels for a different (or every) supported architecture.
+- In the `CHANNELS` table a `^` (UTF-8 terminals: `↑`) means the risk level has no revision of its own and follows the one above it.
 </sdk_cli>
 
 <storage_and_lxd>
@@ -174,5 +186,7 @@ At ≥90% pool usage the daemon enters **degraded mode**: it rejects state-chang
 - `explanation/cli.md` — how the four CLIs (`workshop`, `sdk`, `sdkcraft`, `workshopctl`) divide the work
 - `reference/workshop-status.md` — state transition diagrams
 - `reference/workshops.md` — storage pools, degraded mode, and the backward/forward compatibility policy
-- `release-notes/v0.9.7.md`, `release-notes/v0.9.6.md` — the newest flags and behavior floors cited above
+- `reference/cli/workshopctl.md` — `get-secret` and `set-health`
+- `reference/ai-agents.md` — agent SDKs, publisher marks, reading `sdk info`
+- `release-notes/v0.9.8.md`, `release-notes/v0.9.7.md`, `release-notes/v0.9.6.md` — the newest flags and behavior floors cited above
 </source_docs>

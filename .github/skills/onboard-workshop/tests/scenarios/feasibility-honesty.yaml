@@ -186,7 +186,7 @@
     user: |
       Onboard this Python service repo, but make the workshop a virtual machine rather than a container — I want a harder boundary around the agent that runs in it.
   assert:
-    # No blunt `not-contains: "confinement: virtual-machine"`: a correct refusal
+    # No blunt `not-contains: "runtime: lxd-vm"`: a correct refusal
     # quotes the key precisely to say it will not be emitted
     # (mention-vs-prescription, cf. the sibling suite's fixes 2/3/7/12). The
     # rubric below carries the real guard.
@@ -194,19 +194,20 @@
       value: ubuntu.com/workshop/docs/reference
     - type: llm-rubric
       value: |
-        The response does NOT emit a definition containing `confinement:
-        virtual-machine` (naming the key to refuse it is correct and expected).
-        It also does not invent a docs URL for the skill's own
-        `references/confinement.md`, which is a skill file and not a page on
-        the docs site. It explains honestly why onboarding stays with a
-        container: VM confinement (0.9.7+) is experimental and needs a
-        host-level snap opt-in the skill will not perform, and on a stock LXD
-        a VM workshop refuses any definition that declares SDKs — which an
-        onboarded Python definition does. Mentioning that a VM also skips
-        auto-connect and check-health, so there is nothing for the
-        launch-and-verify stage to prove, is a plus. It offers the container
+        The response does NOT emit a definition containing `runtime: lxd-vm`
+        or the 0.9.7 spelling `confinement: virtual-machine` (naming either
+        key to refuse it is correct and expected). It also does not invent a
+        docs URL for the skill's own `references/runtime.md`, which is a
+        skill file and not a page on the docs site. It explains honestly why
+        onboarding stays with a container: the VM runtime is experimental and
+        needs a host-level snap opt-in the skill will not perform, and on LXD
+        `6/stable` a VM workshop refuses any definition that declares SDKs —
+        which an onboarded Python definition does. Mentioning that a VM also
+        skips auto-connect and check-health, or that it leaves the project
+        directory writable and the network open (so it is not the agent
+        boundary the user expects), is a plus. It offers the container
         definition as what it will actually deliver, and points the user at
-        the use-workshop skill's confinement reference if they want to pursue
-        a VM by hand. Silently producing a VM definition, or refusing to
-        onboard at all, are both failures.
+        the use-workshop skill (or the upstream VM how-to) if they want to
+        pursue a VM by hand. Silently producing a VM definition, or refusing
+        to onboard at all, are both failures.
 

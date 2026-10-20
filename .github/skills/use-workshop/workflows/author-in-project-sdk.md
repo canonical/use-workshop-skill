@@ -30,6 +30,7 @@ Walk down the hook taxonomy from `references/in-project-sdk.md`. For a tool-wrap
 | OS package installs / system-wide config that persists into every workshop on a given base | `setup-base` |
 | Report whether the SDK can operate (gate `Ready`) via `workshopctl set-health okay\|waiting\|error` | `check-health` |
 | Carry mutable state across a refresh that rebuilds the SDK | `save-state` + `restore-state` |
+| The tool needs a credential (API key, token) at runtime (0.9.8+) | **No hook.** Declare a `secret` plug in `sdk.yaml`; have the user's command read it through a wrapper with `workshopctl get-secret <NAME>.<PLUG>` (bare name). `setup-base` may install that wrapper and put it on `PATH` — never fetch or store the value in a hook. See `references/in-project-sdk.md` and `references/secrets.md` |
 
 There are exactly five hooks (`setup-base`, `setup-project`, `check-health`, `save-state`, `restore-state`) — there is no `setup-sdk`. `save-state`/`restore-state` fire during an *applied* `workshop refresh` (and during `workshop restore`, which runs the same machinery), not on stop/start; `check-health`/`save-state`/`restore-state` run as `root`. See `references/in-project-sdk.md` for the full contract.
 
@@ -140,6 +141,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK <NAM
 - Omitting the `project-` prefix in `workshop.yaml`'s `sdks:` entry — Workshop won't find the SDK.
 - Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation as `unknown SDK YAML fields: hooks`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
 - Calling `workshopctl set-health` from anywhere other than a `check-health` hook — it is intended for in-hook execution context.
+- Fetching a secret in a hook and writing it to a file, `/etc/profile.d`, or `~/.profile` (or running such a hook with `--verbose`, which turns on `xtrace` and prints it) — the value must stay out of the workshop's filesystem and logs; read it per command with `workshopctl get-secret`.
 - Reaching for the build-time `schema-sdk.json` to validate `sdk.yaml` — that schema describes the post-`sdkcraft` form; in-project hooks aren't a YAML field there.
 - Editing `setup-base` and expecting `workshop refresh` to re-run it — `setup-base` only runs on workshop creation. `remove` + `launch` is required.
 </anti_patterns>
@@ -158,5 +160,6 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK <NAM
 - `explanation/sdks/concepts.md` (SDK concepts)
 - `reference/definition-files/sdk-definition.md`
 - `reference/cli/workshop.md` (refresh, tasks, info sections)
-- `reference/cli/workshopctl.md` (`set-health`, in-hook only)
+- `reference/cli/workshopctl.md` (`set-health`, in-hook only; `get-secret`)
+- `how-to/develop-sdks/use-secrets.md` (a `secret` plug in an SDK, and the wrapper pattern)
 </source_docs>

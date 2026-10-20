@@ -139,6 +139,8 @@
         - "1024"
         - "non-privileged"
         - "rejected"
+        - "rejects"
+        - "1023"
         - "unprivileged"
     - type: llm-rubric
       value: |

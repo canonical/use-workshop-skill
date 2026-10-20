@@ -21,8 +21,8 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
-| `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted, but warns on every launch/refresh and breaks in the release after 0.9.7 |
-| `confinement` | optional | string | `container` (default when the key is absent) or `virtual-machine` (0.9.7+, experimental and snap-gated). Fixed at launch. See `references/confinement.md` |
+| `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted (0.9.8 included), but warns on every launch/refresh; removal is announced, not dated |
+| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/edge`). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key is silently ignored. See `references/runtime.md` |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |
 | `actions` | optional | map | Named bash scripts invoked via `workshop run` |
@@ -91,7 +91,7 @@ connections:
     slot: mir:install        # not try-mir:install
 ```
 
-**A `connections:` entry still has to satisfy the interface's auto-connection policy** — it steers auto-connect, it does not override it. Interfaces that block auto-connection outright (camera, desktop, ssh-agent, custom-device, non-loopback tunnels) yield **no** connection when listed here; they need a `workshop connect` after launch (which then persists across refresh, 0.9.5+).
+**A `connections:` entry still has to satisfy the interface's auto-connection policy** — it steers auto-connect, it does not override it. Interfaces that block auto-connection outright (camera, desktop, ssh-agent, custom-device, `secret`, non-loopback tunnels) yield **no** connection when listed here — silently, with no error; they need a `workshop connect` after launch (which then persists across refresh, 0.9.5+, until a refresh changes the endpoint, filter or secret lookup it depends on, 0.9.8+).
 </connections_entry>
 
 <actions_entry>
@@ -135,15 +135,22 @@ actions:
 - Name is freeform.
 - Attributes: `subsystem` (kernel device subsystem to expose, e.g. `tty`, `input`, `usb`), `vendorid` (0.9.3+), `productid` (0.9.3+) — each optional, at least one required; `productid` requires `vendorid`. Quote IDs as strings (`"0403"`, `"6001"`).
 - Never auto-connects — wire it after launch/refresh with `workshop connect <WORKSHOP>/<SDK>:<PLUG> :custom-device`. The slot exists only as `system:custom-device`.
+
+**Secret slots** (0.9.8+; on the `system` SDK only — the user adds them here, any name):
+- `attributes` (required): a map of keyring item attributes, **string** values only, at least one. The lookup succeeds only when exactly one item in the collection carries all of them.
+- `collection` (optional): keyring collection label; omitted means the keyring's `default` alias (GNOME's Login keyring). Must identify exactly one collection; can't be blank.
+- No other keys, and **never the value**. Bad slots fail at launch/refresh with e.g. `secret interface slots are only supported by the system SDK`, `secret interface slot must contain "attributes"`, `at least one attribute must be defined for a secret slot`, `attribute "<key>" must be of type string`, `unsupported keys found in secret slot`.
+- The matching **plug** is declared by a regular SDK (`interface: secret`, no attributes). Grafting one onto someone else's SDK from the workshop definition is undocumented — use an SDK that declares it, or an in-project SDK of your own.
+- Never auto-connects, and a `connections:` entry doesn't connect it — `workshop connect` after launch/refresh. See `references/secrets.md`.
 </interface_specifics>
 
 <minimal_examples>
 
-**VM confinement (0.9.7+, experimental — needs the snap opt-in; no SDKs on stock LXD):**
+**VM runtime (experimental — needs the snap opt-in; no SDKs on LXD `6/stable`):**
 ```yaml
 name: dev
 base: ubuntu@24.04
-confinement: virtual-machine
+runtime: lxd-vm
 actions:
   <action>: |
     <command>
@@ -224,4 +231,5 @@ After `workshop refresh`, run: `workshop connect <workshop>/<consumer-sdk>:svc <
 - `how-to/customize-workshops/add-actions.md`
 - `how-to/customize-workshops/add-mounts.md`
 - `how-to/customize-workshops/forward-ports.md`
+- `how-to/develop-with-workshops/provide-secrets.md` (the `secret` slot)
 </source_docs>

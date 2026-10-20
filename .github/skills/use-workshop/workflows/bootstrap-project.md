@@ -28,9 +28,9 @@ skill is installed, use that skill instead — it owns repo analysis,
 feasibility verdicts, and toolchain-to-action mapping.
 
 Ask the user (only what isn't obvious):
-- What base OS? (`ubuntu@22.04`, `24.04`, `26.04` — default to `24.04` if no preference. `ubuntu@20.04` is deprecated as of 0.9.7: still accepted, but it warns on every launch/refresh and breaks in the next release — don't offer it.)
+- What base OS? (`ubuntu@22.04`, `24.04`, `26.04` — default to `24.04` if no preference. `ubuntu@20.04` is deprecated since 0.9.7: still accepted, but it warns on every launch/refresh and its removal is announced — don't offer it.)
 - What tools/runtimes do they need inside?
-- Confinement: **don't ask.** Default to a container silently. Only raise `confinement: virtual-machine` if the user asks for it or states a need a container can't meet (isolating an agent behind a hard boundary, running LXD inside the workshop) — and then read `references/confinement.md` first, because a VM is experimental, needs a snap opt-in, and on stock LXD cannot carry SDKs at all.
+- Runtime: **don't ask.** Default to a container silently. Only raise `runtime: lxd-vm` if the user asks for it or states a need a container can't meet (running LXD inside the workshop, a harder kernel boundary) — and then read `references/runtime.md` first, because a VM is experimental, needs a snap opt-in, cannot carry SDKs without a host-wide switch to LXD `6/edge`, and still leaves `/project` writable and the network open.
 
 For each tool, find a published SDK:
 ```
@@ -49,7 +49,7 @@ Two first-class paths — pick by what the definition needs:
 ```
 workshop init <name> [--sdks <sdk1>,<sdk2>/<channel>] [--base <base>]
 ```
-This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). `--sdks` is optional (0.9.5+; bare `workshop init <name>` gives a base-only definition) and each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`) or reference an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). `--base` defaults to `ubuntu@24.04` and `--help` lists the supported bases. `--vm` (0.9.7+) scaffolds `confinement: virtual-machine` — see the confinement note in Step 2 before using it. Fast when the workshop is a base plus an SDK list. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or an in-project SDK's *directory* — add those by editing the generated file (or authoring `.workshop/<NAME>/`), or use Path B.
+This writes `.workshop/<name>.yaml` (and fails if a workshop with that name already exists). `--sdks` is optional (0.9.5+; bare `workshop init <name>` gives a base-only definition) and each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `ollama/cpu/stable`) or reference an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). `--base` defaults to `ubuntu@24.04` and `--help` lists the supported bases. `--runtime lxd-vm` (0.9.8+; `--vm` in 0.9.7) scaffolds `runtime: lxd-vm` — see the runtime note in Step 2 before using it. Fast when the workshop is a base plus an SDK list. It does NOT scaffold `actions:`, `connections:`, plug/slot grafts, or an in-project SDK's *directory* — add those by editing the generated file (or authoring `.workshop/<NAME>/`), or use Path B.
 
 When answering a question about what `init` can produce, state two things unprompted, because a reader otherwise assumes the opposite: `--base` defaults to `ubuntu@24.04` (so `workshop init <name>` alone is the bare form), and `--sdks project-<NAME>` writes only the *reference* — `init` never creates `.workshop/<NAME>/`, its `sdk.yaml` or its hooks, so the SDK directory has to exist or be authored separately.
 

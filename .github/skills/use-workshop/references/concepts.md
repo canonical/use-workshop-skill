@@ -8,7 +8,7 @@ Core conceptual model an agent must hold to operate Workshop fluently. These are
 <core_terms>
 
 <term name="workshop (lowercase)">
-An isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it) — an LXD container by default, or a full virtual machine when the definition says `confinement: virtual-machine` (0.9.7+, experimental). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
+An isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it) — an LXD container by default, or a full virtual machine when the definition says `runtime: lxd-vm` (experimental; spelled `confinement: virtual-machine` in 0.9.7). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
 </term>
 
 <term name="project">
@@ -16,15 +16,15 @@ The directory on the host that contains workshop definition file(s). The project
 </term>
 
 <term name="workshop definition">
-A YAML file describing how a workshop should be assembled: `name`, `base` image, optional `confinement:`, `sdks:` list, optional `connections:`, optional `actions:`. Either `workshop.yaml` / `.workshop.yaml` at project root (single-workshop project), or `.workshop/<name>.yaml` files (multi-workshop project — names must match filenames). Cannot mix the two layouts.
+A YAML file describing how a workshop should be assembled: `name`, `base` image, optional `runtime:`, `sdks:` list, optional `connections:`, optional `actions:`. Either `workshop.yaml` / `.workshop.yaml` at project root (single-workshop project), or `.workshop/<name>.yaml` files (multi-workshop project — names must match filenames). Cannot mix the two layouts.
 </term>
 
 <term name="base">
-The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. Supported as of 0.9.7: `22.04`, `24.04`, `26.04`. **`20.04` is deprecated, not removed** — the validator still accepts it and `workshop init --base ubuntu@20.04` still succeeds, but every launch and refresh raises the warning `workshops with "base: ubuntu@20.04" are no longer supported; refresh to 22.04+ before the next release of Workshop`, and it is slated to stop working in the next release. Never propose `20.04` for a new definition; when a user already has one, tell them to move to `22.04`+ rather than claiming it is rejected today.
+The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. Supported as of 0.9.7 and 0.9.8: `22.04`, `24.04`, `26.04`. **`20.04` is deprecated, not removed** — the validator still accepts it and `workshop init --base ubuntu@20.04` still succeeds, but every launch and refresh raises the warning `workshops with "base: ubuntu@20.04" are no longer supported; refresh to 22.04+ before the next release of Workshop`, and it will stop working in a later release — the same warning shipped in 0.9.7 and 0.9.8, so upstream has not said which. Never propose `20.04` for a new definition; when a user already has one, tell them to move to `22.04`+ rather than claiming it is rejected today.
 </term>
 
-<term name="confinement">
-How the workshop is sandboxed, declared as the top-level `confinement:` key: `container` (the default; omitting the key selects it) or `virtual-machine` (0.9.7+, **experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1`). Confinement is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on stock LXD, auto-connect, and `check-health`. Full model and the exact errors: `references/confinement.md`.
+<term name="runtime">
+How the workshop is sandboxed, declared as the top-level `runtime:` key (0.9.8+; `confinement:` in 0.9.7, now silently ignored): `lxd-container` (the default; omitting the key selects it) or `lxd-vm` (**experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1` and, for SDKs, LXD from `6/edge`). The runtime is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on LXD `6/stable`, auto-connect, and `check-health`, and its boundary stops at the kernel. Full model and the exact errors: `references/runtime.md`.
 </term>
 
 <term name="workshop hostname (DNS)">
@@ -45,7 +45,7 @@ The mechanism for controlled communication and resource sharing.
 - **Interface**: a predefined resource type (camera, custom-device, desktop, GPU, mount, ssh-agent, tunnel). Cannot create custom types (`custom-device` is itself predefined — it exposes host devices by kernel subsystem, optionally narrowed by vendor/product ID (0.9.3+), not a way to define new interfaces).
 - **Plug**: the consumer side, declared in the SDK that wants to use the resource.
 - **Slot**: the provider side; for host resources, declared on the system SDK; for workshop-internal resources, on a regular SDK.
-- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount auto-connects to **system-SDK slots only** — a regular-SDK mount slot needs an explicit `connections:` entry; GPU auto-connects; tunnel auto-connects only host→workshop under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, and the remaining tunnel cases. Persistence (0.9.5+): manual connects *and* manual disconnects survive `workshop refresh`; `workshop restore` resets everything to the definition's auto-connect defaults.
+- **Connection**: a plug bound to a slot. Auto-connected for some interfaces (mount auto-connects to **system-SDK slots only** — a regular-SDK mount slot needs an explicit `connections:` entry; GPU auto-connects; tunnel auto-connects only host→workshop under certain conditions); manual via `workshop connect` for camera, desktop, ssh-agent, custom-device, `secret` (0.9.8+), and the remaining tunnel cases. Persistence (0.9.5+): manual connects *and* manual disconnects survive `workshop refresh`; `workshop restore` resets everything to the definition's auto-connect defaults. Connection maintenance (0.9.8+): a refresh that changes what a manual connection depends on — a tunnel endpoint, a custom-device filter, a secret slot's lookup — drops it and raises a warning.
 </term>
 
 <term name="plug binding">
@@ -67,7 +67,7 @@ A lifecycle script in an SDK. Exactly five: `setup-base` (root, runs at install/
 </core_terms>
 
 <gotchas>
-- A workshop on `base: ubuntu@20.04` still launches but warns on every launch and refresh; it breaks in the release after 0.9.7. Treat the warning as a migration deadline, not noise.
+- A workshop on `base: ubuntu@20.04` still launches (0.9.8 included) but warns on every launch and refresh; removal is announced but not dated. Treat the warning as a migration deadline, not noise.
 - Two projects with the same workshop `name:` are independent workshops, not a shared one. `workshop list --global` shows the project path.
 - `cp -r` of a project directory does not duplicate the workshop. The copy is silent until you launch in the new directory; then you have two independent workshops with the same name.
 - Deleting a project directory without `workshop remove` first orphans the workshop — `workshop list --global` shows `Error` with a `missing-project` note. Recreate the directory at the same absolute path to remove it cleanly (or restore its content to keep it); see the `purge-and-recover` workflow.

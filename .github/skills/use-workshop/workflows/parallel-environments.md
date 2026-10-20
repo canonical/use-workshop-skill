@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <objective>
-Run multiple isolated workloads over the same codebase in parallel: side-by-side test runs, A/B comparisons across base images or SDK versions, multi-branch experiments, agent-driven concurrent tasks, and similar. Combines `git worktree` with one workshop per worktree (or a single shared workshop, per the user's preference).
+Run multiple isolated workloads over the same codebase in parallel: side-by-side test runs, A/B comparisons across base images or SDK versions, multi-branch experiments, agent-driven concurrent tasks, and similar. Combines `git worktree` with one workshop per worktree (or a single shared workshop, per the user's preference). Two facts hold in every layout: **Git commands for a worktree run on the host**, never inside its workshop, and a coding agent is better served by a **separate clone** than by a worktree (Step 1).
 </objective>
 
 <required_reading>
@@ -19,6 +19,7 @@ Run multiple isolated workloads over the same codebase in parallel: side-by-side
 |---------|------|
 | **One workshop per worktree** | Each worktree may need a different workshop definition (different base image, different SDK channels). Strongest isolation. |
 | **One shared workshop, multiple worktrees** | All worktrees use the same toolchain; you just want isolated working trees. Cheaper resources; faster startup. |
+| **Separate clone per coding agent** | The parallel worker is an autonomous coding agent. Upstream's recommendation: a clone in its own project directory gives the agent its own files *and* its own `.git`, apart from the user's working copy — a worktree narrows the files but Git can't run inside its workshop, and starting an agent in a subdirectory narrows nothing (the whole project, `.git` included, is mounted read-write). Launch one workshop in the clone exactly as in Step 3a. |
 
 **Step 2. Set up worktrees. The layout you choose depends on the pattern.**
 
@@ -34,9 +35,9 @@ git worktree add <subdir-name>
 git worktree add <other-subdir>
 git worktree list
 ```
-This is the supported "shared sandbox" pattern — documented upstream in the AI-agents how-to (`use-workshops-with-ai-agents.md`), not in the general Git guide. The single workshop is launched at the project root; every worktree is reachable inside the workshop at `/project/<subdir-name>/` because the whole project directory is mounted.
+The single workshop is launched at the project root; every worktree is reachable inside the workshop at `/project/<subdir-name>/` because the whole project directory is mounted. Upstream described this "shared sandbox" layout only in its AI-agents how-to, which 0.9.8 retired; the documented pattern is now one workshop per sibling worktree (Step 3a). It still works for running parallel *non-Git* tasks — tests, builds — in one container, but say that it is no longer an upstream-documented pattern, and that it isolates nothing between the tasks: each one can read and write every worktree and the root `.git`.
 
-Caveat for projects that COMMIT their definition: every subdirectory worktree checkout then carries its own copy of `workshop.yaml`/`.workshop.yaml`, and per-worktree definitions and lock files interfere with each other. The upstream pattern resolves this by gitignoring the definition **and** the lock (`.workshop.yaml` + `.workshop.lock`, or `.workshop/` + `*.lock` for multi-workshop projects) so only the project root's copy exists. If the user wants the definition committed (this skill's default stance), prefer the sibling-worktree layout instead.
+Caveat for projects that COMMIT their definition: every subdirectory worktree checkout then carries its own copy of `workshop.yaml`/`.workshop.yaml`, and per-worktree definitions and lock files interfere with each other. Gitignoring the definition **and** the lock (`.workshop.yaml` + `.workshop.lock`, or `.workshop/` + `*.lock` for multi-workshop projects) leaves only the project root's copy. If the user wants the definition committed (this skill's default stance), prefer the sibling-worktree layout instead.
 
 **Step 3a. One-workshop-per-worktree path (sibling worktrees).**
 For each worktree:
@@ -59,10 +60,12 @@ Then run each parallel task inside that single workshop, scoping its working dir
 workshop run --cwd /project/<subdir-name> -- <action>          # or: workshop exec --cwd /project/<subdir-name> -- <command>
 workshop run --cwd /project/<other-subdir> -- <action>          # in a separate terminal, in parallel
 ```
-Two tasks run concurrently inside one container, isolated by which worktree they touch. This is the cheapest layout; upstream documents it in the AI-agents how-to (the general Git guide's canonical pattern is one workshop per sibling worktree — Step 3a).
+Two tasks run concurrently inside one container, separated only by convention — which worktree each one touches. This is the cheapest layout, not an upstream-documented one (the canonical pattern is one workshop per sibling worktree — Step 3a).
 
 **Step 4. Run the parallel tasks.**
 - Each terminal/tab/agent works in one worktree.
+- **Run Git on the host.** A worktree's `.git` is a file pointing into the main repository's `.git` directory, which isn't mounted in the worktree's workshop, so `workshop exec <name> -- git status` fails with `fatal: not a git repository: <main-repo>/.git/worktrees/<name>`. Commit, diff and merge from the host. Don't work around it by mounting the main repository's `.git` into a workshop where untrusted tools such as coding agents run — Git executes hooks and configured commands from that directory **on the host**.
+- Before an autonomous agent starts, disconnect the interfaces it doesn't need (ssh-agent, secrets, writable mounts, tunnels) — inside the workshop everything runs as one user, so a connected interface is reachable by the agent too.
 - For non-interactive runs, `workshop exec` or `workshop run` inherits stdout/stderr; capture as needed.
 - For interactive runs, `workshop shell` opens a login shell.
 - Use `workshop run --env <KEY>=<VALUE> -- <action>` to pass per-run configuration without editing the definition.
@@ -98,6 +101,8 @@ git worktree list                  # the removed worktree should be gone
 - Sharing a workshop AND letting different worktrees mutate the same `.workshop.lock` — pick one model and stick to it.
 - Letting two parallel tasks modify the SAME files in the SAME worktree concurrently. Workshops give container isolation; they do not solve filesystem write contention within a single project directory.
 - Forgetting that worktrees share Git history but have independent working trees — definition file edits in one worktree don't show up in another until a commit + checkout.
+- Running Git inside a worktree's workshop, or mounting the main `.git` into it to make that work. Git for worktrees runs on the host.
+- Treating a subdirectory or a worktree as a boundary for a coding agent. The agent can change anything in the project mount; give it a separate clone.
 </anti_patterns>
 
 <success_criteria>
@@ -107,8 +112,10 @@ git worktree list                  # the removed worktree should be gone
 </success_criteria>
 
 <source_docs>
-- `how-to/develop-with-workshops/use-git.md` (canonical source for SIBLING worktrees — one workshop per worktree — and `git worktree move`)
-- `how-to/develop-with-workshops/use-workshops-with-ai-agents.md` (canonical source for the SHARED-workshop subdirectory pattern, incl. the gitignore-the-definition requirement)
+- `how-to/develop-with-workshops/use-git.md` (canonical source for SIBLING worktrees — one workshop per worktree — `git worktree move`, and the 0.9.8 warning that Git fails inside a worktree's workshop)
+- `explanation/workshops/multi-workshop-patterns.md` (one directory vs several; worktrees run Git on the host; a separate clone for coding agents)
+- `security.md` (coding agents: the writable project mount, one user, connected interfaces)
+- `reference/ai-agents.md` (agent SDKs; replaces the AI-agents how-to retired in 0.9.8, which was the only upstream source for the shared-workshop subdirectory layout)
 - `how-to/customize-workshops/move-projects.md` (move/copy semantics)
 - `reference/cli/workshop.md` (launch, remove, list, exec, run sections)
 </source_docs>

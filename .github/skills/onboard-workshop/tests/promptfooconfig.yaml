@@ -31,6 +31,14 @@ providers:
     config:
       model: claude-sonnet-4-6
       timeout_ms: 240000
+  # Copilot SDK candidate, the cross-vendor run (`make eval-routing-copilot`;
+  # see _testlib/provider-routing-copilot.js: the bundle REPLACES Copilot's
+  # own system prompt; no tools; served model checked). Same local judge.
+  - id: file://../../_testlib/provider-routing-copilot.js
+    label: copilot:gpt-6.1-sol
+    config:
+      model: gpt-6.1-sol
+      timeout_ms: 240000
 
 defaultTest:
   options:

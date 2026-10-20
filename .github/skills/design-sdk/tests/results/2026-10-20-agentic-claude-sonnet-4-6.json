@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "generated_at": "2026-10-20T01:57:37+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 13,
+    "passed": 13,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 238,
+      "completion": 119342,
+      "cached": 7746066
+    },
+    "cost_usd": 6.5122
+  },
+  "cases": [
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 143743,
+      "cost": 0.483949
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 130145,
+      "cost": 0.456179
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 109539,
+      "cost": 0.375703
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 104377,
+      "cost": 0.368082
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 112254,
+      "cost": 0.372326
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 112687,
+      "cost": 0.379947
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 104310,
+      "cost": 0.370569
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 155306,
+      "cost": 0.578077
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 102685,
+      "cost": 0.411818
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 111536,
+      "cost": 0.420467
+    },
+    {
+      "description": "onboard-sdk-repo \u2014 repo automation for a working SDK (no LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 186986,
+      "cost": 0.63083
+    },
+    {
+      "description": "design-pack-mini \u2014 design + generate + sdkcraft pack for a local tool",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 385160,
+      "cost": 0.86904
+    },
+    {
+      "description": "try-verify \u2014 fix a defective SDK, then prove it via try + launch (real LXD)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 384507,
+      "cost": 0.795198
+    }
+  ]
+}
