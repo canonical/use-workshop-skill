@@ -132,6 +132,10 @@ Update expectations when a guinea pig's ground truth changes.
 
 | Guinea pig | Scorecard | Rubric | Date | Notes |
 |------------|-----------|--------|------|-------|
+| mir | **PASS** | pass 0.8 | 2026-10-19 | Workshop 0.9.8 round, offline tier: **3/4 overall, 0 errors, 37m43s** at concurrency 1, which matches the pinned rate. Raw: `results/raw/2026-10-20-015738-reconstruction-offline-claude-sonnet-4-6.json`. |
+| subiquity | **PASS** | pass 0.8 | 2026-10-19 | Workshop 0.9.8 round. |
+| formally-verify-rust-neetcode-with-creusot | **PASS** | pass 0.8 | 2026-10-19 | Workshop 0.9.8 round. |
+| store-workshop | **PASS** (fixed scorer) | fail 0.6 | 2026-10-19 | **The "known-open G2" was a scorer bug, not a skill gap.** `compare-definition.py` looked for the literal text `.workshop.lock` in `.gitignore`. The repo's `.gitignore` already has `*.lock` on line 2, which git applies to `.workshop.lock` (`git check-ignore -v` in a scratch repo matches `.gitignore:2:*.lock`). Sonnet said so and correctly left the file alone, here and in the 2026-08-24 and 2026-09-22 transcripts, and was failed each time. The scorer now asks git in a scratch repo holding only the repo's `.gitignore`, and all four stored repos from the full run score `overall_pass: true`. A store-workshop-only re-run under the fixed scorer (8m55s, `results/raw/2026-10-20-030707-...json`) passed the scorecard with no failures and scored 0.867 overall. It still fails the rubric, for the reason it always has: capability breadth against a 17-service ground truth the sandbox can't show (per-service apt deps, no tunnel slots, `direnv`/`opencode` not proposed, `ubuntu@24.04` vs the maintainers' 22.04). That part is the open item now, and per the 2026-09-22 note it is the expectations and rubric for this guinea pig that need revisiting, not the skill. |
 | mir | **PASS** | pass | 2026-09-22 | Workshop 0.9.7 round, offline tier: 3/4 overall, 0 errors, 31m13s at concurrency 1 — matches the pinned rate. |
 | subiquity | **PASS** | pass | 2026-09-22 | Workshop 0.9.7 round. |
 | formally-verify-rust-neetcode-with-creusot | **PASS** | pass | 2026-09-22 | Workshop 0.9.7 round. |
