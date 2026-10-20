@@ -92,9 +92,10 @@ local claude judge, so their rows differ by candidate model only.
   Copilot silently remaps model ids it doesn't serve (`gpt-5.5` came back as
   `gpt-5.6-sol`), so the preflight checks the account lists the model and the
   provider errors on any served-model mismatch. Each case opens a fresh
-  session and pays the cache-write rate on the whole bundle — measured
-  2026-10-19 at ~25 AI credits per case on `gpt-5.6-sol`; `gpt-6.1-sol` was
-  chosen at half that per-token price (see `BASELINE.md` for measured runs). The summary's
+  session, but `gpt-6.1-sol` serves the bundle prefix from cache across
+  sessions: the first full run (2026-10-19) cost 105 premium requests and
+  ~108 AI credits, where a `gpt-5.6-sol` smoke run got no cache hits and
+  cost ~25 AI credits per case (see `BASELINE.md` for measured runs). The summary's
   `meta.copilot` block records the real spend; `cost_usd` stays 0.
 - **Suspended — `make eval-routing-glm`.** The former gate: GLM-5.2 plus the
   `gpt-5.5` judge via OpenRouter (`promptfooconfig.yaml`, ~$1.41/run). The
@@ -191,7 +192,7 @@ suite(s) to confirm nothing regressed:
    `claude-sonnet-4-6` + local-judge pair, investigate before merging.
 2. (Release rounds and substantial content changes) `make
    eval-routing-copilot` — the cross-vendor run. It spends Copilot premium
-   allowance (on the order of 1,300 AI credits per full run), so iterate on single cases
+   allowance (one premium request per case, ~108 AI credits per full run), so iterate on single cases
    with `--filter-pattern` and run it whole once the gate is green.
 3. (Optional, slow) `make eval-agentic` — the end-to-end check that
    matters for behaviour, not text. Run before shipping changes that
