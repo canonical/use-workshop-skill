@@ -160,7 +160,8 @@
       value:
         - uv
         - part
-    - type: contains-any
+    # Case-insensitive: a correct 2026-10-19 answer wrote "Mount plug".
+    - type: icontains-any
       value:
         - mount
         - persist

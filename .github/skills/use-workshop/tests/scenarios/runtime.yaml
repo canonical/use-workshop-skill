@@ -81,8 +81,9 @@
       value: |
         The response explains that SDK support in a VM workshop depends on the
         host's LXD being able to mount shifted disks into a virtual machine,
-        which means switching LXD to the `6/edge` channel; the other way out
-        is a VM definition that declares no SDKs at all. Before or alongside
+        which means switching LXD to the `6/edge` channel. Mentioning the
+        other way out — a VM definition that declares no SDKs — is a plus,
+        not a requirement (this user wants their SDKs). Before or alongside
         the switch it warns about its cost — any of: it applies to the whole
         host including container workshops, `edge` is unreleased LXD, or LXD
         cannot move back from `6/edge` to `6/stable`. It does NOT claim VM
