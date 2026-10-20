@@ -115,6 +115,8 @@
         - non-blocking
         - "not blocking"
         - "doesn't block"
+        - "don't block"
+        - "do not block"
         - transient
         - cosmetic
     - type: contains

@@ -35,6 +35,8 @@ Check it is there **without printing the value** — `secret-tool search` writes
 secret-tool search service openai account work >/dev/null
 ```
 
+A match prints its `attribute.<NAME> = <VALUE>` lines; no output means no match. `secret-tool search` **exits 0 either way**, so never script `search … && echo found`. For a yes/no check use `secret-tool lookup service openai account work >/dev/null`, which exits 1 when nothing matches (both verified with libsecret-tools 0.21).
+
 **2. Add a `secret` slot to the `system` SDK** in the workshop definition. Only the `system` SDK can carry a `secret` slot. The slot holds lookup attributes, never the value:
 
 ```yaml
