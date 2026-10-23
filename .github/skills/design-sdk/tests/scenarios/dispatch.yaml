@@ -87,7 +87,8 @@
     user: |
       test — add smoke tests for my go SDK
   assert:
-    - type: contains-any
+    # icontains-any: "Spread smoke tests" is the same word (Copilot, 2026-10-23).
+    - type: icontains-any
       value:
         - spread
         - task.yaml

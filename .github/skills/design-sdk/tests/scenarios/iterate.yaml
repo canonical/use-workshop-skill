@@ -113,16 +113,18 @@
         The response acknowledges sketch-sdk as the human rapid-iteration
         tool but explains it needs an interactive $EDITOR session an agent
         cannot drive; the agent-drivable equivalent is editing the SDK
-        source and going through the try loop (optionally prototyping a
-        command via workshop exec first). It does not enumerate a
-        step-by-step sketch-sdk session.
+        source and going through the try loop. Mentioning that a command can
+        be prototyped via workshop exec first is a plus, not required. It
+        does not enumerate a step-by-step sketch-sdk session.
 
 - description: A healthy SDK graduates to spread tests
   vars:
     user: |
       The try workshop comes up Ready and the SDK reports okay twice in a row. What's next before I call it done?
   assert:
-    - type: contains
+    # icontains: a correct answer wrote "Spread regression tests" (Copilot,
+    # 2026-10-23) and failed a case-sensitive `contains`.
+    - type: icontains
       value: spread
     - type: llm-rubric
       value: |
