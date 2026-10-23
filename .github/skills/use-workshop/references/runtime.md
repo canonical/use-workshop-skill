@@ -111,7 +111,7 @@ lxc query /1.0/metadata/configuration | jq -r '.configs["device-disk"]["device-c
 
 **4. A stopped VM may not be removable.** Disconnecting a `mount` plug needs the VM running, and removal disconnects mounts, so `workshop remove` on a stopped VM workshop can fail. Run `workshop start <NAME>` first, then `workshop remove <NAME>`; if it won't start, follow `workflows/purge-and-recover.md`. Upstream says a future release lifts this.
 
-**5. Virtual hardware is fixed at start.** The processor count, total memory, and root-filesystem size are set when the VM starts, and interface connections are capped the way devices on a physical machine are. Each `mount` connection is its own PCIe device. Workshop gives the system SDK 8 PCIe ports (the `/project` mount, the network card, and other default devices use some of them), adds 4 for each further SDK except `sketch` (which slows `workshop start`), and stops at 192 ports, about 46 SDKs. All SDKs share the budget, so one SDK with many mount plugs can exhaust it:
+**5. Virtual hardware is fixed at start.** The processor count, total memory, and root-filesystem size are set when the VM starts, and interface connections are capped the way devices on a physical machine are. Each `mount` connection is its own PCIe device. Workshop gives the system SDK 8 PCIe ports (the `/project` mount, the network card, and other default devices use some of them), adds 4 for each further SDK except `sketch` (each extra 4 ports slows `workshop start` a little), and stops at 192 ports, about 46 SDKs. All SDKs share the budget, so one SDK with many mount plugs can exhaust it:
 
 ```
 - Connect "dev/go:mod-cache" to "dev/system:mount" (… Failed starting device "go_mod-cache": No unused PCIe ports available for hotplugging

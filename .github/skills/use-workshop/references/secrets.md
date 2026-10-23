@@ -75,7 +75,7 @@ workshop connect dev/<SDK>:<PLUG> dev/system:openai-key
 
 When the slot has the same name as the plug, the one-argument form works too (the slot defaults to `<WORKSHOP>/system:<PLUG>`): `workshop connect dev/<SDK>:<PLUG>`. Afterwards `workshop connections` shows the pair with `manual` in `NOTES`. Connecting reads nothing from the keyring and puts nothing in the workshop; it only permits later requests.
 
-The plug's identifier inside the workshop is `<SDK>.<PLUG>`, using the SDK's **bare** name: a `try-<NAME>` SDK keeps `<NAME>` (connect target `dev/<NAME>:<PLUG>`), and an in-project `project-<NAME>` SDK is `<NAME>` too — `workshopctl get-secret project-<NAME>.<PLUG>` is rejected as an invalid SDK name (verified on 0.9.8).
+The plug's identifier inside the workshop is `<SDK>.<PLUG>`, using the SDK's **bare** name: a `try-<NAME>` SDK keeps `<NAME>` (connect target `dev/<NAME>:<PLUG>`), and an in-project `project-<NAME>` SDK is `<NAME>` too — `workshopctl get-secret project-<NAME>.<PLUG>` is rejected as an invalid SDK name (verified on 0.9.8). When you hand back the corrected identifier as a command, show it only in the value-safe form below (`| wc -c` or `> /dev/null`) — a bare `workshopctl get-secret <NAME>.<PLUG>` prints the secret to the terminal, even as a one-off "the right identifier is…" example.
 
 **4. Check it without printing it.** The value is only fetched when requested, so prove the lookup works by requesting it and counting bytes, never by echoing it:
 
