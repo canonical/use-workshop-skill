@@ -55,6 +55,7 @@ The error log usually identifies the SDK and hook (e.g., `Run hook "setup-base" 
 | On 0.9.8 or earlier: a `workshop.yaml` key seems ignored — an SDK not installed, a connection never proposed, an action missing | Before 0.9.9, `workshop.yaml` had **no** unknown-field validation: a typo'd key was silently ignored. Diff the file against `reference/definition-files/workshop-definition.md` (or lint against `schema.json`); there is no error string to hunt for. 0.9.9 names the key |
 | `workshop restore` / `launch --continue` / `refresh --continue` refused right after a Workshop snap update | Back-compat guard (0.9.5+): the updated daemon won't run those ops on an old-format workshop. Run `workshop refresh <name>` once — that migrates it. No forward compat: never downgrade the snap to "fix" this (downgrade = snap remove + reinstall, which deletes every workshop and SDK) |
 | `ssh <workshop>.<project>.wp` fails (host-key prompt, password prompt, or no resolution) | Automatic SSH needs 0.9.5+ AND a workshop launched under 0.9.5+ — pre-existing workshops must be **removed and launched again** (refresh is not enough). Also check the distro supports `/etc/ssh/ssh_config.d/` and the drop-in `70-workshop-cert-authority.conf` exists there |
+| `ssh` from a strictly confined snap (e.g. `juju ssh`) fails to parse `/etc/ssh/ssh_config` once a workshop has been launched on the host | A Workshop bug fixed in 0.9.9: the drop-in's `Include` of a file the confined client can't open was fatal. Update the Workshop snap; its post-refresh hook moves the config to `/var/snap/workshop/common/workshop/ssh/ssh_config.d/workshop.conf`, which a confined client skips. Nothing to change in the workshop |
 | `cannot continue: no refresh in progress` (or `abort` / `launch`) | Nothing is paused — there is no `Waiting` change to resume. Re-check `workshop info` / `workshop changes`; you likely didn't run `--wait-on-error`, or it already resolved |
 | `… : <kind> change is in progress` (e.g. `launch change is in progress`) | Ordinary change-conflict — another change is still running. Wait for it or inspect `workshop changes`. NOT the stuck-`Doing` signature in Step 7; do **not** restart the daemon for this |
 | GPU device missing/inaccessible (e.g. `/dev/kfd`) on a workshop created before 0.9.2 | `workshop refresh` to apply the 0.9.2 device-group fix (adds the `workshop` user to groups like `render`) |
@@ -191,7 +192,7 @@ Surface the result to the user: "Recovery: change <ID> succeeded, status Ready. 
 - `reference/workshops.md` (the "Storage pools and drivers" section — pool sizing, degraded mode, and how to resize; the backward- and forward-compatibility policy behind the post-update refusals)
 - `release-notes/v0.9.7.md` (the corrected storage-pool hint)
 - `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`)
-- `release-notes/v0.9.9.md` (unknown workshop-definition fields rejected; VM interfaces, health checks and PCIe ports)
+- `release-notes/v0.9.9.md` (unknown workshop-definition fields rejected; VM interfaces, health checks and PCIe ports; SSH from strictly confined snaps fixed)
 - `reference/workshops.md` ("Interfaces in virtual machines": the PCIe and CPU errors)
 - `how-to/customize-workshops/use-virtual-machines.md` (the VM runtime's errors and limitations)
 </source_docs>
