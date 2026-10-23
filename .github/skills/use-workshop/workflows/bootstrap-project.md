@@ -30,7 +30,7 @@ feasibility verdicts, and toolchain-to-action mapping.
 Ask the user (only what isn't obvious):
 - What base OS? (`ubuntu@22.04`, `24.04`, `26.04` — default to `24.04` if no preference. `ubuntu@20.04` is deprecated since 0.9.7: still accepted, but it warns on every launch/refresh and its removal is announced — don't offer it.)
 - What tools/runtimes do they need inside?
-- Runtime: **don't ask.** Default to a container silently. Only raise `runtime: lxd-vm` if the user asks for it or states a need a container can't meet (running LXD inside the workshop, a harder kernel boundary) — and then read `references/runtime.md` first, because a VM is experimental, needs a snap opt-in, cannot carry SDKs without a host-wide switch to LXD `6/edge`, and still leaves `/project` writable and the network open.
+- Runtime: **don't ask.** Default to a container silently. Only raise `runtime: lxd-vm` if the user asks for it or states a need a container can't meet (running LXD inside the workshop, a harder kernel boundary) — and then read `references/runtime.md` first, because a VM is experimental, needs a snap opt-in, cannot carry SDKs without a host-wide switch to LXD `6/candidate`, supports only `mount` and `secret` interfaces, and still leaves `/project` writable and the network open.
 
 For each tool, find a published SDK:
 ```

@@ -55,8 +55,9 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
   needs a host-level snap opt-in this skill must never perform, and on LXD
   `6/stable` refuses any definition that declares SDKs — which every
   onboarded definition does; lifting that needs a host-wide, one-way switch
-  to LXD `6/edge`. It also skips auto-connect and `check-health`, so the
-  launch-and-verify stage has nothing to verify against. If the user asks for
+  to LXD `6/candidate`. Even then a VM supports only `mount` and `secret`
+  interfaces, so any tunnel, GPU, desktop, or device wiring the repo needs is
+  skipped. If the user asks for
   a VM, say this plainly and offer the container definition instead; do not
   emit the key. If the motive is containing a coding agent, say also that a
   VM leaves `/project` (with `.git`) writable and the network open. For your

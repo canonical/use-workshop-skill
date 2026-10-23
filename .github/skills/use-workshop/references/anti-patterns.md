@@ -102,9 +102,9 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Right:** `runtime: lxd-vm` in place of the old key (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
 </anti_pattern>
 
-<anti_pattern name="Promising SDKs, interfaces, or health checks in a VM workshop">
-**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:`, `connections:`, or a tunnel, and treating it like a container with a stronger wall.
-**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/edge`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM skips auto-connect at launch *and* refresh, has no proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device), and never runs `check-health`, so `workshop info` shows no SDK health notes. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
+<anti_pattern name="Promising SDKs or container-only interfaces in a VM workshop">
+**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:` on a stock host, or that relies on a tunnel, desktop, ssh-agent, camera, custom-device, or GPU plug, and treating it like a container with a stronger wall.
+**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/candidate`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM supports only `mount` and `secret`: every other interface is skipped with an `incompatible plugs` warning and cannot be connected by hand, and each mount spends a PCIe port from a fixed budget. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
 **Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up and what the LXD switch costs. See `references/runtime.md`.
 </anti_pattern>
 

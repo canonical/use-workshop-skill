@@ -13,7 +13,7 @@ A workshop is a graph of capabilities wired through two named endpoints that bot
 </model>
 
 <auto_vs_manual>
-**The VM runtime voids this whole table.** A `runtime: lxd-vm` workshop skips auto-connect at launch *and* at refresh, and the proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) are unavailable in a VM at all. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/runtime.md`.
+**The VM runtime narrows this table to two rows.** A `runtime: lxd-vm` workshop supports only `mount` and `secret` (0.9.9): those auto-connect and persist as below, while every other interface's plugs and slots are skipped with an `incompatible plugs` warning and cannot be connected at all. Through 0.9.8 a VM skipped auto-connect entirely. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/runtime.md`.
 
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|
@@ -153,7 +153,7 @@ sdks:
           account: work
 ```
 **Connect:** always `workshop connect <WS>/<SDK>:<PLUG> <WS>/system:<SLOT>` (one argument when the slot has the plug's name). Never automatic; `connections:` can't do it. Survives refresh until the slot's lookup changes. Inside the workshop the secret is `<SDK>.<PLUG>` (bare SDK name) and is read with `workshopctl get-secret <SDK>.<PLUG>`.
-**Exposure:** a connected secret is available to the **whole workshop**, not just the declaring SDK. Needs a desktop keyring session on the host (Secret Service over D-Bus); not available in a VM workshop.
+**Exposure:** a connected secret is available to the **whole workshop**, not just the declaring SDK. Needs a desktop keyring session on the host (Secret Service over D-Bus). Works in a VM workshop since 0.9.9 (`workshopctl` reaches the daemon over vsock); not through 0.9.8.
 </interface>
 
 <wiring_decision_tree>
