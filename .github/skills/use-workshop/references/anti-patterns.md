@@ -109,7 +109,7 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 </anti_pattern>
 
 <anti_pattern name="Writing a secret's value where the workshop can read it">
-**Wrong:** putting an API key or token into the workshop definition, an `actions:` script, a project file, `.envrc`, a shell profile, or an in-project SDK hook; passing it as `--env KEY=<value>`; or echoing it to "check" the setup.
+**Wrong:** putting an API key or token into the workshop definition, an `actions:` script, a project file, `.envrc`, a shell profile, or an in-project SDK hook; passing it as `--env KEY=<value>`; echoing it to "check" the setup; or showing `workshopctl get-secret <SDK>.<PLUG>` without a redirect, even just to illustrate the corrected identifier.
 **Why it's bad:** all of those are plain files or command lines. The project directory — definition included — is visible inside the workshop and often lands in version control; a profile exports to every command; a typed `--env` value stays in shell history and the host process list; an echoed value lands in terminal scrollback and agent transcripts.
 **Right:** keep the value in the host keyring and give the SDK a `secret` slot plus a manual `workshop connect` (0.9.8+), or fill `--env KEY` from the store for one command (`KEY=$(secret-tool lookup …) workshop exec --env KEY …`). Verify with `workshopctl get-secret … | wc -c`, never by printing. See `references/secrets.md`.
 </anti_pattern>
