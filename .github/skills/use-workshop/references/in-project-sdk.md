@@ -21,7 +21,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails strict validation (0.9.2+) with `unknown SDK YAML fields: hooks (line N, column M)`. The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
+There is NO `hooks:` key in an in-project `sdk.yaml`. Hooks are files under `.workshop/<NAME>/hooks/<HOOK-NAME>`, discovered automatically by filename — adding a `hooks:` key fails validation with `invalid "<NAME>" SDK: SDK definition YAML: only the "sketch" SDK supports inline hooks` (0.9.9, verified; 0.9.2–0.9.8 said `unknown SDK YAML fields: hooks (line N, column M)`). The only SDK definition where hooks appear in YAML is a *sketch* SDK's `sdk.yaml` (a map of hook name → inline script); `workshop sketch-sdk --eject` materializes that map into `hooks/` files and drops the key. Do not copy a sketch's `hooks:` map into an in-project SDK.
 
 Reference the SDK from the workshop definition as `project-<NAME>`:
 
@@ -30,11 +30,11 @@ sdks:
   - name: project-<NAME>
 ```
 
-Only `name` is mandatory. Valid optional top-level keys: `title`, `version`, `summary`, `description`, `base`, `architecture`, `license`, `plugs`, `slots` (built Store SDKs additionally carry fields like `sdkcraft-started-at` — never author those by hand). Caution: `schema-sdk.json` also lists `contact`, `issues`, `source-code`, and `website`, because the schema describes what SDKcraft *writes*; the runtime validator **rejects** all four in an in-project `sdk.yaml`. Upstream now marks them "built SDKs only" and says to rely on the field table, not the schema — the two kinds of `sdk.yaml` are read differently: an in-project one strictly, a built one (Store SDKs, `sdkcraft try` output) leniently, picking the fields it understands and ignoring the rest. Stick to the list above. `architecture` is assumed to match the host (or `all`). `name` rules: at least one lowercase letter; lowercase letters, digits, and interior hyphens; up to 40 characters; cannot be `agent`, `system`, or `sketch`, and cannot start with `try-` or `project-` — the `project-` prefix appears ONLY in the workshop definition's `sdks:` reference. The manifest lives at `.workshop/<NAME>/sdk.yaml` (or `.workshop/<NAME>/meta/sdk.yaml`).
+Only `name` is mandatory. Valid optional top-level keys: `title`, `version`, `summary`, `description`, `base`, `architecture`, `license`, `plugs`, `slots`, and (0.9.9+) the publisher metadata `contact`, `issues`, `source-code`, `website`, which Workshop accepts and ignores — 0.9.8 and earlier **rejected** those four in an in-project `sdk.yaml`, so leave them out for a project that must work on older hosts. Built Store SDKs additionally carry fields like `sdkcraft-started-at` — never author those by hand. Since 0.9.9 every `sdk.yaml` is read strictly, built ones (Store SDKs, `sdkcraft try` output) included; before, a built one was read leniently. `architecture` is assumed to match the host (or `all`). `name` rules: at least one lowercase letter; lowercase letters, digits, and interior hyphens; up to 40 characters; cannot be `agent`, `system`, or `sketch`, and cannot start with `try-` or `project-` — the `project-` prefix appears ONLY in the workshop definition's `sdks:` reference. The manifest lives at `.workshop/<NAME>/sdk.yaml` (or `.workshop/<NAME>/meta/sdk.yaml`).
 
 The post-build JSON Schema (`reference/definition-files/schema-sdk.json`) describes the *post-`sdkcraft`* form (its `required` list reflects a packed SDK, which carries fields like `sdkcraft-started-at`) — that is NOT the in-project authoring shape. Do not reach for it to validate `sdk.yaml`.
 
-Note: SDK YAML is validated strictly (0.9.2+) — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front as `unknown SDK YAML fields: <name> (line N, column M)`, rather than being silently ignored. Fix the key; don't retry the same file. (This strictness is SDK-YAML-only — `workshop.yaml` has no such check; see `references/definition-file.md`.)
+Note: SDK YAML is validated strictly (0.9.2+) — an unknown or misspelled key in `sdk.yaml` (or a sketch SDK) is rejected up front, naming the key with its line and column: `cannot launch "dev": invalid "tools" SDK: SDK definition YAML contains unknown fields: "bogus" at line 4, column 8` (0.9.9, verified; sketch: `sketch SDK YAML contains unknown fields: …`; 0.9.2–0.9.8: `unknown SDK YAML fields: <name> (line N, column M)`). Fix the key; don't retry the same file. `workshop.yaml` is strict too since 0.9.9 (see `references/definition-file.md`).
 </sdk_yaml_schema>
 
 <hook_taxonomy>
@@ -122,7 +122,7 @@ fi
 - `explanation/sdks/lifecycle.md` (where in-project sits: sketch → in-project → build → publish → consume)
 - `tutorial/part-3-sketch-sdks.md` (working in-project SDK example after eject)
 - `explanation/sdks/concepts.md` (SDK concepts)
-- `reference/definition-files/sdk-definition.md` (`sdk.yaml` shape; an in-project SDK needs only `name`; the "Unknown keys" section covers strict-vs-lenient parsing and the built-SDKs-only fields)
+- `reference/definition-files/sdk-definition.md` (`sdk.yaml` shape; an in-project SDK needs only `name`; the field table lists every key an in-project file may carry)
 - `reference/cli/workshopctl.md` (`set-health` invocation, in-hook only; `get-secret`)
 - `how-to/develop-sdks/use-secrets.md` (declaring a `secret` plug and consuming it in an SDK)
 </source_docs>

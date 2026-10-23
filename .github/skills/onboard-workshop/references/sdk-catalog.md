@@ -21,7 +21,7 @@ Regenerate via `tests/scripts/update-sdk-catalog.sh` (maintainer-only).
 
 <catalog>
 <!-- catalog:start -->
-Generated from canonical/reference-sdks @ 5f07cedc on 2026-10-19 (hand-curated v1)
+Generated from canonical/reference-sdks @ 5f07cedc on 2026-10-23 (hand-curated v1)
 — fallback only; always prefer live `sdk find`.
 
 | SDK | Provides | Typical channels | Matching repo signals |

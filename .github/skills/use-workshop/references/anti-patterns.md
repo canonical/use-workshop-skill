@@ -96,10 +96,10 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Right:** `workshop remove <NAME>` then `workshop launch <NAME>`. This is one of the few places where remove+launch is correct rather than the anti-pattern at the top of this file. Warn the user first that it discards manual `connect`/`remount` wiring. See `references/runtime.md`.
 </anti_pattern>
 
-<anti_pattern name="Carrying a 0.9.7 `confinement:` key into 0.9.8">
-**Wrong:** writing `confinement: virtual-machine` (the 0.9.7 keyword) in a definition for Workshop 0.9.8+, or reading a definition that has it as "this is a VM".
-**Why it's bad:** 0.9.8 renamed the key to `runtime:`, and the workshop definition is not strictly validated — the old key is silently ignored. The workshop launches as an ordinary container with no error and no warning, so the user believes they have a VM boundary they don't have.
-**Right:** `runtime: lxd-vm` (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
+<anti_pattern name="Carrying a 0.9.7 `confinement:` key into 0.9.8+">
+**Wrong:** writing `confinement: virtual-machine` (the 0.9.7 keyword) in a definition for Workshop 0.9.8+, reading a definition that has it as "this is a VM", or deleting the line just to get past the 0.9.9 error.
+**Why it's bad:** 0.9.8 renamed the key to `runtime:`. Since 0.9.9 the old key fails the launch (`workshop definition YAML contains unknown fields: "confinement"`), which is the safe outcome; on 0.9.8 it was silently ignored and the workshop launched as an ordinary container, so the user believed they had a VM boundary they didn't have. Deleting the line recreates that 0.9.8 trap by hand.
+**Right:** `runtime: lxd-vm` in place of the old key (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
 </anti_pattern>
 
 <anti_pattern name="Promising SDKs, interfaces, or health checks in a VM workshop">
@@ -142,6 +142,7 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `reference/workshops.md` (backward- and forward-compatibility policy)
 - `release-notes/v0.9.7.md` (VM workshops introduced, and their limits)
 - `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`; the `secret` interface)
+- `release-notes/v0.9.9.md` (a leftover `confinement:` key rejected as an unknown field)
 - `how-to/develop-with-workshops/provide-secrets.md` (where a secret must never be written)
 - `how-to/customize-workshops/use-virtual-machines.md` (VM prerequisites and limitations)
 </source_docs>

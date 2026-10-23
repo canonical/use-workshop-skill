@@ -34,10 +34,12 @@ by update-docs-manifest.sh in use-workshop/tests and SHARED by both suites):
               --classify-sdkcraft-template is set, since design-sdk references
               legitimately show snippets rooted at `parts:`/`platforms:`).
 
-Only TOP-LEVEL keys are checked; placeholders like <NAME> only ever appear as
-values, so snippets parse cleanly. One value check rides along on workshop and
-fragment blocks: a `connections[].plug`/`.slot` or `sdks[].plugs.*.bind`
-reference must name the bare SDK. The try-/project- prefixes belong in
+TOP-LEVEL keys are checked, and on workshop and fragment blocks also the keys
+of each `sdks:` and `connections:` entry (Workshop 0.9.9 rejects an unknown key
+there too, e.g. `interface:` in a connections entry). Placeholders like <NAME>
+only ever appear as values, so snippets parse cleanly. One value check rides
+along on workshop and fragment blocks: a `connections[].plug`/`.slot` or
+`sdks[].plugs.*.bind` reference must name the bare SDK. The try-/project- prefixes belong in
 `sdks[].name` only, and Workshop rejects them in a reference as a reserved SDK
 name (issue #25). A snippet that fails to parse is also an
 error (templates are additionally parsed by `make check-yaml`). API-free and
@@ -87,6 +89,10 @@ with open(keys_path) as fh:
     allowed = json.load(fh)
 
 WORKSHOP_KEYS = set(allowed["workshop"])
+ENTRY_KEYS = {
+    "sdks": set(allowed["workshop-sdks-entry"]),
+    "connections": set(allowed["workshop-connections-entry"]),
+}
 SDK_KEYS = set(allowed["sdk"])
 SDKCRAFT_KEYS = set(allowed.get("sdkcraft", ()))
 FRAGMENT_KEYS = WORKSHOP_KEYS | {"plugs", "slots"}
@@ -166,6 +172,19 @@ def prefixed_refs(data):
             yield where, ref
 
 
+def unknown_entry_keys(data):
+    """Yield (where, key) for each key of an sdks:/connections: entry the schema lacks."""
+    for section, keys in ENTRY_KEYS.items():
+        entries = data.get(section)
+        if not isinstance(entries, list):
+            continue
+        for i, entry in enumerate(entries):
+            if isinstance(entry, dict):
+                for key in entry:
+                    if key not in keys:
+                        yield f"{section}[{i}]", key
+
+
 def iter_blocks(path):
     """Yield (start_lineno, [block lines]) for each fenced yaml block."""
     lines = open(path).read().split("\n")
@@ -213,6 +232,8 @@ def check_file(rel, offenders):
                     f"{rel}:{lineno}: {where} '{ref}' names a prefixed SDK; "
                     "try-/project- belong in sdks[].name only, use the bare name"
                 )
+            for where, key in unknown_entry_keys(data):
+                offenders.append(f"{rel}:{lineno}: yaml block ({kind}) {where} uses unknown key '{key}'")
         for key in data:
             if key not in allowlist:
                 offenders.append(

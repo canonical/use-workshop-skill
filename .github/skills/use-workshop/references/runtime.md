@@ -17,7 +17,13 @@ Workshop 0.9.8 replaced the 0.9.7 keyword. Map old to new:
 | `workshop init <NAME> --vm` | `workshop init <NAME> --runtime lxd-vm` |
 | `confinement:` line in `workshop info` | `runtime:` line |
 
-**A leftover `confinement:` key is silently ignored.** The workshop definition is not strictly validated (see `references/definition-file.md`), so `confinement: virtual-machine` on 0.9.8 raises no error and no warning — the workshop launches as an ordinary container and `workshop info` reports `runtime:   lxd-container` (verified on 0.9.8). When a user says "my VM definition launches a container now", or "`workshop info` says lxd-container but I asked for a VM", this is the cause: rename the key to `runtime: lxd-vm`. For an already-launched workshop that also means remove and relaunch, because the runtime is fixed at launch (see `<limitations>`).
+**A leftover `confinement:` key fails the launch (0.9.9+).** The workshop definition is strictly validated since 0.9.9 (see `references/definition-file.md`), so the old key is rejected up front (verified on 0.9.9):
+
+```
+error: cannot launch "dev": invalid file "<path>/workshop.yaml": workshop definition YAML contains unknown fields: "confinement" at line 3, column 14
+```
+
+The fix is to rename the key to `runtime: lxd-vm` — **not** to delete the line, which silently turns the intended VM into a container. On 0.9.8 the same key raised no error at all: it was ignored, the workshop launched as an ordinary container, and `workshop info` reported `runtime:   lxd-container` (verified on 0.9.8). So when a 0.9.8 user says "my VM definition launches a container now", the cause and the rename are the same. For an already-launched workshop the rename also means remove and relaunch, because the runtime is fixed at launch (see `<limitations>`).
 
 The old flag fails loudly instead: `workshop init dev --vm` → `Error: unknown flag: --vm`.
 </renamed_in_0_9_8>
@@ -65,7 +71,7 @@ runtime: lxd-vm
 - Scaffold it with `workshop init <NAME> --runtime lxd-vm` (the message is `"<NAME>" workshop definition created at <path>/.workshop/<NAME>.yaml`), or add the key by hand to a definition that has not been launched yet.
 - A bad value is rejected naming both valid values (verified on 0.9.8): `error: invalid runtime "classic"; valid runtimes: lxd-container, lxd-vm` from `workshop init --runtime`, and `error: cannot launch "dev": invalid runtime "classic"; valid runtimes: lxd-container, lxd-vm` from a definition.
 
-Confirm what you actually got — never infer the runtime from the definition file alone, since the file can have been edited after launch, or can carry a stale `confinement:` key:
+Confirm what you actually got — never infer the runtime from the definition file alone, since the file can have been edited after launch (and on 0.9.8 it could carry a silently ignored `confinement:` key):
 
 ```
 workshop info <NAME>
