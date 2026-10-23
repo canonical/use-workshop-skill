@@ -70,67 +70,130 @@
         another `workshop refresh` variant as the fix, and it does NOT claim
         the refresh would have worked with a flag.
 
-- description: VM workshop that declares SDKs is refused (LXD 6/edge)
+- description: VM workshop that declares SDKs is refused (LXD 6/candidate)
   vars:
     user: |
       Launching my VM workshop fails with "SDKs are currently unavailable for virtual machines", but the same definition works fine as a container. What's going on?
   assert:
     - type: contains
-      value: 6/edge
+      value: 6/candidate
     - type: llm-rubric
       value: |
         The response explains that SDK support in a VM workshop depends on the
         host's LXD being able to mount shifted disks into a virtual machine,
-        which means switching LXD to the `6/edge` channel. Mentioning the
-        other way out — a VM definition that declares no SDKs — is a plus,
-        not a requirement (this user wants their SDKs). Before or alongside
-        the switch it warns about its cost — any of: it applies to the whole
-        host including container workshops, `edge` is unreleased LXD, or LXD
-        cannot move back from `6/edge` to `6/stable`. It does NOT claim VM
-        workshops never support SDKs as a permanent rule, and it does NOT tell
-        the user to reinstall or downgrade Workshop.
+        which means switching LXD to the `6/candidate` channel (Workshop
+        0.9.9; noting that the 0.9.8 docs named `6/edge` is fine, but
+        `6/candidate` must be the channel it tells the user to switch to).
+        Mentioning the other way out — a VM definition that declares no
+        SDKs — is a plus, not a requirement (this user wants their SDKs).
+        Before or alongside the switch it warns about its cost — any of: it
+        applies to the whole host including container workshops, `candidate`
+        is unreleased LXD, or LXD cannot move back from `6/candidate` to
+        `6/stable`. It does NOT claim VM workshops never support SDKs as a
+        permanent rule, and it does NOT tell the user to reinstall or
+        downgrade Workshop.
 
-- description: Connections vanish after refreshing a VM workshop
+- description: Only mount and secret connect in a VM workshop (0.9.9)
   vars:
     user: |
-      I connect a plug in my virtual-machine workshop and it works, but every `workshop refresh` leaves it disconnected again. In my container workshops the connection sticks. Is this a bug?
+      My VM workshop's dev SDK declares a tunnel plug for its web server and an ssh-agent plug. The launch printed a warning that the SDK "has incompatible plugs", and neither plug shows up in `workshop connections`. How do I connect them?
   assert:
     - type: contains
-      value: workshop connect
-    # No blunt `not-contains: workshop restore`: a correct answer often names
-    # restore precisely to say it does NOT help here either
-    # (mention-vs-prescription, cf. BASELINE assertion fixes 2/3/7/12). The
-    # rubric below carries the real guard.
+      value: container
+    # No blunt `not-contains: workshop connect`: a correct answer names it
+    # precisely to say it cannot work here (mention-vs-prescription, cf.
+    # BASELINE assertion fixes 2/3/7/12). The rubric carries the real guard.
     - type: llm-rubric
       value: |
-        The response explains this is expected behavior, not a bug: in a VM
-        workshop Workshop skips auto-connect at launch AND at refresh and
-        restores nothing, so the connection persistence that containers have
-        does not apply. The remedy is to re-run `workshop connect` after each
-        refresh. It does NOT blame `--forget` or a missing `connections:`
-        entry, does NOT prescribe `workshop restore` as the fix (naming it
-        only to say it does not help here is fine), and does NOT tell the
-        user to file a bug or reinstall.
+        The response explains that a VM workshop (Workshop 0.9.9) supports
+        only the `mount` and `secret` interfaces: plugs and slots of other
+        interfaces, tunnel and ssh-agent included, are skipped with exactly
+        this warning, are not listed, and cannot be connected by hand. So
+        there is nothing to connect; if the user needs the tunnel or the
+        ssh-agent plug, the workshop has to run as a container (remove and
+        launch it without `runtime: lxd-vm`, since the runtime is fixed at
+        launch). It does NOT prescribe `workshop connect` or a
+        `connections:` entry as the fix, does NOT suggest a daemon restart
+        or reinstall, and does NOT claim the plugs will appear after a
+        refresh.
 
-- description: A 0.9.7 `confinement:` key silently gives a container on 0.9.8
+- description: VM workshop connections persist across refresh (0.9.9)
   vars:
     user: |
-      After upgrading Workshop to 0.9.8 I launched a fresh workshop from my old definition, which has `confinement: virtual-machine`. No error, but `workshop info` says `runtime: lxd-container`. Did the VM opt-in break?
+      I'm on Workshop 0.9.9 with a VM workshop (`runtime: lxd-vm`). I wired my tools SDK's secret plug with `workshop connect dev/tools:api-key` and it works. On 0.9.8 every refresh of a VM lost its connections — do I still have to redo that after each `workshop refresh`?
+  assert:
+    - type: llm-rubric
+      value: |
+        The response says no: since Workshop 0.9.9 a VM workshop
+        auto-connects at launch and refresh and keeps manual connections
+        across a refresh the way a container does, for the interfaces a VM
+        supports (`mount` and `secret`), so the secret connection survives
+        the refresh. Naming the remaining exceptions is a plus, not
+        required: `workshop restore` or remove + launch resets the wiring,
+        and a refresh that changes the secret slot's lookup drops the
+        connection with a warning. It does NOT tell the user to re-run
+        `workshop connect` after every refresh, and does NOT claim a VM
+        still skips auto-connect on 0.9.9.
+
+- description: PCIe ports exhausted connecting a mount in a VM workshop
+  vars:
+    user: |
+      In my VM workshop, `workshop connect dev/go:mod-cache` fails with `Failed starting device "go_mod-cache": No unused PCIe ports available for hotplugging`. Should I raise limits.max_bus_ports with lxc config?
+  assert:
+    - type: contains
+      value: workshop disconnect
+    - type: llm-rubric
+      value: |
+        The response explains that each `mount` connection in a VM workshop
+        is its own PCIe device, that the VM has a fixed budget of PCIe ports
+        shared by every SDK's mounts (Workshop sizes it from the number of
+        SDKs), and that the budget is spent. The remedy is to disconnect
+        mount plugs that aren't needed (`workshop disconnect`); adding an
+        SDK with few plugs to raise the budget, or using a container, are
+        acceptable extras. It does NOT tell the user to change the instance
+        with `lxc config` (Workshop manages that key itself; naming
+        `limits.max_bus_ports` to say not to touch it is fine), and does
+        NOT prescribe a daemon restart, a snap reinstall, or remove + launch
+        as the first fix.
+
+- description: Removing a stopped VM workshop fails on a mount disconnect
+  vars:
+    user: |
+      `workshop remove dev` fails for my stopped VM workshop — the error is about disconnecting one of its SDK's mount plugs. The container workshops in the same project removed fine. How do I get rid of it?
+  assert:
+    - type: contains
+      value: workshop start
+    - type: llm-rubric
+      value: |
+        The response explains that in a VM workshop disconnecting a `mount`
+        plug needs the workshop to be running, and removal disconnects its
+        mounts, so a stopped VM workshop can fail to remove (a known
+        limitation of the VM runtime). The fix is `workshop start dev`, then
+        `workshop remove dev`; if it won't start, the purge / recovery path
+        is the fallback. It does NOT go straight to `lxc delete`, a daemon
+        restart, or reinstalling Workshop, and does NOT claim the definition
+        is at fault.
+
+- description: A leftover `confinement:` key is rejected on 0.9.9
+  vars:
+    user: |
+      After upgrading Workshop to 0.9.9, `workshop launch dev` fails with `workshop definition YAML contains unknown fields: "confinement" at line 3, column 14`. My definition has `confinement: virtual-machine`, written for 0.9.7. What changed?
   assert:
     - type: contains
       value: "runtime: lxd-vm"
     - type: llm-rubric
       value: |
         The response identifies the cause: Workshop 0.9.8 replaced the
-        `confinement:` key with `runtime:`, and the old key is silently
-        ignored (the workshop definition isn't strictly validated), so the
-        workshop launched as an ordinary container — the opt-in is not the
-        problem. The fix is to write `runtime: lxd-vm` in place of
-        `confinement: virtual-machine`, and, because the runtime is fixed at
-        launch, to `workshop remove` and `workshop launch` the workshop (a
-        refresh cannot convert it). It does NOT tell the user to re-run the
-        snap opt-in as the fix, and does NOT claim `confinement:` still
-        works.
+        `confinement:` key with `runtime:`, and since 0.9.9 the workshop
+        definition is strictly validated, so the old key is rejected as an
+        unknown field. The fix is to write `runtime: lxd-vm` in place of
+        `confinement: virtual-machine` — not merely to delete the line,
+        which would launch a plain container instead of the VM the user
+        wanted. Noting that the VM runtime also needs the experimental snap
+        opt-in, or that 0.9.8 silently ignored the old key, is a plus, not
+        required. It does NOT tell the user to downgrade Workshop, does NOT
+        present deleting the `confinement:` line as the whole fix, and does
+        NOT claim `confinement:` still works.
 
 - description: VM to sandbox a coding agent — the boundary stops at the kernel
   vars:

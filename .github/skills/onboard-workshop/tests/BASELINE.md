@@ -9,7 +9,10 @@ merge below a pinned cell without investigation.
 ## Routing eval (`make eval-routing`)
 
 **62 cases across 9 scenario files** (incl. 11 cross-skill selection
-cases) since the 2026-10-19 Workshop 0.9.8 round, which added one
+cases); the 2026-10-23 Workshop 0.9.9 round added none and changed one
+rubric: the VM case's bonus clause now credits "a VM supports only the mount
+and secret interfaces" instead of the 0.9.8 "skips auto-connect and
+check-health". The suite dates from the 2026-10-19 Workshop 0.9.8 round, which added one
 `generate.yaml` case: a repo whose integration tests need an API key gets
 the variable name and a per-run `--env NAME` instruction, never a value
 (the `secret` slot + manual connect is the on-request option), and rewrote

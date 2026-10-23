@@ -12,7 +12,24 @@ intentional and not a regression.
 
 ## Routing eval
 
-**105 cases across 15 scenario files** since the 2026-10-19 Workshop **0.9.8**
+**110 cases across 15 scenario files** since the 2026-10-23 Workshop **0.9.9**
+round, which flipped every assertion 0.9.9 reversed and gave each reversal a
+case a stale 0.9.8 answer fails. `runtime.yaml` (+3): the SDK refusal now
+names LXD `6/candidate`; the VM-connections-vanish case became "only mount
+and secret connect in a VM"; the leftover-`confinement:` case now quotes the
+0.9.9 rejection instead of the silent container; new cases for VM connections
+persisting across a refresh, the PCIe port budget
+(`No unused PCIe ports available for hotplugging`), and removing a stopped VM.
+`troubleshoot.yaml` (+1): the strict-validation case quotes the 0.9.9
+`SDK definition YAML contains unknown fields` string and no longer credits
+"workshop.yaml silently ignores unknown keys"; new case for an `interface:`
+key rejected in a `connections:` entry. `author-in-project-sdk.yaml` (+1):
+the inline-hooks case accepts the 0.9.9 `only the "sketch" SDK supports inline
+hooks` wording; new case for publisher metadata (`website:`, `source-code:`)
+now accepted in an in-project `sdk.yaml`. Every quoted error string was
+verified on a 0.9.9 host except the VM ones (LXD `6/stable`, no VM opt-in
+here); those come from the 0.9.9 docs and code. Before that, **105 cases
+across 15 scenario files** since the 2026-10-19 Workshop **0.9.8**
 round: the 92-case suite plus `secrets.yaml` (9 cases for the `secret`
 interface — the keyring route end to end, the silent no-op of a secret pair
 in `connections:`, the locked / not-found / multiple-match errors and the
