@@ -38,6 +38,8 @@ sdk find <keyword>     # or `workshop.sdk find <keyword>` if `sdk` isn't on PATH
 sdk info <name>        # confirms channels and supported bases
 ```
 
+Run the lookup even when the base image already ships the tool (Python 3 on `ubuntu@24.04`, for example): a published SDK pins the version and brings its caches, mounts, and health check, which the base package doesn't. Choose a base-only definition only after the lookup comes back empty or unsuitable, and say that's why.
+
 (See `references/command-cheatsheet.md` `<sdk_cli_invocation>` for the full `sdk` vs `workshop.sdk` resolution rule.)
 
 If the tool isn't in the Store, or the user wants a project-specific install recipe, defer to `author-in-project-sdk.md` (write `.workshop/<name>/sdk.yaml` with hooks).
