@@ -1,0 +1,471 @@
+{
+  "meta": {
+    "generated_at": "2026-10-23T21:49:59+00:00",
+    "model": "gpt-6.1-sol",
+    "provider": "copilot",
+    "total_cases": 62,
+    "passed": 61,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.9839,
+    "tokens": {
+      "total": 2083044,
+      "prompt": 2070769,
+      "completion": 12275,
+      "cached": 2022100
+    },
+    "cost_usd": 0,
+    "copilot": {
+      "served_models": [
+        "gpt-6.1-sol"
+      ],
+      "premium_requests": 62,
+      "ai_credits": 44.39
+    }
+  },
+  "cases": [
+    {
+      "description": "analyze verb stops at the verdict without asking which path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18020,
+      "cost": 0
+    },
+    {
+      "description": "onboard verb commits to the full chain",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9343,
+      "cost": 0
+    },
+    {
+      "description": "verify verb goes straight to launch-and-verify",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 18825,
+      "cost": 0
+    },
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13091,
+      "cost": 0
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": true,
+      "score": 0.85,
+      "latency_ms": 9428,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11233,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13890,
+      "cost": 0
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10282,
+      "cost": 0
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7254,
+      "cost": 0
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8123,
+      "cost": 0
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9004,
+      "cost": 0
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 12553,
+      "cost": 0
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10579,
+      "cost": 0
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8307,
+      "cost": 0
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10160,
+      "cost": 0
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10851,
+      "cost": 0
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9487,
+      "cost": 0
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12883,
+      "cost": 0
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4401,
+      "cost": 0
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13059,
+      "cost": 0
+    },
+    {
+      "description": "User asks the onboarded definition to be a VM workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9096,
+      "cost": 0
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18240,
+      "cost": 0
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7925,
+      "cost": 0
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11873,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 0.8,
+      "latency_ms": 13677,
+      "cost": 0
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16475,
+      "cost": 0
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12494,
+      "cost": 0
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12118,
+      "cost": 0
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7028,
+      "cost": 0
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6255,
+      "cost": 0
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8915,
+      "cost": 0
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16540,
+      "cost": 0
+    },
+    {
+      "description": "JVM repo maps to openjdk plus the matching build-tool SDK",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 16621,
+      "cost": 0
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 11824,
+      "cost": 0
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 10188,
+      "cost": 0
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": false,
+      "score": 0.7999999999999999,
+      "latency_ms": 8468,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response gives .workshop/<name>.yaml with default name dev, notes\nthe basename must match name:, and does not create a root\nworkshop.yaml alongside .workshop/ files.\n",
+          "passed": false,
+          "reason": "The output correctly identifies `.workshop/dev.yaml` as the default path and shows `name: dev` inside, satisfying the first criterion. However, it does not explicitly state that the basename of the file must match the `name:` field \u2014 it only implies it by example. The output also does not mention creating a root `workshop.yaml`, satisfying the third criterion. Because the key explicit rule about basename matching `name:` is absent, the response only partially meets the rubric."
+        }
+      ],
+      "failure_reason": "The output correctly identifies `.workshop/dev.yaml` as the default path and shows `name: dev` inside, satisfying the first criterion. However, it does not explicitly state that the basename of the file must match the `name:` field \u2014 it only implies it by example. The output also does not mention creating a root `workshop.yaml`, satisfying the third criterion. Because the key explicit rule about basename matching `name:` is absent, the response only partially meets the rubric."
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9120,
+      "cost": 0
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13376,
+      "cost": 0
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9777,
+      "cost": 0
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8905,
+      "cost": 0
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9053,
+      "cost": 0
+    },
+    {
+      "description": "A repo that needs an API key gets the variable name, never a value (0.9.8)",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 16436,
+      "cost": 0
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17739,
+      "cost": 0
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8267,
+      "cost": 0
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11231,
+      "cost": 0
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10105,
+      "cost": 0
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13009,
+      "cost": 0
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3465,
+      "cost": 0
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2971,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8598,
+      "cost": 0
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4371,
+      "cost": 0
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4338,
+      "cost": 0
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8282,
+      "cost": 0
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6923,
+      "cost": 0
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4698,
+      "cost": 0
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4732,
+      "cost": 0
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2898,
+      "cost": 0
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4956,
+      "cost": 0
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9875,
+      "cost": 0
+    },
+    {
+      "description": "sdkcraft publishing routes to the design-sdk sibling",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13017,
+      "cost": 0
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 13902,
+      "cost": 0
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9306,
+      "cost": 0
+    }
+  ]
+}
