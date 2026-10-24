@@ -63,8 +63,13 @@
     user: |
       I want to run two coding agents in parallel on the same repo, each in its own worktree, sharing one workshop sandbox. Can workshops do that?
   assert:
-    - type: contains
-      value: git worktree
+    # "separate clone" is the skill's own recommendation since 0.9.8; a
+    # correct answer that leads with it need not spell `git worktree`.
+    - type: contains-any
+      value:
+        - git worktree
+        - worktree add
+        - separate clone
     - type: contains-any
       value:
         - workshop launch
