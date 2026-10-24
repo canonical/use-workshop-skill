@@ -83,6 +83,7 @@
     - type: contains-any
       value:
         - manual
+        - explicit
         - "not auto"
         - "never auto"
         - "doesn't auto"

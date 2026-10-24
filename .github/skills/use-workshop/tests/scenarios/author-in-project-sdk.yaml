@@ -103,6 +103,7 @@
         - "executable file"
         - "hook script"
         - "unknown field"
+        - "inline hooks"
         - rejected
         - discovered
         - "lives elsewhere"
@@ -110,8 +111,10 @@
       value: |
         The response explains that in-project SDK hooks are NOT inline
         YAML scripts, and that an in-project `sdk.yaml` has NO `hooks:` key
-        at all — strict validation rejects unknown fields, so adding one
-        fails. The actual scripts live in a sibling `hooks/` directory as
+        at all — validation rejects one, so adding it fails (since 0.9.9 the
+        error is `only the "sketch" SDK supports inline hooks`; earlier
+        releases reported an unknown field — either account is correct).
+        The actual scripts live in a sibling `hooks/` directory as
         executable files, discovered automatically by filename. It does not
         present a `hooks:` list or map as valid in-project `sdk.yaml`
         syntax. (It MAY note that a sketch SDK's `sdk.yaml` is the one place
@@ -138,6 +141,23 @@
         filename. Any example `sdk.yaml` it shows contains no `hooks:` key.
         Fail if it claims a `hooks:` list/map is required or shown in the
         minimal file.
+
+- description: Publisher metadata in an in-project sdk.yaml (0.9.9)
+  vars:
+    user: |
+      Can I put `website:` and `source-code:` in my in-project SDK's `.workshop/tools/sdk.yaml`? I'm on Workshop 0.9.9, and I remember those keys being rejected.
+  assert:
+    - type: llm-rubric
+      value: |
+        The response says yes for 0.9.9: an in-project `sdk.yaml` accepts
+        the publisher metadata fields `contact`, `issues`, `source-code` and
+        `website`, and Workshop ignores them (they change nothing about how
+        the SDK runs). It confirms the user's memory was right for 0.9.8 and
+        earlier, which rejected those fields in an in-project `sdk.yaml` —
+        adding that leaving them out keeps the SDK working on older hosts is
+        a plus, not required. It does NOT claim they are rejected on 0.9.9,
+        and does NOT suggest adding a `hooks:` key or any other field outside
+        the documented set.
 
 - description: User asks how to update an existing in-project SDK's setup-project
   vars:

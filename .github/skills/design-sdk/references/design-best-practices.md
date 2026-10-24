@@ -154,10 +154,12 @@ workshopctl set-health okay
 - Use `--code=<slug>` for distinct failure modes when there are several.
 - The hook runs as root: wrap user-context checks in
   `sudo -u workshop --login` so PATH and profile.d take effect.
-Caveat worth knowing, not designing around: Workshop skips `check-health`
-entirely in a VM workshop (`runtime: lxd-vm`), so an SDK gets no health signal
-there. VM workshops cannot carry SDKs on LXD `6/stable` anyway — design for
-containers and don't weaken the health check for it.
+Caveat worth knowing, not designing around: since Workshop 0.9.9
+`check-health` runs in a VM workshop (`runtime: lxd-vm`) too, but a VM
+supports only `mount` and `secret` plugs — any other plug the SDK declares is
+skipped there with a warning. (Through 0.9.8 a VM never ran `check-health`.)
+VM workshops cannot carry SDKs on LXD `6/stable` anyway — design for
+containers, and don't make a health check depend on a plug a VM drops.
 </health_checks>
 
 <sdk_dependencies>
@@ -193,4 +195,5 @@ canonical example, set in `~/.profile` with a comment).
 - `how-to/develop-sdks/build-an-sdk.md` (service-unit pattern, user-level systemd preference)
 - `how-to/develop-sdks/share-content-between-sdks.md` (slot/plug sharing walk-through)
 - `how-to/develop-sdks/configure-mount.md` (mount attribute details)
+- `release-notes/v0.9.9.md` (`check-health` in VM workshops; container-only interfaces skipped there)
 </source_docs>

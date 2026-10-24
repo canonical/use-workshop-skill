@@ -203,8 +203,8 @@
         needs a host-level snap opt-in the skill will not perform, and on LXD
         `6/stable` a VM workshop refuses any definition that declares SDKs —
         which an onboarded Python definition does. Mentioning that a VM also
-        skips auto-connect and check-health, or that it leaves the project
-        directory writable and the network open (so it is not the agent
+        supports only the mount and secret interfaces, or that it leaves the
+        project directory writable and the network open (so it is not the agent
         boundary the user expects), is a plus. It offers the container
         definition as what it will actually deliver, and points the user at
         the use-workshop skill (or the upstream VM how-to) if they want to

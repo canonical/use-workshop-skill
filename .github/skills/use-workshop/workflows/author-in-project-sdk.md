@@ -43,7 +43,7 @@ name: <NAME>           # matches the directory; the ONLY required key
 # slots: {}            # optional; mount/tunnel slots the SDK provides
 ```
 
-Only `name` is required. Do NOT add a `hooks:` key — hooks are the script files you write in Step 4, discovered automatically by filename; strict validation rejects it as `unknown SDK YAML fields: hooks (line N, column M)`. (Inline `hooks:` maps exist only in sketch SDKs.)
+Only `name` is required. Do NOT add a `hooks:` key — hooks are the script files you write in Step 4, discovered automatically by filename; validation rejects it as `SDK definition YAML: only the "sketch" SDK supports inline hooks` (0.9.9; `unknown SDK YAML fields: hooks (line N, column M)` before). (Inline `hooks:` maps exist only in sketch SDKs.)
 
 **Step 4. Write each hook script under `.workshop/<NAME>/hooks/<HOOK>`.**
 
@@ -139,7 +139,7 @@ Report back as: **"Change <ID>: <status>. Workshop status: <Ready|...>. SDK <NAM
 - Writing a hook for an interpreter other than bash and relying on the shebang to select it — Workshop runs every hook with bash whatever the shebang says. (The missing `+x` bit is NOT this failure: Workshop invokes bash rather than exec'ing the file, so an in-project hook at `0644` still runs.)
 - Naming the SDK directory and the `name:` field differently — the SDK fails to load.
 - Omitting the `project-` prefix in `workshop.yaml`'s `sdks:` entry — Workshop won't find the SDK.
-- Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation as `unknown SDK YAML fields: hooks`. Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
+- Writing hook logic in `sdk.yaml` itself — an in-project `sdk.yaml` has no `hooks:` key at all; adding one fails validation (`only the "sketch" SDK supports inline hooks` since 0.9.9, `unknown SDK YAML fields: hooks` before). Logic lives in `hooks/<HOOK-NAME>` scripts, discovered by filename. (Inline `hooks:` maps exist only in sketch SDKs.)
 - Calling `workshopctl set-health` from anywhere other than a `check-health` hook — it is intended for in-hook execution context.
 - Fetching a secret in a hook and writing it to a file, `/etc/profile.d`, or `~/.profile` (or running such a hook with `--verbose`, which turns on `xtrace` and prints it) — the value must stay out of the workshop's filesystem and logs; read it per command with `workshopctl get-secret`.
 - Reaching for the build-time `schema-sdk.json` to validate `sdk.yaml` — that schema describes the post-`sdkcraft` form; in-project hooks aren't a YAML field there.

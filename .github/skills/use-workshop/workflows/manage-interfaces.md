@@ -128,7 +128,7 @@ The `manual` note appears in `workshop connections`.
 
 **Persistence (0.9.5+):** a manual connection survives `workshop refresh` for as long as its plug and slot still exist in the definition — no re-connect ritual after each refresh. **Connection maintenance (0.9.8+):** the exception is a refresh that changes what the connection depends on — a tunnel plug's or slot's `endpoint`, a custom-device plug's filter attributes, a secret slot's `attributes`/`collection`. That refresh succeeds, drops the connection, and prints `WARNING: There is 1 new warning. See "workshop warnings".` (`disconnected "<plug>" from "<slot>" because its definition changed`). Reconnect once; `workshop okay` acknowledges the warning. Mount, camera, desktop, GPU and ssh-agent connections are always kept. What resets wiring to the definition's auto-connect defaults is `workshop restore` (drops manual connects, re-establishes manual disconnects regardless of `--forget`, resets remount sources) — or `workshop remove` + `launch`, which starts from scratch.
 
-**The VM runtime is the exception.** A `runtime: lxd-vm` workshop skips auto-connect at launch *and* at refresh and restores nothing, so every connection is manual and every refresh loses it — re-run `workshop connect` after each one. Proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device) don't work in a VM at all, and on LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire. Check `workshop info`'s `runtime:` line before diagnosing "my connections keep vanishing". See `references/runtime.md`.
+**The VM runtime is the exception.** A `runtime: lxd-vm` workshop supports only `mount` and `secret` (0.9.9): those auto-connect and persist across a refresh as above, while plugs and slots of every other interface (tunnel, desktop, ssh-agent, camera, custom-device, GPU) are skipped with an `incompatible plugs` warning, aren't listed, and can't be connected — the answer for those is a container. Each mount also takes a PCIe port from a fixed budget, so a VM that refuses a new mount (`No unused PCIe ports available for hotplugging`) needs an unused mount disconnected, not a retry. Through 0.9.8 a VM skipped auto-connect and lost every connection on refresh. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire. Check `workshop info`'s `runtime:` line before diagnosing "my connections keep vanishing". See `references/runtime.md`.
 
 **Step 5. Reassign a mount source.**
 ```
@@ -183,4 +183,5 @@ For tunnels, also surface a curl or netcat one-liner the user can run on the hos
 - `how-to/develop-with-workshops/provide-secrets.md` (the secret slot, connecting, checking)
 - `reference/cli/workshopctl.md` (`get-secret`)
 - `release-notes/v0.9.8.md` (the `secret` interface; connections dropped when their definition changes)
+- `release-notes/v0.9.9.md` (auto-connect in VM workshops; container-only interfaces skipped there)
 </source_docs>

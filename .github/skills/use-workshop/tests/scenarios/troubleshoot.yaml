@@ -300,7 +300,7 @@
 - description: SDK YAML rejected by strict validation (unknown SDK YAML fields)
   vars:
     user: |
-      `workshop refresh` fails with `unknown SDK YAML fields: workshp-target (line 7, column 3)` for my `.workshop/tools/sdk.yaml`. The file looks fine to me. What's going on?
+      `workshop refresh` fails with `invalid "tools" SDK: SDK definition YAML contains unknown fields: "descripton" at line 4, column 13` for my `.workshop/tools/sdk.yaml`. The file looks fine to me. What's going on?
   assert:
     - type: contains-any
       value:
@@ -314,14 +314,32 @@
       value: |
         The response explains that SDK YAML (an in-project `sdk.yaml`, or a
         sketch SDK) is validated strictly — an unknown or misspelled key
-        (here `workshp-target`, a typo for `workshop-target`) is rejected up
-        front with the line and column named in the error. The fix is to
-        correct the offending key (consult the definition reference);
-        retrying the same file unchanged won't help. A response that also
-        notes this strictness applies to SDK YAML only — `workshop.yaml`
-        itself silently ignores unknown keys — earns extra credit but it is
-        not required. It does NOT treat this as a daemon stall or prescribe
-        a daemon restart or remove+launch.
+        (here `descripton`, a typo for `description`) is rejected up front
+        with the line and column named in the error. The fix is to correct
+        the offending key (consult the definition reference); retrying the
+        same file unchanged won't help. A response that also notes
+        `workshop.yaml` is strictly validated too since 0.9.9 earns extra
+        credit but it is not required; claiming `workshop.yaml` silently
+        ignores unknown keys on 0.9.9 is wrong. It does NOT treat this as a
+        daemon stall or prescribe a daemon restart or remove+launch.
+
+- description: A connections entry with an interface key is rejected (0.9.9)
+  vars:
+    user: |
+      My workshop.yaml has a connections entry with `plug: go:mod-cache`, `slot: tools:cache` and `interface: mount`. Since upgrading to 0.9.9, `workshop refresh` fails with `workshop definition YAML: connections entry contains unknown fields: "interface" at line 9, column 16`. The interface really is mount — what's wrong?
+  assert:
+    - type: not-contains
+      value: snap restart
+    - type: llm-rubric
+      value: |
+        The response explains that a `connections:` entry takes only `plug`
+        and `slot` — the interface is implied by the two endpoints, which
+        must share it — and that Workshop 0.9.9 validates `workshop.yaml`
+        strictly, so the extra `interface:` key, which earlier releases
+        silently ignored, is now rejected. The fix is to delete the
+        `interface:` line and run `workshop refresh` again. It does NOT tell
+        the user to move `interface:` elsewhere in the entry, to restart the
+        daemon, or to remove and relaunch the workshop.
 
 - description: Restore refused right after a Workshop snap update
   vars:

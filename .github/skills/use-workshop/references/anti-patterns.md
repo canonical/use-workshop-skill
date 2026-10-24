@@ -96,20 +96,20 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 **Right:** `workshop remove <NAME>` then `workshop launch <NAME>`. This is one of the few places where remove+launch is correct rather than the anti-pattern at the top of this file. Warn the user first that it discards manual `connect`/`remount` wiring. See `references/runtime.md`.
 </anti_pattern>
 
-<anti_pattern name="Carrying a 0.9.7 `confinement:` key into 0.9.8">
-**Wrong:** writing `confinement: virtual-machine` (the 0.9.7 keyword) in a definition for Workshop 0.9.8+, or reading a definition that has it as "this is a VM".
-**Why it's bad:** 0.9.8 renamed the key to `runtime:`, and the workshop definition is not strictly validated — the old key is silently ignored. The workshop launches as an ordinary container with no error and no warning, so the user believes they have a VM boundary they don't have.
-**Right:** `runtime: lxd-vm` (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
+<anti_pattern name="Carrying a 0.9.7 `confinement:` key into 0.9.8+">
+**Wrong:** writing `confinement: virtual-machine` (the 0.9.7 keyword) in a definition for Workshop 0.9.8+, reading a definition that has it as "this is a VM", or deleting the line just to get past the 0.9.9 error.
+**Why it's bad:** 0.9.8 renamed the key to `runtime:`. Since 0.9.9 the old key fails the launch (`workshop definition YAML contains unknown fields: "confinement"`), which is the safe outcome; on 0.9.8 it was silently ignored and the workshop launched as an ordinary container, so the user believed they had a VM boundary they didn't have. Deleting the line recreates that 0.9.8 trap by hand.
+**Right:** `runtime: lxd-vm` in place of the old key (and `workshop init <NAME> --runtime lxd-vm`; `--vm` is gone). Confirm with the `runtime:` line in `workshop info`, never from the file. See `references/runtime.md`.
 </anti_pattern>
 
-<anti_pattern name="Promising SDKs, interfaces, or health checks in a VM workshop">
-**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:`, `connections:`, or a tunnel, and treating it like a container with a stronger wall.
-**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/edge`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM skips auto-connect at launch *and* refresh, has no proxy-device interfaces (tunnel, desktop, ssh-agent, camera, custom-device), and never runs `check-health`, so `workshop info` shows no SDK health notes. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
+<anti_pattern name="Promising SDKs or container-only interfaces in a VM workshop">
+**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:` on a stock host, or that relies on a tunnel, desktop, ssh-agent, camera, custom-device, or GPU plug, and treating it like a container with a stronger wall.
+**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/candidate`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM supports only `mount` and `secret`: every other interface is skipped with an `incompatible plugs` warning and cannot be connected by hand, and each mount spends a PCIe port from a fixed budget. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
 **Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up and what the LXD switch costs. See `references/runtime.md`.
 </anti_pattern>
 
 <anti_pattern name="Writing a secret's value where the workshop can read it">
-**Wrong:** putting an API key or token into the workshop definition, an `actions:` script, a project file, `.envrc`, a shell profile, or an in-project SDK hook; passing it as `--env KEY=<value>`; or echoing it to "check" the setup.
+**Wrong:** putting an API key or token into the workshop definition, an `actions:` script, a project file, `.envrc`, a shell profile, or an in-project SDK hook; passing it as `--env KEY=<value>`; echoing it to "check" the setup; or showing `workshopctl get-secret <SDK>.<PLUG>` without a redirect, even just to illustrate the corrected identifier.
 **Why it's bad:** all of those are plain files or command lines. The project directory — definition included — is visible inside the workshop and often lands in version control; a profile exports to every command; a typed `--env` value stays in shell history and the host process list; an echoed value lands in terminal scrollback and agent transcripts.
 **Right:** keep the value in the host keyring and give the SDK a `secret` slot plus a manual `workshop connect` (0.9.8+), or fill `--env KEY` from the store for one command (`KEY=$(secret-tool lookup …) workshop exec --env KEY …`). Verify with `workshopctl get-secret … | wc -c`, never by printing. See `references/secrets.md`.
 </anti_pattern>
@@ -142,6 +142,7 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 - `reference/workshops.md` (backward- and forward-compatibility policy)
 - `release-notes/v0.9.7.md` (VM workshops introduced, and their limits)
 - `release-notes/v0.9.8.md` (`confinement:` replaced by `runtime:`; the `secret` interface)
+- `release-notes/v0.9.9.md` (a leftover `confinement:` key rejected as an unknown field)
 - `how-to/develop-with-workshops/provide-secrets.md` (where a secret must never be written)
 - `how-to/customize-workshops/use-virtual-machines.md` (VM prerequisites and limitations)
 </source_docs>

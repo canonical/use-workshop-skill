@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "generated_at": "2026-10-24T00:27:30+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "anthropic:messages",
+    "total_cases": 9,
+    "passed": 9,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 0,
+      "prompt": 147,
+      "completion": 30699,
+      "cached": 4203689
+    },
+    "cost_usd": 3.2716
+  },
+  "cases": [
+    {
+      "description": "bootstrap-project \u2014 greenfield Python workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 72897,
+      "cost": 0.445654
+    },
+    {
+      "description": "daily-ops \u2014 launch workshop and run a defined action",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 49143,
+      "cost": 0.283277
+    },
+    {
+      "description": "customize-actions \u2014 add a new action and run it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 36713,
+      "cost": 0.246171
+    },
+    {
+      "description": "author-in-project-sdk \u2014 write .workshop/ruff/ with setup-project, launch, verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 93030,
+      "cost": 0.312852
+    },
+    {
+      "description": "manage-interfaces \u2014 wire an HTTP service tunnel from workshop to host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 207062,
+      "cost": 0.689175
+    },
+    {
+      "description": "provide-secret \u2014 connect a keyring secret to an in-project SDK without exposing it",
+      "passed": true,
+      "score": 0.9933333333333333,
+      "latency_ms": 75841,
+      "cost": 0.375081
+    },
+    {
+      "description": "ide-integration \u2014 verify out-of-the-box SSH access for a remote-SSH IDE workflow",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 51046,
+      "cost": 0.293769
+    },
+    {
+      "description": "multi-workshop-projects \u2014 migrate to multi-workshop layout and add a second workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 52287,
+      "cost": 0.298144
+    },
+    {
+      "description": "troubleshoot \u2014 diagnose a failed launch and recover to Ready",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 47062,
+      "cost": 0.327518
+    }
+  ]
+}

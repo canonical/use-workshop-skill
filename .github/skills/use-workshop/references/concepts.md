@@ -24,7 +24,7 @@ The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. S
 </term>
 
 <term name="runtime">
-How the workshop is sandboxed, declared as the top-level `runtime:` key (0.9.8+; `confinement:` in 0.9.7, now silently ignored): `lxd-container` (the default; omitting the key selects it) or `lxd-vm` (**experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1` and, for SDKs, LXD from `6/edge`). The runtime is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on LXD `6/stable`, auto-connect, and `check-health`, and its boundary stops at the kernel. Full model and the exact errors: `references/runtime.md`.
+How the workshop is sandboxed, declared as the top-level `runtime:` key (0.9.8+; `confinement:` in 0.9.7 — 0.9.8 silently ignored a leftover one, 0.9.9 rejects it as an unknown field): `lxd-container` (the default; omitting the key selects it) or `lxd-vm` (**experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1` and, for SDKs, LXD from `6/candidate`). The runtime is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on LXD `6/stable` and every interface but `mount` and `secret` (0.9.9; through 0.9.8 it also skipped auto-connect and `check-health`), fixes its virtual hardware at start, and its boundary stops at the kernel. Full model and the exact errors: `references/runtime.md`.
 </term>
 
 <term name="workshop hostname (DNS)">

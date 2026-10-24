@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <overview>
-Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. Validation scope matters: strict unknown-field rejection (0.9.2+) applies to **SDK YAML only** — an in-project `sdk.yaml` or a sketch SDK fails up front with `unknown SDK YAML fields: <name> (line N, column M)` (sketch wording: `sketch SDK YAML contains unknown fields: …`). **`workshop.yaml` itself gets no such check**: an unknown or misspelled top-level key there is silently ignored, and the symptom is the *effect* going missing (an SDK not installed, a connection never proposed) or a downstream error about a required attribute — not a validation message. Never quote an `unknown field` / `field not found` error for `workshop.yaml`; those strings don't exist. The published `reference/definition-files/schema.json` is the editor-side lint for workshop.yaml. Bad *values* (as opposed to keys) surface at `workshop launch` / `workshop refresh` time in both file kinds.
+Anatomy of a workshop definition file. Use this when generating or editing `workshop.yaml` / `.workshop/<NAME>.yaml`. **`workshop.yaml` is strictly validated (0.9.9+)**: an unknown or misspelled key fails `workshop launch` / `workshop refresh` up front, naming the key with its line and column (the column points at the value). That covers the top level (`name`, `base`, `runtime`, `sdks`, `connections`, `actions`), each `sdks:` entry (`name`, `channel`, `plugs`, `slots`) and each `connections:` entry (`plug`, `slot` — there is no `interface:`). The three wordings, verified on 0.9.9: `cannot launch "dev": invalid file "<path>": workshop definition YAML contains unknown fields: "confinement" at line 3, column 14`; `… "go" SDK contains unknown fields: "chanel" at line 5, column 13`; `… workshop definition YAML: connections entry contains unknown fields: "interface" at line 6, column 16`. **Before 0.9.9 there was no such check**: a typo'd key in `workshop.yaml` was silently ignored, and the symptom was the *effect* going missing (an SDK not installed, a connection never proposed) — so on a 0.9.8 host, don't promise an error that won't come. SDK YAML (an in-project `sdk.yaml`, a sketch SDK) has been strict since 0.9.2; its wording is in `references/in-project-sdk.md`. The published `reference/definition-files/schema.json` is the editor-side lint for workshop.yaml. Bad *values* (as opposed to keys) surface at `workshop launch` / `workshop refresh` time in both file kinds.
 </overview>
 
 <file_layout>
@@ -22,7 +22,7 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
 | `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted (0.9.8 included), but warns on every launch/refresh; removal is announced, not dated |
-| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/edge`). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key is silently ignored. See `references/runtime.md` |
+| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/candidate`, only `mount` and `secret` interfaces). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key fails as an unknown field since 0.9.9 (0.9.8 silently ignored it). See `references/runtime.md` |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |
 | `actions` | optional | map | Named bash scripts invoked via `workshop run` |
@@ -232,4 +232,5 @@ After `workshop refresh`, run: `workshop connect <workshop>/<consumer-sdk>:svc <
 - `how-to/customize-workshops/add-mounts.md`
 - `how-to/customize-workshops/forward-ports.md`
 - `how-to/develop-with-workshops/provide-secrets.md` (the `secret` slot)
+- `release-notes/v0.9.9.md` (unknown fields in a workshop definition rejected, naming line and column)
 </source_docs>

@@ -30,13 +30,15 @@ feasibility verdicts, and toolchain-to-action mapping.
 Ask the user (only what isn't obvious):
 - What base OS? (`ubuntu@22.04`, `24.04`, `26.04` — default to `24.04` if no preference. `ubuntu@20.04` is deprecated since 0.9.7: still accepted, but it warns on every launch/refresh and its removal is announced — don't offer it.)
 - What tools/runtimes do they need inside?
-- Runtime: **don't ask.** Default to a container silently. Only raise `runtime: lxd-vm` if the user asks for it or states a need a container can't meet (running LXD inside the workshop, a harder kernel boundary) — and then read `references/runtime.md` first, because a VM is experimental, needs a snap opt-in, cannot carry SDKs without a host-wide switch to LXD `6/edge`, and still leaves `/project` writable and the network open.
+- Runtime: **don't ask.** Default to a container silently. Only raise `runtime: lxd-vm` if the user asks for it or states a need a container can't meet (running LXD inside the workshop, a harder kernel boundary) — and then read `references/runtime.md` first, because a VM is experimental, needs a snap opt-in, cannot carry SDKs without a host-wide switch to LXD `6/candidate`, supports only `mount` and `secret` interfaces, and still leaves `/project` writable and the network open.
 
 For each tool, find a published SDK:
 ```
 sdk find <keyword>     # or `workshop.sdk find <keyword>` if `sdk` isn't on PATH
 sdk info <name>        # confirms channels and supported bases
 ```
+
+Run the lookup even when the base image already ships the tool (Python 3 on `ubuntu@24.04`, for example): a published SDK pins the version and brings its caches, mounts, and health check, which the base package doesn't. Choose a base-only definition only after the lookup comes back empty or unsuitable, and say that's why.
 
 (See `references/command-cheatsheet.md` `<sdk_cli_invocation>` for the full `sdk` vs `workshop.sdk` resolution rule.)
 
