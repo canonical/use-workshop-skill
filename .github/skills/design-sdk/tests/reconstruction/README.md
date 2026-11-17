@@ -29,14 +29,33 @@ is never re-run, so its rates are not comparable with the suite's pinned
   because reference `main` branches are template branches), renovate
   datasource, README/CI presence. Every expectations file is calibrated so
   the reference repo itself passes its own scorecard.
-- **Offline tier only.** Generate-and-stop: no sdkcraft, no workshop, no
-  network. What the try loop would verify is reported, not run.
+- **Two tiers.** `offline` (default) is generate-and-stop: no sdkcraft, no
+  workshop, no network; what the try loop would verify is reported, not
+  run. `full` (`--tier full`, `make eval-reconstruction-full`) also lets
+  the agent run the skill's iterate loop — pack, `sdkcraft try`, a test
+  workshop named exactly `recon-<sdk>` — and then the **harness** runs each
+  expectations file's `online_checks` against that workshop
+  (`_testlib/behavior-checks.js`: command on PATH, user service active,
+  tunnel answering, a mount surviving `workshop refresh` with a control
+  file proving the refresh really reset the container) before tearing it
+  down. The agent's own success claims go to the rubric; only the harness
+  checks set `"behavioral_pass"`. The agent gets no general `curl`/`git`,
+  so it cannot fetch the published reference. Real LXD, Store and upstream
+  downloads, ~15-40 min per SDK, concurrency forced to 1, local only.
+  ollama-sdk needs a GPU host for its `gpu` plug. The install-and-assert
+  idea comes from rascheel/snap-packager-skill-test.
+- **Non-interactive.** Both tiers run the candidate with
+  `--disallowedTools AskUserQuestion,ScheduleWakeup,CronCreate` and an
+  appended directive (`_testlib/claude-cli-core.js` `nonInteractiveArgs`)
+  that makes it decide by the skill's own defaults and list every such
+  choice under `## Decisions`, which the config asserts.
 
 ## Running
 
 ```console
 $ make -C .. eval-reconstruction          # all three SDKs
 $ DESIGN_SDKS=uv-sdk make -C .. eval-reconstruction   # fail-fast: smallest first
+$ DESIGN_SDKS="uv-sdk claude-code-sdk" make -C .. eval-reconstruction-full   # online tier
 ```
 
 Knobs (see `run-sdk-reconstruction.sh`): `DESIGN_SDKS`, `DESIGN_SDK_ROOT`

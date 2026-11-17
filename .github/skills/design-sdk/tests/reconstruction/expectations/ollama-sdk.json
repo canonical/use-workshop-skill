@@ -16,5 +16,11 @@
   "min_ci_workflows": 1,
   "anywhere_token_groups": [
     { "name": "systemd user unit install", "any": ["systemctl --user"] }
+  ],
+  "_online_note": "Full tier only (--tier full): run by the harness against the launched recon-<sdk> workshop after the agent exits (_testlib/behavior-checks.js). Design-agnostic on purpose: they test what the brief asked for, not the reference's mount paths or unit names where the brief leaves those free.",
+  "online_checks": [
+    {"name": "ollama on PATH", "kind": "exec_ok", "cmd": "ollama --version"},
+    {"name": "ollama user service active", "kind": "service_active", "unit": "ollama", "timeout_s": 90},
+    {"name": "API answers inside the workshop", "kind": "exec_output_matches", "cmd": "curl -s http://127.0.0.1:11434/api/version", "regex": "\"version\""}
   ]
 }
