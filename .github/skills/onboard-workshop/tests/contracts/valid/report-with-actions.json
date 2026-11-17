@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "stage": "report",
+  "verdict": "PARTIAL",
+  "low_confidence": false,
+  "covered": [
+    {"need": "Node build", "construct": "node SDK (22/stable) + build action", "evidence": "package.json engines"}
+  ],
+  "gaps": [
+    {"need": "e2e tests", "why": "action stayed UNVERIFIED after 3 fix iterations", "workaround": null}
+  ],
+  "unverified": [],
+  "fallback_offered": null,
+  "actions": [
+    {"name": "build", "result": "PASS"},
+    {"name": "e2e", "result": "UNVERIFIED", "note": "Electron test host needs a display"}
+  ]
+}

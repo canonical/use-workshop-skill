@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0", "stage": "verdict", "verdict": "FULL", "low_confidence": false,
+  "covered": [], "gaps": [], "unverified": [], "fallback_offered": null,
+  "confidence_score": 0.9
+}

@@ -71,6 +71,31 @@ Next steps: commit the definition and .workshop/ SDK dirs (keep
 .workshop.lock gitignored); `workshop shell` to start working;
 IDE attach → use-workshop's ide-integration workflow.
 ```
+End the report with the final `onboarding-verdict` block
+(`references/capability-envelope.md` `<verdict_format>`), now with
+`"stage": "report"`, the verdict after any downgrade, every UNVERIFIED
+action carried into `gaps`, and one `actions` entry per row of the proof
+table:
+```json onboarding-verdict
+{
+  "schema_version": "1.0",
+  "stage": "report",
+  "verdict": "PARTIAL",
+  "low_confidence": false,
+  "covered": [
+    {"need": "Node build", "construct": "node SDK + build action", "evidence": "package.json"}
+  ],
+  "gaps": [
+    {"need": "e2e tests", "why": "action UNVERIFIED after 3 fix iterations", "workaround": null}
+  ],
+  "unverified": [],
+  "fallback_offered": null,
+  "actions": [
+    {"name": "build", "result": "PASS"},
+    {"name": "e2e", "result": "UNVERIFIED", "note": "Electron test host needs a display"}
+  ]
+}
+```
 </process>
 
 <verification>

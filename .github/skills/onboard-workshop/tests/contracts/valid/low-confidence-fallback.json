@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "stage": "verdict",
+  "verdict": "PARTIAL",
+  "low_confidence": true,
+  "covered": [],
+  "gaps": [
+    {"need": "licensed FPGA toolchain", "why": "manual licensed installer, no apt/Store/download path", "workaround": "install by hand inside a minimal workshop"}
+  ],
+  "unverified": [],
+  "fallback_offered": "accepted"
+}

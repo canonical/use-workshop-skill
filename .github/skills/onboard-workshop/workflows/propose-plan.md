@@ -80,7 +80,8 @@ UNVERIFIED. Proceed to `generate-definition.md` only on approval.
 
 <verification>
 - Verdict block emitted before any generation talk; format matches
-  `<verdict_format>` exactly.
+  `<verdict_format>` exactly, followed by its `json onboarding-verdict`
+  mirror (INFEASIBLE included).
 - Every SDK in the proposal is live-verified or explicitly tagged unverified.
 - Every question asked carried a recommendation.
 </verification>

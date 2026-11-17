@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "stage": "verdict",
+  "verdict": "PARTIAL",
+  "low_confidence": false,
+  "covered": [
+    {"need": "Python tests", "construct": "uv SDK + test action wrapping pytest", "evidence": "pyproject.toml"}
+  ],
+  "gaps": [
+    {"need": "macOS notarization", "why": "needs a macOS host", "workaround": null},
+    {"need": "GPU benchmarks", "why": "no GPU on this host", "workaround": "gpu plug on a GPU machine"}
+  ],
+  "unverified": [],
+  "fallback_offered": null
+}

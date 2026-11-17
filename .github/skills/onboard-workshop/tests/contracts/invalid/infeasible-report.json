@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0", "stage": "report", "verdict": "INFEASIBLE", "low_confidence": false,
+  "covered": [], "gaps": [{"need": "Xcode", "why": "macOS only", "workaround": null}], "unverified": [], "fallback_offered": null,
+  "actions": [{"name": "build", "result": "FAIL"}]
+}

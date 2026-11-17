@@ -153,6 +153,34 @@ Unverified:                    # omit when everything was confirmed live
 Fallback offered:              # only for low-confidence PARTIAL
 - minimal workshop (base + project mount only) — accepted | declined
 ```
+
+Directly under it — for every verdict, INFEASIBLE included — emit the same
+verdict as one machine-readable block, fenced exactly as
+` ```json onboarding-verdict `. It mirrors the block above line for line
+(no new facts, no omissions) and follows
+`references/onboarding-verdict.schema.json`: `stage` is `"verdict"`;
+`gaps` is empty for FULL and non-empty for PARTIAL; `workaround` is `null`
+for "none"; `fallback_offered` is `null` unless a low-confidence PARTIAL
+offered the fallback. It goes in the chat only — never write it to a file.
+
+```json onboarding-verdict
+{
+  "schema_version": "1.0",
+  "stage": "verdict",
+  "verdict": "PARTIAL",
+  "low_confidence": false,
+  "covered": [
+    {"need": "Go build and test", "construct": "go SDK + build/test actions", "evidence": "go.mod, Makefile"}
+  ],
+  "gaps": [
+    {"need": "macOS release signing", "why": "needs a macOS host", "workaround": null}
+  ],
+  "unverified": [
+    {"item": "go/1.24/stable", "confirm": "sdk info go"}
+  ],
+  "fallback_offered": null
+}
+```
 </verdict_format>
 
 <worked_examples>

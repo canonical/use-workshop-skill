@@ -19,5 +19,7 @@
   ],
   "min_action_groups": 0,
   "_action_note": "NOT gated, deliberately. The maintainers' definition has no actions at all, so gating on them would fail an exact reproduction of the human answer — the wrong outcome for a human-vs-machine comparison. The groups stay listed so `action_groups_satisfied` records whether the skill wrapped the Makefile anyway (SKILL.md principle 5 says it should); that surplus is judged by the rubric and in the comparison report, not here.",
-  "gitignore_lock": true
+  "gitignore_lock": true,
+  "expected_verdict_any": ["FULL", "PARTIAL"],
+  "_verdict_note": "The maintainers onboarded this repo, so INFEASIBLE is wrong; FULL vs PARTIAL is a judgement on out-of-loop needs and both pass. Read from the onboarding-verdict JSON mirror (references/onboarding-verdict.schema.json)."
 }

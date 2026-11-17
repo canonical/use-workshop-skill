@@ -17,6 +17,17 @@
       value:
         - INFEASIBLE
         - infeasible
+    # The machine-readable mirror says the same (schema:
+    # references/onboarding-verdict.schema.json), in chat — not on disk.
+    - type: javascript
+      value: |
+        const blocks = [...output.matchAll(/```[ \t]*json[ \t]+onboarding-verdict[ \t]*\n([\s\S]*?)```/g)];
+        if (!blocks.length) return { pass: false, score: 0, reason: 'no ```json onboarding-verdict block' };
+        let doc;
+        try { doc = JSON.parse(blocks[blocks.length - 1][1]); }
+        catch (e) { return { pass: false, score: 0, reason: 'block is not valid JSON: ' + e.message }; }
+        const ok = doc.verdict === 'INFEASIBLE' && doc.stage === 'verdict';
+        return { pass: ok, score: ok ? 1 : 0, reason: 'mirror verdict=' + doc.verdict + ' stage=' + doc.stage };
     # Nothing was generated: the harness's GENERATED FILES capture is empty.
     - type: contains
       value: "--- GENERATED FILES ---\n(none)"

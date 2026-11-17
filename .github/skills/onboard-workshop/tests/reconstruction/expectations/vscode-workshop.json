@@ -14,5 +14,7 @@
     { "name": "test-headless", "any": ["xvfb-run"] }
   ],
   "min_action_groups": 3,
-  "gitignore_lock": true
+  "gitignore_lock": true,
+  "expected_verdict_any": ["FULL", "PARTIAL"],
+  "_verdict_note": "The maintainers onboarded this repo, so INFEASIBLE is wrong; FULL vs PARTIAL is a judgement on out-of-loop needs and both pass. Read from the onboarding-verdict JSON mirror (references/onboarding-verdict.schema.json)."
 }

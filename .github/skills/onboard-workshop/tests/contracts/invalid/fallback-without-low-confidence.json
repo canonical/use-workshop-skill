@@ -1,0 +1,4 @@
+{
+  "schema_version": "1.0", "stage": "verdict", "verdict": "PARTIAL", "low_confidence": false,
+  "covered": [], "gaps": [{"need": "x", "why": "y", "workaround": null}], "unverified": [], "fallback_offered": "declined"
+}

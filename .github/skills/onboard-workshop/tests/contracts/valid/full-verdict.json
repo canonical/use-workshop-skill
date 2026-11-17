@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "stage": "verdict",
+  "verdict": "FULL",
+  "low_confidence": false,
+  "covered": [
+    {"need": "Go build", "construct": "go SDK (1.24/stable) + build action", "evidence": "go.mod"},
+    {"need": "lint", "construct": "lint action wrapping golangci-lint run", "evidence": ".golangci.yml"}
+  ],
+  "gaps": [],
+  "unverified": [
+    {"item": "go/1.24/stable", "confirm": "sdk info go"}
+  ],
+  "fallback_offered": null
+}

@@ -1,0 +1,4 @@
+{
+  "schema_version": "1.0", "stage": "verdict", "verdict": "PARTIAL", "low_confidence": false,
+  "covered": [], "gaps": [{"need": "GPU benchmarks", "workaround": null}], "unverified": [], "fallback_offered": null
+}
