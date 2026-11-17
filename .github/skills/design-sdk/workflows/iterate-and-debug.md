@@ -75,7 +75,12 @@ as the right user (`setup-project` runs as `workshop`; root hooks may need
 `sudo -u workshop --login` for user-context probes). Quote the failing
 `workshop tasks` output in the report — never summarize from memory. Put
 the failure in exactly one class below before touching the source; each
-class has its own fix budget, counted across the whole session:
+class has its own fix budget, counted across the whole session — and fixes
+the user already tried and reports to you count against it. A user who
+says the same error came back after their fixes has spent that budget:
+answer with the Blocked report below (your best hypothesis and the check
+that would confirm it go inside it), not with another fix-and-refresh
+recipe.
 
 | Class | Evidence | Fix route | Cap |
 |---|---|---|---|
