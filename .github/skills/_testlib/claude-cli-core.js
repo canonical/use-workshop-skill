@@ -79,6 +79,39 @@ function resolveAuth(maxBudgetUsd) {
   };
 }
 
+// --------------------------------------------------------------------------
+// Non-interactive mode (agentic + reconstruction candidates; never the judge
+// or the tool-less routing candidate)
+// --------------------------------------------------------------------------
+//
+// An unattended run has no one to answer a question, so "assume I accept
+// every recommendation" in the task prompt is not enough on its own: the
+// tools that wait for a human (or for a later turn) are denied at the CLI,
+// and a directive appended to the system prompt says how to decide instead
+// and makes every decision auditable in a `## Decisions` section the
+// rubric can read. Pattern borrowed from rascheel/snap-packager-skill-test
+// (its NONINTERACTIVE_DIRECTIVE + --disallowedTools).
+
+const NONINTERACTIVE_DISALLOWED = ['AskUserQuestion', 'ScheduleWakeup', 'CronCreate'];
+
+const NONINTERACTIVE_DIRECTIVE = [
+  'You are running unattended: no human will read or answer anything until the run ends.',
+  '- Never ask a question and never wait for a reply. At every step where a loaded skill says to ask, confirm, or wait for approval, decide yourself using that skill\'s own stated criteria and defaults, then continue.',
+  '- The user\'s instruction to assume they accept every recommendation is their acknowledgment of any PARTIAL feasibility verdict or design proposal. A verdict or stop condition that ends the run (for example INFEASIBLE, or a blocked report) still ends it.',
+  '- Do not end your turn while a build, launch, refresh, or other command you started is still running; wait for it and report its outcome.',
+  '- End your final report with a section headed exactly `## Decisions`: one line per decision you took in place of asking, formatted `<decision> — <choice> — <why>`. Write `- none` if you took no such decision.',
+].join('\n');
+
+// Returns the argv fragment. --disallowedTools is variadic, so the list is
+// passed as ONE comma-joined token and is immediately followed by another
+// flag; callers spread this before --allowedTools / the positional prompt.
+function nonInteractiveArgs() {
+  return [
+    '--disallowedTools', NONINTERACTIVE_DISALLOWED.join(','),
+    '--append-system-prompt', NONINTERACTIVE_DIRECTIVE,
+  ];
+}
+
 // In subscription mode a sandbox carries an explicit project settings file so
 // `--setting-sources project` resolves to a known-empty config (no hooks, no
 // plugins) rather than to nothing at all.
@@ -405,6 +438,8 @@ function teardownWorkshops(cwd, names) {
 module.exports = {
   authMode,
   resolveAuth,
+  nonInteractiveArgs,
+  NONINTERACTIVE_DIRECTIVE,
   writeSandboxSettings,
   spawnClaude,
   runCmd,

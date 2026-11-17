@@ -113,6 +113,7 @@ class OnboardReconstructionProvider {
       '--verbose',
       '--model', model,
       ...auth.isolationArgs,
+      ...core.nonInteractiveArgs(),
       '--permission-mode', 'acceptEdits',
       '--allowedTools', ...allowedTools,
       '--no-session-persistence',
@@ -131,12 +132,30 @@ class OnboardReconstructionProvider {
     const { transcriptText, digest } = core.flattenStream(transcriptPath);
     const stderrText = core.readSafe(stderrPath, 4_000);
 
+    // Verdict hand-off: extract + schema-check the last onboarding-verdict
+    // block (check-contracts.py exits 1 on an invalid/missing block but
+    // still prints its JSON result, which is all we need here).
+    const flatPath = path.join(sandbox, 'transcript.txt');
+    const verdictPath = path.join(sandbox, 'verdict-check.json');
+    fs.writeFileSync(flatPath, transcriptText);
+    const vc = spawnSync('python3', [
+      path.join(here, '..', '..', '..', '_testlib', 'check-contracts.py'),
+      '--schema', path.join(here, '..', '..', 'references', 'onboarding-verdict.schema.json'),
+      '--transcript', flatPath,
+      '--fence', 'onboarding-verdict',
+    ], { encoding: 'utf8', timeout: 60_000 });
+    const verdictCheck = (vc.stdout || '').trim() ||
+      JSON.stringify({ verdict_valid: false, found: false, document: null,
+        errors: ['check-contracts.py failed: ' + (vc.stderr || vc.error || 'unknown')] });
+    fs.writeFileSync(verdictPath, verdictCheck);
+
     // Scorecard: deterministic comparison against the parked ground truth.
     const expFile = path.join(here, 'expectations', `${repoName}.json`);
     const cmpArgs = [
       path.join(here, 'compare-definition.py'),
       '--repo-dir', repoDir,
       '--ground-truth', gtDir,
+      '--verdict-json', verdictPath,
     ];
     if (fs.existsSync(expFile)) {
       cmpArgs.push('--expectations', expFile);
@@ -159,6 +178,7 @@ class OnboardReconstructionProvider {
       transcriptText +
       '\n\n--- GENERATED FILES ---\n' + generated +
       '\n\n--- GROUND TRUTH (hidden from the agent) ---\n' + groundTruth +
+      '\n\n--- VERDICT JSON CHECK ---\n' + verdictCheck +
       '\n\n--- SCORECARD ---\n```json\n' + scorecard + '\n```\n' +
       (timedOut ? '\n[harness] timed out after ' + timeoutMs + 'ms\n' : '') +
       (stderrText ? '\n--- claude stderr (tail) ---\n' + stderrText + '\n' : '');
