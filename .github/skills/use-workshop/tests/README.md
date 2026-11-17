@@ -34,7 +34,7 @@ diffing a run's summary against its baseline row before merging.
   in (`copilot login`) and the SDK installed once per checkout with
   `make eval-deps` (repo-root `package.json`). It draws on the account's
   monthly premium allowance; the preflight prints what is left.
-- For the suspended GLM lane only (`make eval-routing-glm`):
+- For the GLM lane only (`make eval-routing-glm`):
   `OPENROUTER_API_KEY`, which covers both the GLM-5.2 candidate and the
   `gpt-5.5` judge pinned in `promptfooconfig.yaml`.
 - For the agentic suite only: a working `workshop`, `lxc`, `claude`,
@@ -50,7 +50,7 @@ make check-yaml-keys            # lint skill YAML snippets/templates against the
 make update-docs-manifest       # regenerate docs-manifest.txt + allowed-keys.json (needs WORKSHOP_REPO; maintainer-only)
 make eval-routing               # routing gate: Sonnet 4.6 via the claude CLI subscription lane ($0)
 make eval-routing-copilot       # cross-vendor run: gpt-6.1-sol via the Copilot login (premium allowance)
-make eval-routing-glm           # SUSPENDED former gate: GLM-5.2 via OpenRouter
+make eval-routing-glm           # paid cross-vendor run: GLM-5.2 via OpenRouter
 make eval-agentic               # agentic E2E suite (slow, real LXD)
 make eval-deps                  # install the Copilot SDK (once per checkout)
 make eval-bundle                # regenerate skill-bundle.md from current sources
@@ -97,13 +97,13 @@ local claude judge, so their rows differ by candidate model only.
   ~108 AI credits, where a `gpt-5.6-sol` smoke run got no cache hits and
   cost ~25 AI credits per case (see `BASELINE.md` for measured runs). The summary's
   `meta.copilot` block records the real spend; `cost_usd` stays 0.
-- **Suspended — `make eval-routing-glm`.** The former gate: GLM-5.2 plus the
-  `gpt-5.5` judge via OpenRouter (`promptfooconfig.yaml`, ~$1.41/run). The
-  OpenRouter budget ran out in October 2026. The config, the diagnostic tiers
-  and `eval-routing-sweep` stay in place so the lane can resume; its last pin
-  is in `BASELINE.md`.
+- **Paid cross-vendor — `make eval-routing-glm`.** GLM-5.2 plus the
+  `gpt-5.5` judge via OpenRouter (`promptfooconfig.yaml`, ~$1.41/run). It was
+  the gate until 2026-10-19, was suspended while the OpenRouter budget was
+  gone, and resumed on 2026-11-17 as a cross-vendor row beside the Sonnet
+  gate. `eval-routing-sweep` runs the diagnostic tiers.
 
-Rules of the road for the HTTP lane, when it runs again:
+Rules of the road for the HTTP lane:
 
 - **Declared-only.** A `--provider` id must be declared in
   `promptfooconfig.yaml`; an unknown id is a hard error (it would

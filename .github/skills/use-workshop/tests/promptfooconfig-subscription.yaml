@@ -7,7 +7,7 @@ description: |
   subscription login (the gate, $0) and a GPT model via the Copilot login (the
   cross-vendor run). run-routing.sh --subscription / --copilot filters to one.
   Both are tool-less and single-turn, and both are graded by the local claude
-  judge. The GLM-5.2 HTTP config is suspended (no OpenRouter budget).
+  judge. The GLM-5.2 HTTP lane lives in promptfooconfig.yaml.
 
   NOTE: keep the prompts/tests/defaultTest.vars sections in sync with
   promptfooconfig.yaml — the two configs must run the same suite.

@@ -38,8 +38,8 @@ help:
 	@echo "  eval-routing             the routing gate: Sonnet via the local claude CLI login + local judge (\$$0, no keys)"
 	@echo "  eval-routing-subscription  alias of eval-routing"
 	@echo "  eval-routing-copilot     cross-vendor run: gpt-6.1-sol via the local Copilot login + local claude judge (premium allowance)"
-	@echo "  eval-routing-glm         SUSPENDED former gate: GLM-5.2 via OpenRouter (needs OPENROUTER_API_KEY)"
-	@echo "  eval-routing-sweep       SUSPENDED diagnostic sweep over the OpenRouter tiers (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-glm         paid cross-vendor run: GLM-5.2 via OpenRouter (needs OPENROUTER_API_KEY)"
+	@echo "  eval-routing-sweep       diagnostic sweep over the OpenRouter tiers (needs OPENROUTER_API_KEY)"
 	@echo "  eval-agentic             run agentic E2E suite (slow, real LXD)"
 	@echo "  eval-clean               remove the generated skill-bundle.md and raw/ outputs"
 
@@ -96,13 +96,14 @@ eval-routing-subscription:
 eval-routing-copilot:
 	bash $(ROUTING_SH) --copilot
 
-# SUSPENDED (no OpenRouter budget since 2026-10-19): the former pinned gate,
-# GLM-5.2 via OpenRouter with the gpt-5.5 judge (~$1.41/run). Kept runnable so
-# the lane can resume; see TESTING.md.
+# Lane 1 (resumed 2026-11-17 after a budget suspension from 2026-10-19):
+# GLM-5.2 via OpenRouter with the gpt-5.5 judge (~$1.41/run), the paid
+# cross-vendor routing row; the Sonnet subscription row stays the gate. See
+# TESTING.md.
 eval-routing-glm:
 	bash $(ROUTING_SH) --provider openrouter:z-ai/glm-5.2
 
-# SUSPENDED with eval-routing-glm (OpenRouter).
+# Lane 1 (OpenRouter), like eval-routing-glm.
 # Diagnostic sweep over every provider still declared in promptfooconfig.yaml:
 # the GLM family plus MiniMax-M2.7 (the documented runner-up candidate, kept
 # so a GLM deprecation has a measured fallback). run-sweep.sh CONTINUES past

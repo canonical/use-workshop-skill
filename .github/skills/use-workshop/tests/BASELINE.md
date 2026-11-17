@@ -99,9 +99,9 @@ surface. Every case is single-turn against the bundled skill (`SKILL.md` +
 every reference + every workflow concatenated). Run with: `make
 eval-routing` (Sonnet 4.6 via the claude CLI subscription lane, $0 — the
 gate since 2026-10-19), `make eval-routing-copilot` (`gpt-6.1-sol` via the
-Copilot SDK, same local judge — the cross-vendor run), or, while the
-OpenRouter budget is gone, not at all: `make eval-routing-glm` /
-`make eval-routing-sweep` (the suspended GLM gate and its diagnostics).
+Copilot SDK, same local judge — the cross-vendor run), or
+`make eval-routing-glm` / `make eval-routing-sweep` (the GLM lane and its
+diagnostics; suspended 2026-10-19..2026-11-17, resumed since).
 
 > **The gate moved twice.** Off Anthropic on 2026-08-13 (candidate and judge
 > both through OpenRouter — see *Gate model change* below), then off
