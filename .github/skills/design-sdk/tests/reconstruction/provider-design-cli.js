@@ -123,6 +123,10 @@ class DesignReconstructionProvider {
     const transcriptPath = path.join(sandbox, 'transcript.jsonl');
     const stderrPath = path.join(sandbox, 'stderr.log');
 
+    // Full tier builds into the shared try area (keyed by SDK name): keep the
+    // maintainer's own try builds safe (claude-cli-core.js snapshotTryArea).
+    const trySnap = tier === 'full' ? core.snapshotTryArea() : null;
+
     const claudeArgs = [
       '-p',
       '--output-format', 'stream-json',
@@ -176,7 +180,7 @@ class DesignReconstructionProvider {
       try {
         checks = (JSON.parse(fs.readFileSync(expFile, 'utf8')).online_checks) || [];
       } catch (_) { /* no expectations → no checks; reported below */ }
-      behaviorSummary = behavior.runBehaviorChecks(workshopName, checks);
+      behaviorSummary = behavior.runBehaviorChecks(workshopName, checks, { sdkDir: repoDir });
       const owner = behavior.findWorkshop(workshopName);
       const projectDir = (owner && owner.project) || repoDir;
       const state = core.captureWorkshopState(projectDir, [workshopName]);
@@ -189,6 +193,7 @@ class DesignReconstructionProvider {
         ((state.per_workshop[workshopName] || {}).info || {}).stdout + '\n';
       cleanupError = core.teardownWorkshops(projectDir, [workshopName]);
     }
+    const tryRestore = trySnap ? core.restoreTryArea(trySnap) : null;
 
     const output =
       transcriptText +
@@ -208,6 +213,7 @@ class DesignReconstructionProvider {
         tier,
         behavioral_pass: behaviorSummary ? behaviorSummary.behavioral_pass : null,
         cleanup_error: cleanupError,
+        try_area_restore: tryRestore,
         exit_code: exitCode,
         timed_out: timedOut,
         duration_ms: durationMs,

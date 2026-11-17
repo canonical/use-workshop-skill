@@ -1,0 +1,471 @@
+{
+  "meta": {
+    "generated_at": "2026-11-17T21:00:15+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "claude-cli",
+    "total_cases": 63,
+    "passed": 62,
+    "failed": 1,
+    "errors": 0,
+    "pass_rate": 0.9841,
+    "tokens": {
+      "total": 2466910,
+      "prompt": 2412551,
+      "completion": 54359,
+      "cached": 2286350
+    },
+    "cost_usd": 2.2264
+  },
+  "cases": [
+    {
+      "description": "analyze verb stops at the verdict without asking which path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20535,
+      "cost": 0.29031
+    },
+    {
+      "description": "onboard verb commits to the full chain",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21761,
+      "cost": 0.290943
+    },
+    {
+      "description": "verify verb goes straight to launch-and-verify",
+      "passed": false,
+      "score": 0.7,
+      "latency_ms": 16914,
+      "cost": 0.027818,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response goes straight to verification of the freshly\ngenerated definition: launch, the verification triplet, and the\naction proof loop \u2014 not a new analysis or proposal pass. With\nno prior context in this single-turn setting, explicitly\nrouting to launch-and-verify and asking for the missing context\nthe proof loop needs (project path, workshop name, current\nworkshop status, which actions were generated) before launching\nis acceptable; re-analyzing, re-proposing, or re-opening the\nintake menu is not.\n",
+          "passed": false,
+          "reason": "The response correctly routes to launch-and-verify and presents the full verification sequence (launch, verification triplet, action proof loop) in Option A, which satisfies the core requirement. However, Option B explicitly re-opens the intake menu by offering to redirect to `onboard` (analyze \u2192 propose \u2192 generate \u2192 verify) or `generate`, which the rubric explicitly prohibits. Additionally, the response does not ask for the specific missing context items the proof loop needs (project path, work"
+        }
+      ],
+      "failure_reason": "The response correctly routes to launch-and-verify and presents the full verification sequence (launch, verification triplet, action proof loop) in Option A, which satisfies the core requirement. However, Option B explicitly re-opens the intake menu by offering to redirect to `onboard` (analyze \u2192 propose \u2192 generate \u2192 verify) or `generate`, which the rubric explicitly prohibits. Additionally, the response does not ask for the specific missing context items the proof loop needs (project path, work"
+    },
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 32768,
+      "cost": 0.03785
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 23683,
+      "cost": 0.031859
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17192,
+      "cost": 0.026603
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23802,
+      "cost": 0.030023
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17740,
+      "cost": 0.026798
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22470,
+      "cost": 0.031091
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24995,
+      "cost": 0.032345
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19718,
+      "cost": 0.030425
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 21602,
+      "cost": 0.030806
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 41995,
+      "cost": 0.049517
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11573,
+      "cost": 0.022364
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16870,
+      "cost": 0.024911
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 31642,
+      "cost": 0.036794
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18951,
+      "cost": 0.028115
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 58655,
+      "cost": 0.061442
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13977,
+      "cost": 0.025433
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 37226,
+      "cost": 0.04385
+    },
+    {
+      "description": "User asks the onboarded definition to be a VM workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 37650,
+      "cost": 0.04022
+    },
+    {
+      "description": "INFEASIBLE verdict carries its onboarding-verdict JSON mirror",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27553,
+      "cost": 0.038549
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23657,
+      "cost": 0.032117
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16971,
+      "cost": 0.026918
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8708,
+      "cost": 0.020933
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 41237,
+      "cost": 0.050207
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21716,
+      "cost": 0.028982
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21314,
+      "cost": 0.030863
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 31386,
+      "cost": 0.04292
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10443,
+      "cost": 0.022661
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14447,
+      "cost": 0.024845
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20185,
+      "cost": 0.02951
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 47483,
+      "cost": 0.051833
+    },
+    {
+      "description": "JVM repo maps to openjdk plus the matching build-tool SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19104,
+      "cost": 0.029792
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23909,
+      "cost": 0.035717
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27510,
+      "cost": 0.036671
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6583,
+      "cost": 0.019421
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8241,
+      "cost": 0.021473
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14319,
+      "cost": 0.025727
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22271,
+      "cost": 0.02957
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 33053,
+      "cost": 0.042998
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13610,
+      "cost": 0.024401
+    },
+    {
+      "description": "A repo that needs an API key gets the variable name, never a value (0.9.8)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 61463,
+      "cost": 0.067412
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18308,
+      "cost": 0.027017
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8526,
+      "cost": 0.021467
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14761,
+      "cost": 0.026042
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25671,
+      "cost": 0.034841
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18767,
+      "cost": 0.028496
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 2972,
+      "cost": 0.003543
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3117,
+      "cost": 0.003342
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5198,
+      "cost": 0.005097
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3430,
+      "cost": 0.003465
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4033,
+      "cost": 0.003474
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3172,
+      "cost": 0.003315
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4551,
+      "cost": 0.004545
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3475,
+      "cost": 0.003546
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3781,
+      "cost": 0.003606
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3297,
+      "cost": 0.00363
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 3804,
+      "cost": 0.004551
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13109,
+      "cost": 0.02483
+    },
+    {
+      "description": "sdkcraft publishing routes to the design-sdk sibling",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12167,
+      "cost": 0.023786
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10274,
+      "cost": 0.022913
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9333,
+      "cost": 0.021821
+    }
+  ]
+}

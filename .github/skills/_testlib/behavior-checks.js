@@ -18,10 +18,12 @@
 //   wait_for_port           {port, host=127.0.0.1, timeout_s=60}  host-side TCP connect
 //   persists_across_refresh {write_cmd, read_cmd, regex,
 //                            control_write_cmd?, control_read_cmd?}
-//       write, `workshop refresh`, read back. The optional control pair
-//       writes OUTSIDE any mount and must be GONE after the refresh; if it
-//       survived, the refresh did not reset the writable filesystem and the
-//       check reports `inconclusive` rather than a false pass.
+//       write, force an APPLIED `workshop refresh` (see the kind's comment:
+//       needs ctx.sdkDir), read back. The optional control pair writes
+//       OUTSIDE any mount and must be GONE after the refresh; if it survived,
+//       the refresh did not reset the writable filesystem and the check is
+//       `inconclusive`. Inconclusive results count as FAILED in
+//       behavioral_pass — an unproven claim is not a pass.
 //
 // Everything is synchronous (spawnSync + a blocking sleep): it runs once
 // per case after the agent, so simplicity beats parallelism.
@@ -29,7 +31,9 @@
 'use strict';
 
 const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
 const os = require('node:os');
+const path = require('node:path');
 
 function sleepMs(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -114,19 +118,52 @@ const KINDS = {
     });
   },
 
-  persists_across_refresh(c, ws, project) {
+  persists_across_refresh(c, ws, project, ctx = {}) {
     const w = wsExec(ws, project, c.write_cmd);
     if (w.status !== 0) return { ok: false, detail: `write failed rc=${w.status} ${tail(w.out)}` };
     if (c.control_write_cmd) wsExec(ws, project, c.control_write_cmd);
-    const ref = run('workshop', ['refresh', ws], { cwd: project, timeoutMs: 900_000 });
+    // An unchanged workshop answers `workshop refresh` with "no updates
+    // available" and touches nothing, so the refresh must APPLY to prove a
+    // mount. Verified 2026-11-17 on Workshop 0.9.9: a definition-only edit
+    // (actions:) does not count either, but a new try revision does, and a
+    // hook-body change is enough for one (plain `sdkcraft try`, cached parts).
+    // So: append a comment to one of the agent's hooks, re-try, refresh,
+    // and always put the hook back.
+    let restore = null;
+    if (ctx.sdkDir) {
+      const hooksDir = path.join(ctx.sdkDir, 'hooks');
+      let hook = null;
+      try {
+        hook = fs.readdirSync(hooksDir).sort().map(f => path.join(hooksDir, f))
+          .find(f => fs.statSync(f).isFile());
+      } catch (_) { /* no hooks dir */ }
+      if (!hook) return { ok: false, inconclusive: true, detail: 'cannot force an applied refresh: the SDK has no hook file to touch' };
+      const original = fs.readFileSync(hook);
+      restore = () => fs.writeFileSync(hook, original);
+      fs.appendFileSync(hook, '\n# recon-refresh-probe (harness; reverted after the check)\n');
+      const tr = run('sdkcraft', ['try'], { cwd: ctx.sdkDir, timeoutMs: 1_800_000 });
+      if (tr.status !== 0) {
+        restore();
+        return { ok: false, inconclusive: true, detail: `sdkcraft try for the forced refresh failed rc=${tr.status} ${tail(tr.out)}` };
+      }
+    }
+    let ref;
+    try {
+      ref = run('workshop', ['refresh', ws], { cwd: project, timeoutMs: 900_000 });
+    } finally {
+      if (restore) restore();
+    }
     if (ref.status !== 0) return { ok: false, detail: `workshop refresh failed rc=${ref.status} ${tail(ref.out)}` };
+    if (/no updates available/i.test(ref.out)) {
+      return { ok: false, inconclusive: true, detail: 'refresh did not apply ("no updates available"), so nothing was proven' };
+    }
     const r = wsExec(ws, project, c.read_cmd);
     const kept = r.status === 0 && new RegExp(c.regex, 'm').test(r.out);
     if (!kept) return { ok: false, detail: `lost across refresh: rc=${r.status} ${tail(r.out)}` };
     if (c.control_read_cmd) {
       const ctl = wsExec(ws, project, c.control_read_cmd);
       if (ctl.status === 0) {
-        return { ok: true, inconclusive: true, detail: 'kept, but the control file outside the mount also survived — refresh did not reset the writable filesystem' };
+        return { ok: false, inconclusive: true, detail: 'kept, but the control file outside the mount also survived — refresh did not reset the writable filesystem' };
       }
     }
     return { ok: true, detail: 'kept across refresh' };
@@ -135,7 +172,9 @@ const KINDS = {
 
 // Returns { behavioral_pass, workshop, project, status, results[] }.
 // behavioral_pass is null when there were no checks to run.
-function runBehaviorChecks(workshopName, checks) {
+// ctx.sdkDir: the agent's SDK source (where sdkcraft.yaml lives), needed by
+// persists_across_refresh to force an applied refresh.
+function runBehaviorChecks(workshopName, checks, ctx = {}) {
   const summary = { behavioral_pass: null, workshop: workshopName, project: null, status: null, results: [] };
   if (!Array.isArray(checks) || checks.length === 0) return summary;
   const found = findWorkshop(workshopName);
@@ -155,7 +194,7 @@ function runBehaviorChecks(workshopName, checks) {
     const fn = KINDS[c.kind];
     let res;
     try {
-      res = fn ? fn(c, workshopName, found.project) : { ok: false, detail: `unknown check kind '${c.kind}'` };
+      res = fn ? fn(c, workshopName, found.project, ctx) : { ok: false, detail: `unknown check kind '${c.kind}'` };
     } catch (e) {
       res = { ok: false, detail: `check threw: ${String(e && e.message || e)}` };
     }

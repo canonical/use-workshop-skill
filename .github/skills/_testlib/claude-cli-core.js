@@ -405,6 +405,72 @@ function captureWorkshopState(cwd, names) {
   return state;
 }
 
+// --------------------------------------------------------------------------
+// Try-area guard
+// --------------------------------------------------------------------------
+//
+// `sdkcraft try` writes ~/.local/share/workshop/try/<sdk>/, keyed by SDK
+// NAME — so an eval that builds "uv" silently replaces the maintainer's own
+// try build of uv. snapshotTryArea() hard-links the whole area into a
+// sibling backup dir (cheap, and always the same filesystem; `sdkcraft try`
+// replaces files rather than rewriting them, verified 2026-11-17, so the
+// links keep the old bytes) and restoreTryArea() puts every entry the run
+// created, changed or removed back the way it was.
+//
+// Only for serial runs (design-sdk full tier forces concurrency 1): a
+// restore during a concurrent run would revert another case's live build.
+
+const TRY_AREA = path.join(os.homedir(), '.local', 'share', 'workshop', 'try');
+
+function entrySignature(dir) {
+  try {
+    return fs.readdirSync(dir).sort()
+      .map(f => { const st = fs.statSync(path.join(dir, f)); return `${f}:${st.ino}:${st.size}`; })
+      .join('|');
+  } catch (_) { return null; }
+}
+
+function snapshotTryArea(backupDir = path.join(path.dirname(TRY_AREA), `.try-eval-backup-${process.pid}-${Date.now()}`)) {
+  const snap = { backupDir, entries: {}, error: null };
+  if (!fs.existsSync(TRY_AREA)) return snap;
+  fs.mkdirSync(backupDir, { recursive: true });
+  for (const name of fs.readdirSync(TRY_AREA)) {
+    const src = path.join(TRY_AREA, name);
+    const r = spawnSync('cp', ['-al', src, path.join(backupDir, name)], { encoding: 'utf8' });
+    if (r.status !== 0) {
+      snap.error = `cannot hard-link ${src} into ${backupDir}: ${(r.stderr || '').trim()}`;
+      return snap;
+    }
+    snap.entries[name] = entrySignature(src);
+  }
+  return snap;
+}
+
+// Returns a short report string (null when nothing needed restoring).
+function restoreTryArea(snap) {
+  if (!snap || snap.error) return snap && snap.error ? `try-area NOT restored: ${snap.error}` : null;
+  const actions = [];
+  const now = fs.existsSync(TRY_AREA) ? fs.readdirSync(TRY_AREA) : [];
+  for (const name of now) {
+    if (!(name in snap.entries)) {
+      fs.rmSync(path.join(TRY_AREA, name), { recursive: true, force: true });
+      actions.push(`removed new ${name}`);
+    } else if (entrySignature(path.join(TRY_AREA, name)) !== snap.entries[name]) {
+      fs.rmSync(path.join(TRY_AREA, name), { recursive: true, force: true });
+      fs.renameSync(path.join(snap.backupDir, name), path.join(TRY_AREA, name));
+      actions.push(`restored ${name}`);
+    }
+  }
+  for (const name of Object.keys(snap.entries)) {
+    if (!now.includes(name)) {
+      fs.renameSync(path.join(snap.backupDir, name), path.join(TRY_AREA, name));
+      actions.push(`restored removed ${name}`);
+    }
+  }
+  fs.rmSync(snap.backupDir, { recursive: true, force: true });
+  return actions.length ? actions.join(', ') : null;
+}
+
 // 1. Ask workshop to remove; 2. LXD-level prefix cleanup as a safety net for
 //    containers a half-failed launch leaves behind.
 function teardownWorkshops(cwd, names) {
@@ -451,4 +517,7 @@ module.exports = {
   parseListVar,
   captureWorkshopState,
   teardownWorkshops,
+  snapshotTryArea,
+  restoreTryArea,
+  TRY_AREA,
 };

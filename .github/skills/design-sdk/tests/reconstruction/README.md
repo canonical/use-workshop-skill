@@ -36,9 +36,15 @@ is never re-run, so its rates are not comparable with the suite's pinned
   workshop named exactly `recon-<sdk>` — and then the **harness** runs each
   expectations file's `online_checks` against that workshop
   (`_testlib/behavior-checks.js`: command on PATH, user service active,
-  tunnel answering, a mount surviving `workshop refresh` with a control
-  file proving the refresh really reset the container) before tearing it
-  down. The agent's own success claims go to the rubric; only the harness
+  tunnel answering, a mount surviving an applied `workshop refresh` with a
+  control file proving the refresh really reset the container) before
+  tearing it down. A refresh of an unchanged workshop is a no-op ("no
+  updates available"), so the mount check appends a comment to one of the
+  agent's hooks, re-runs `sdkcraft try`, refreshes, and restores the hook;
+  a refresh that still doesn't apply is reported inconclusive and fails.
+  The run snapshots `~/.local/share/workshop/try/` first (hard links) and
+  restores it afterwards, because `sdkcraft try` is keyed by SDK name and
+  would otherwise replace your own `uv`/`claude-code` try builds. The agent's own success claims go to the rubric; only the harness
   checks set `"behavioral_pass"`. The agent gets no general `curl`/`git`,
   so it cannot fetch the published reference. Real LXD, Store and upstream
   downloads, ~15-40 min per SDK, concurrency forced to 1, local only.
