@@ -69,13 +69,50 @@ output). Then hook-specific checks via `workshop exec`:
 - `check-health`: exercise the same probe by hand and compare.
 - state hooks: mutate → `workshop refresh` → confirm the state survived.
 
-**Step 5. On failure, investigate in place.** The workshop parks in
-`Waiting`: `workshop shell` in, run the failing hook body by hand — as the
-right user (`setup-project` runs as `workshop`; root hooks may need
+**Step 5. On failure, classify, then investigate in place.** The workshop
+parks in `Waiting`: `workshop shell` in, run the failing hook body by hand —
+as the right user (`setup-project` runs as `workshop`; root hooks may need
 `sudo -u workshop --login` for user-context probes). Quote the failing
-`workshop tasks` output in the report — never summarize from memory. Fix
-the SDK source, `workshop refresh --abort` (or `workshop launch --abort`)
-to release the parked workshop, back to Step 1.
+`workshop tasks` output in the report — never summarize from memory. Put
+the failure in exactly one class below before touching the source; each
+class has its own fix budget, counted across the whole session:
+
+| Class | Evidence | Fix route | Cap |
+|---|---|---|---|
+| pack/lint | `sdkcraft try` fails before the artifact lands: ShellCheck error, `$SDK` mount source missing from prime, interface linter, reserved name (anti-patterns 6, 8, 16) | Edit `sdkcraft.yaml` or the hook, Step 1 | 3 |
+| try staging | Artifact not in the try area, or the test workshop lists the wrong `try-` name | Fix the test definition or rerun `sdkcraft try`, Step 1–2 | 2 |
+| hook failure | Change parks in `Waiting` on `setup-base`/`setup-project`/a state hook | Reproduce by hand, fix the hook in the source, `--abort`, Step 1 (Step 6 for `setup-base`) | 3 |
+| health never ready | `check-health` ends in Error: ten `waiting` results, or a probe over 5 s | Fix the probe or the service unit, Step 1 | 2 |
+| connection/interface | A plug stays unconnected, a tunnel endpoint is wrong, a mount source is missing at connect time | Fix the plug/slot or the test `connections:`, Step 1 | 2 |
+
+Fixed an **external** cause instead (a transient Store or network hiccup
+that has since cleared)? Resume with `workshop refresh --continue` (or
+`workshop launch --continue`) rather than spending a try cycle; a source
+fix always goes through `--abort` and back to Step 1, because the
+definition can't change while a change is paused.
+
+**Stop — do not patch — and write the Blocked report when:**
+- a class reaches its cap, or the loop reaches 8 `sdkcraft try` cycles in
+  total;
+- the same error text comes back after that class's fix (the fix was a
+  guess — a second guess is not a plan);
+- the failure fits no class above;
+- the host toolchain is the problem — snapd, LXD, the Store, or the
+  network is unreachable, or a `workshop`/`sdkcraft` command fails before
+  any SDK code runs. Stop on the first occurrence and change no SDK file;
+  never `snap refresh`/`remove` (Step 0).
+
+Release any parked workshop with `--abort` first, then report:
+
+```
+## Blocked: <class>
+Attempts: <n> of <cap> for this class (<total> try cycles)
+Last failure (`workshop tasks <ID>`, verbatim):
+  <quoted output>
+Hypothesis: <one line — what you think is wrong and why>
+Tried: <one line per fix attempt>
+Next for the user: <the check or decision you can't make>
+```
 
 **Step 6. Respect setup-base semantics.** An applied refresh does NOT
 re-run `setup-base` — it reuses the post-setup-base snapshot. After editing
@@ -99,7 +136,9 @@ command via `workshop exec` before baking it into a hook, then this loop.
 - [ ] Failures were diagnosed from `workshop tasks` output quoted in the
       report.
 - [ ] setup-base edits went through remove+launch, not refresh.
-- [ ] The loop ended in either a healthy SDK or an explicit blocked report.
+- [ ] Every failure was put in one class, and no class exceeded its cap.
+- [ ] The loop ended in either a healthy SDK or a `## Blocked:` report in
+      the Step 5 shape.
 </verification>
 
 <anti_patterns>
@@ -109,6 +148,8 @@ command via `workshop exec` before baking it into a hook, then this loop.
   the artifact; a fix that lives only in the container evaporates on the
   next launch.
 - Guessing why a change failed instead of reading `workshop tasks <ID>`.
+- Retrying past a class cap, or patching the SDK for a host LXD/snapd/Store
+  failure.
 - Leaving a `--wait-on-error` workshop parked and starting another.
 - Calling the SDK done after a green build with no launch, or a launch with
   no health check.
