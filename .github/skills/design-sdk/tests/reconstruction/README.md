@@ -47,7 +47,9 @@ is never re-run, so its rates are not comparable with the suite's pinned
   would otherwise replace your own `uv`/`claude-code` try builds. The agent's own success claims go to the rubric; only the harness
   checks set `"behavioral_pass"`. The agent gets no general `curl`/`git`,
   so it cannot fetch the published reference. Real LXD, Store and upstream
-  downloads, ~15-40 min per SDK, concurrency forced to 1, local only.
+  downloads, ~25-45 min per SDK (the agent gets 45 min: uv-sdk's from-source
+  Rust build plus one detour overran 30 on 2026-11-18), concurrency forced
+  to 1, local only.
   ollama-sdk needs a GPU host for its `gpu` plug. The install-and-assert
   idea comes from rascheel/snap-packager-skill-test.
 - **Non-interactive.** Both tiers run the candidate with

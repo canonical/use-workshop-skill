@@ -108,7 +108,7 @@ class DesignReconstructionProvider {
 
     const model =
       vars.model || process.env.RECON_MODEL_OVERRIDE || cfg.model || 'claude-sonnet-5';
-    const timeoutMs = Number(vars.timeout_ms || cfg.agent_timeout_ms || (tier === 'full' ? 1_800_000 : 900_000));
+    const timeoutMs = Number(vars.timeout_ms || cfg.agent_timeout_ms || (tier === 'full' ? 2_700_000 : 900_000));
     const maxBudgetUsd = Number(vars.max_budget_usd || cfg.max_budget_usd || (tier === 'full' ? 8 : 3));
     const taskPrompt = vars.task || prompt;
     if (!taskPrompt || !String(taskPrompt).trim()) {
