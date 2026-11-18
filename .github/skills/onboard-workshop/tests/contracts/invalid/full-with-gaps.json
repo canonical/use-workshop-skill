@@ -1,0 +1,4 @@
+{
+  "schema_version": "1.0", "stage": "verdict", "verdict": "FULL", "low_confidence": false,
+  "covered": [], "gaps": [{"need": "docs", "why": "no Sphinx evidence", "workaround": null}], "unverified": [], "fallback_offered": null
+}

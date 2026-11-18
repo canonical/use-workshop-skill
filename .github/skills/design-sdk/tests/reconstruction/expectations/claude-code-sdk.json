@@ -15,5 +15,9 @@
   "min_ci_workflows": 1,
   "anywhere_token_groups": [
     { "name": "download integrity", "any": ["sha256sum", "checksum", "CHECKSUM"] }
+  ],
+  "_online_note": "Full tier only (--tier full): run by the harness against the launched recon-<sdk> workshop after the agent exits (_testlib/behavior-checks.js). Design-agnostic on purpose: they test what the brief asked for, not the reference's mount paths or unit names where the brief leaves those free.",
+  "online_checks": [
+    {"name": "claude on PATH", "kind": "exec_output_matches", "cmd": "claude --version", "regex": "\\d+\\.\\d+\\.\\d+"}
   ]
 }

@@ -11,5 +11,11 @@
   ],
   "required_hooks": ["setup-base", "setup-project"],
   "datasource_any": ["github-releases"],
-  "min_ci_workflows": 1
+  "min_ci_workflows": 1,
+  "_online_note": "Full tier only (--tier full): run by the harness against the launched recon-<sdk> workshop after the agent exits (_testlib/behavior-checks.js). Design-agnostic on purpose: they test what the brief asked for, not the reference's mount paths or unit names where the brief leaves those free.",
+  "online_checks": [
+    {"name": "uv on PATH", "kind": "exec_output_matches", "cmd": "uv --version", "regex": "^uv \\d+\\.\\d+"},
+    {"name": "uvx on PATH", "kind": "exec_ok", "cmd": "command -v uvx"},
+    {"name": "uv cache survives refresh", "kind": "persists_across_refresh", "write_cmd": "d=$(uv cache dir) && mkdir -p \"$d\" && echo recon-marker > \"$d/.recon-marker\"", "read_cmd": "cat \"$(uv cache dir)/.recon-marker\"", "regex": "^recon-marker$", "control_write_cmd": "echo control > \"$HOME/.recon-control\"", "control_read_cmd": "test -f \"$HOME/.recon-control\""}
+  ]
 }

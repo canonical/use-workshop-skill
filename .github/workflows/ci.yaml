@@ -53,10 +53,9 @@ jobs:
           path: eval-routing-smoke.txt
           retention-days: 1
 
-  # Routing eval — Lane 1 (see TESTING.md), SUSPENDED since 2026-10-19: the
-  # OpenRouter budget is gone. Kept runnable (manual-only via
-  # workflow_dispatch) so the lane can resume without archaeology; do not
-  # dispatch it until the OPENROUTER_API_KEY account is funded again.
+  # Routing eval — Lane 1 (see TESTING.md). Manual-only (workflow_dispatch)
+  # because every run is paid. Suspended 2026-10-19..2026-11-17 while the
+  # OpenRouter budget was gone; resumed since.
   #
   # use-workshop ONLY: GLM-5.2 as candidate and gpt-5.5 as the llm-rubric
   # judge, both through OpenRouter (~$1.41/run). OPENROUTER_API_KEY is the
@@ -77,7 +76,7 @@ jobs:
         # Aligned with the locally-verified version (see TESTING.md) so CI
         # and local runs measure with the same client.
         run: npm install -g promptfoo@0.121.17
-      - name: Routing eval (use-workshop, GLM-5.2, suspended lane)
+      - name: Routing eval (use-workshop, GLM-5.2, Lane 1)
         run: make -C .github/skills/use-workshop/tests eval-routing-glm
         env:
           # Covers both the candidate and the judge; run-routing.sh preflights

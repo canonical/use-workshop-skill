@@ -132,3 +132,48 @@
         (tests/spread.yaml plus per-job task.yaml, run via sdkcraft test)
         and treats the README as part of done — rather than declaring the
         SDK finished on a single healthy launch.
+
+# Capped, classified loop (iterate-and-debug.md Step 5) — borrowed from the
+# per-class retry caps in rascheel/scheel-skills' snap-builder.
+- description: A repeated hook failure stops at the cap with a Blocked report
+  vars:
+    user: |
+      Third time now: workshop refresh parks in Waiting on my SDK's setup-project hook with the same "uv: command not found" error, even after I changed the PATH line in the hook twice. Just try another fix and refresh again?
+  assert:
+    - type: icontains
+      value: blocked
+    - type: icontains-any
+      value:
+        - workshop tasks
+        - --abort
+    - type: llm-rubric
+      value: |
+        The response does NOT propose a fourth blind fix-and-refresh. It
+        recognises that the hook-failure class has used its fix budget
+        (or that the same error after a fix means the fix was a guess),
+        releases the parked workshop with --abort, and ends in a Blocked
+        report: the failure class, attempts used against the cap, the
+        `workshop tasks <ID>` output quoted verbatim (or a placeholder for
+        it), a one-line hypothesis, and what the user should check next.
+        Offering a concrete hypothesis to check (for example that
+        setup-project's environment does not source the profile.d file
+        that sets PATH) is a plus. Simply suggesting another PATH edit
+        and refresh is the failure mode.
+
+- description: A host LXD failure stops the loop without touching the SDK
+  vars:
+    user: |
+      sdkcraft try worked, but workshop launch --verbose --wait-on-error fails straight away with "Failed to connect to LXD: dial unix /var/snap/lxd/common/lxd/unix.socket: connect: no such file or directory". What should I change in the SDK?
+  assert:
+    - type: icontains
+      value: lxd
+    - type: llm-rubric
+      value: |
+        The response classifies this as a host-toolchain failure, not an
+        SDK bug: nothing in sdkcraft.yaml or the hooks should change, and
+        the try loop stops here with a Blocked report (or an equivalent
+        explicit stop) that names LXD as the cause and tells the user what
+        to check on the host (for example whether the LXD snap/daemon is
+        installed and running and the user is in the lxd group). Editing
+        the SDK, or running snap refresh/remove on workshop or sdkcraft on
+        the user's behalf, is the failure mode.

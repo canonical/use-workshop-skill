@@ -31,6 +31,19 @@ defaultTest:
     # Deterministic gate: the scorecard's threshold verdict.
     - type: contains
       value: '"overall_pass": true'
+    # Non-interactive contract (_testlib/claude-cli-core.js
+    # nonInteractiveArgs): every decision taken in place of asking is listed.
+    - type: contains
+      value: '## Decisions'
+    # Full tier only: the harness's own behavioural checks against the
+    # launched workshop (_testlib/behavior-checks.js) all passed. Offline
+    # outputs carry no checks section, so this passes vacuously there.
+    - type: javascript
+      value: |
+        if (!output.includes('--- BEHAVIORAL CHECKS')) return true;
+        return output.includes('"behavioral_pass": true')
+          ? { pass: true, score: 1, reason: 'harness behavioural checks passed' }
+          : { pass: false, score: 0, reason: 'harness behavioural checks failed or did not run (see BEHAVIORAL CHECKS)' };
     # A design decision trail exists before the files (proposal wording from
     # the skill's design workflow).
     - type: contains-any
@@ -61,6 +74,9 @@ defaultTest:
         apt/system setup in setup-base, project/user setup in
         setup-project, services as systemd user units installed by a hook,
         env vars via profile.d rather than shell rc files.
+        (e) Decisions: the final `## Decisions` section lists each choice
+        the agent took in place of asking, with a one-line rationale that
+        follows the skill's stated defaults.
         Fail (3 or below) if the generated SDK would not serve the briefed
         needs, invents schema constructs, asserts unverifiable facts as
         settled, or skips the design-before-files contract.

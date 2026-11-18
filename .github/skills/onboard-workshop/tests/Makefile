@@ -20,11 +20,13 @@ BUNDLE_SH         := scripts/regenerate-bundle.sh
 SOURCE_DOCS_SH    := $(TESTLIB)/check-source-docs.sh
 YAML_KEYS_PY      := $(TESTLIB)/check-yaml-keys.py
 SCENARIOS_PY      := $(TESTLIB)/check-scenarios.py
+CONTRACTS_PY      := $(TESTLIB)/check-contracts.py
+VERDICT_SCHEMA    := ../references/onboarding-verdict.schema.json
 CATALOG_SH        := scripts/update-sdk-catalog.sh
 RECONSTRUCTION_SH := reconstruction/run-reconstruction.sh
 SIBLING_TESTS     := ../../use-workshop/tests
 
-.PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
+.PHONY: help check check-yaml check-yaml-keys check-scenarios check-contracts check-shell check-source-docs \
         check-catalog-stamp check-hooks-exec eval-deps eval-bundle eval-routing eval-routing-copilot \
         eval-agentic eval-reconstruction eval-reconstruction-full \
         update-sdk-catalog eval-clean eval-clean-all
@@ -34,6 +36,7 @@ help:
 	@echo "  check                     all free static checks (CI entry point)"
 	@echo "  check-source-docs         cited doc paths exist in the SHARED docs-manifest.txt (offline)"
 	@echo "  check-scenarios          assert every scenarios/*.yaml is registered in every promptfooconfig*.yaml (offline)"
+	@echo "  check-contracts           verdict JSON schema: self-test on contracts/ + the skill's own examples (offline)"
 	@echo "  check-yaml-keys           YAML snippets/templates against the SHARED schema allowlists (offline)"
 	@echo "  check-catalog-stamp       sdk-catalog.md markers + generation stamp intact (offline)"
 	@echo "  check-hooks-exec          advisory: warn if template hook stubs lack the executable bit (offline)"
@@ -49,7 +52,7 @@ help:
 	@echo "  eval-clean-all            eval-clean + reconstruction .cache/ and .work/ (~150 MB+; re-clones on next run)"
 
 # All free static checks in one entry point, shared by CI and local runs.
-check: check-source-docs eval-bundle check-yaml check-yaml-keys check-scenarios check-shell \
+check: check-source-docs eval-bundle check-yaml check-yaml-keys check-scenarios check-contracts check-shell \
        check-catalog-stamp check-hooks-exec
 	@test -s skill-bundle.md || { echo "error: skill-bundle.md is empty" >&2; exit 1; }
 	@echo "ok: all static checks passed"
@@ -62,6 +65,18 @@ print('ok: %d YAML file(s) parsed' % len(files))"
 
 check-scenarios:
 	python3 $(SCENARIOS_PY) --tests-dir $(CURDIR)
+
+# Contract gate for the onboarding-verdict hand-off block: the schema's
+# good/invalid fixtures behave as labelled, and every example block the skill
+# itself prints (verdict format, final report) conforms. No LXD, no claude.
+check-contracts:
+	python3 $(CONTRACTS_PY) --schema $(VERDICT_SCHEMA) --self-test --examples contracts
+	@for f in ../references/capability-envelope.md ../workflows/launch-and-verify.md; do \
+	  python3 $(CONTRACTS_PY) --schema $(VERDICT_SCHEMA) --transcript "$$f" --fence onboarding-verdict >/dev/null \
+	    || { echo "error: $$f: its onboarding-verdict example does not match the schema" >&2; \
+	         python3 $(CONTRACTS_PY) --schema $(VERDICT_SCHEMA) --transcript "$$f" --fence onboarding-verdict >&2; exit 1; }; \
+	done
+	@echo "ok: skill-text onboarding-verdict examples conform"
 
 check-yaml-keys:
 	python3 $(YAML_KEYS_PY) --skill-root $(CURDIR)/.. --allowed-keys $(CURDIR)/$(SIBLING_TESTS)/allowed-keys.json --templates-recursive --classify-sdk-template

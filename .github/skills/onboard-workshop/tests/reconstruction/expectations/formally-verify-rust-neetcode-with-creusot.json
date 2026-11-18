@@ -16,5 +16,7 @@
   ],
   "min_action_groups": 1,
   "_action_note": "1, not 2: the maintainers' definition ships only `prove`, so a higher bar would fail an exact reproduction of the human answer. build/test stay listed as recorded metrics.",
-  "gitignore_lock": true
+  "gitignore_lock": true,
+  "expected_verdict_any": ["FULL", "PARTIAL"],
+  "_verdict_note": "The maintainers onboarded this repo, so INFEASIBLE is wrong; FULL vs PARTIAL is a judgement on out-of-loop needs and both pass. Read from the onboarding-verdict JSON mirror (references/onboarding-verdict.schema.json)."
 }

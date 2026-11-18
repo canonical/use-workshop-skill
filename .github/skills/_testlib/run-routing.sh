@@ -28,8 +28,8 @@
 #   HTTP (OpenRouter): candidate + judge over HTTP APIs. Needs
 #     OPENROUTER_API_KEY. Deterministic via --filter-providers against a
 #     DECLARED provider (config block preserved: temperature 0, max_tokens,
-#     backend pinning). SUSPENDED since 2026-10-19 (no OpenRouter budget);
-#     kept so it can be resumed — see TESTING.md.
+#     backend pinning). Suspended 2026-10-19..2026-11-17 (no OpenRouter
+#     budget), resumed since — see TESTING.md.
 #   Both local lanes default to concurrency 2 (EVAL_ROUTING_CONCURRENCY
 #   overrides).
 #

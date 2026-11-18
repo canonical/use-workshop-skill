@@ -192,6 +192,7 @@ class AgenticProvider {
         '--verbose',
         '--model', model,
         ...auth.isolationArgs,
+        ...core.nonInteractiveArgs(),
         '--permission-mode', 'acceptEdits',
         '--allowedTools', ...allowedTools,
         '--no-session-persistence',

@@ -25,7 +25,7 @@ SIBLING_TESTS     := ../../use-workshop/tests
 
 .PHONY: help check check-yaml check-yaml-keys check-scenarios check-shell check-source-docs \
         check-hooks-exec eval-deps eval-bundle eval-routing eval-routing-copilot eval-agentic \
-        eval-reconstruction eval-clean eval-clean-all
+        eval-reconstruction eval-reconstruction-full eval-clean eval-clean-all
 
 help:
 	@echo "design-sdk eval targets:"
@@ -41,6 +41,7 @@ help:
 	@echo "  eval-routing-copilot cross-vendor routing run: gpt-6.1-sol via the local Copilot login + local claude judge (premium allowance)"
 	@echo "  eval-agentic         agentic E2E tasks (slow; \$$0 on the claude CLI subscription login; heaviest task uses real LXD)"
 	@echo "  eval-reconstruction  one-off SDK-reconstruction round vs local reference-SDK clones (\$$0 on the subscription login; not in CI)"
+	@echo "  eval-reconstruction-full  + sdkcraft try, a real recon-<sdk> workshop, and harness-run behavioural checks (slow, real LXD; local only)"
 	@echo "  eval-clean           remove generated bundles and raw outputs"
 	@echo "  eval-clean-all       eval-clean + reconstruction .work/ (safe; everything regenerates)"
 
@@ -99,6 +100,9 @@ eval-agentic:
 
 eval-reconstruction:
 	bash $(RECONSTRUCTION_SH)
+
+eval-reconstruction-full:
+	bash $(RECONSTRUCTION_SH) --tier full
 
 eval-clean:
 	rm -f skill-bundle.md skill-selection-context.md

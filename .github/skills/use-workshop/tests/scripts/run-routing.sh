@@ -11,7 +11,7 @@
 #   --copilot      — gpt-6.1-sol via the local Copilot login, the cross-vendor
 #                    run (same config, premium allowance)
 #   --provider ... — any OpenRouter provider declared in promptfooconfig.yaml;
-#                    SUSPENDED (no OpenRouter budget), kept runnable
+#                    the paid cross-vendor lane (resumed 2026-11-17)
 
 set -euo pipefail
 

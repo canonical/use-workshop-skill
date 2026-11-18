@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "onboarding-verdict.schema.json",
+  "title": "onboard-workshop verdict hand-off",
+  "description": "Machine-readable mirror of the human verdict block (capability-envelope.md <verdict_format>) and of the final Onboarding report (launch-and-verify.md Step 4). Emitted in chat as a fenced block tagged `json onboarding-verdict`; never written to the repo. Checked by _testlib/check-contracts.py (stdlib subset of JSON Schema: type, enum, const, required, properties, additionalProperties, items, minItems, maxItems, minLength, allOf, if/then).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "stage", "verdict", "low_confidence", "covered", "gaps", "unverified", "fallback_offered"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "stage": { "enum": ["verdict", "report"] },
+    "verdict": { "enum": ["FULL", "PARTIAL", "INFEASIBLE"] },
+    "low_confidence": { "type": "boolean" },
+    "covered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["need", "construct", "evidence"],
+        "properties": {
+          "need": { "type": "string", "minLength": 1 },
+          "construct": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["need", "why", "workaround"],
+        "properties": {
+          "need": { "type": "string", "minLength": 1 },
+          "why": { "type": "string", "minLength": 1 },
+          "workaround": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "unverified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "confirm"],
+        "properties": {
+          "item": { "type": "string", "minLength": 1 },
+          "confirm": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fallback_offered": { "enum": ["accepted", "declined", null] },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "result"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "result": { "enum": ["PASS", "FAIL", "UNVERIFIED"] },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "FULL has no gaps and no fallback.",
+      "if": { "properties": { "verdict": { "const": "FULL" } } },
+      "then": { "properties": { "gaps": { "maxItems": 0 }, "low_confidence": { "const": false }, "fallback_offered": { "const": null } } }
+    },
+    {
+      "$comment": "PARTIAL names at least one gap.",
+      "if": { "properties": { "verdict": { "const": "PARTIAL" } } },
+      "then": { "properties": { "gaps": { "minItems": 1 } } }
+    },
+    {
+      "$comment": "INFEASIBLE generates nothing, so it is only ever a verdict-stage block with no actions.",
+      "if": { "properties": { "verdict": { "const": "INFEASIBLE" } } },
+      "then": { "properties": { "stage": { "const": "verdict" }, "actions": { "maxItems": 0 } } }
+    },
+    {
+      "$comment": "A fallback is offered only on a low-confidence PARTIAL.",
+      "if": { "properties": { "low_confidence": { "const": false } } },
+      "then": { "properties": { "fallback_offered": { "const": null } } }
+    },
+    {
+      "$comment": "The final report carries the action proof table.",
+      "if": { "properties": { "stage": { "const": "report" } } },
+      "then": { "required": ["actions"], "properties": { "actions": { "minItems": 1 } } }
+    }
+  ]
+}

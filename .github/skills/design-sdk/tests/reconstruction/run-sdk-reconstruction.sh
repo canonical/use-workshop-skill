@@ -27,6 +27,17 @@
 # Then run promptfoo with provider-design-cli.js, which appends the
 # generated tree, the reference tree, and the compare-sdk.py scorecard.
 #
+# Tiers (--tier):
+#   offline (default) — generate-and-stop: no sdkcraft, no workshop, no
+#     network; what the try loop would verify is reported, not run.
+#   full — the agent also packs, stages with `sdkcraft try`, and launches a
+#     test workshop named exactly recon-<sdk>; after it exits the HARNESS
+#     runs the expectations' `online_checks` (binary on PATH, user service
+#     active, tunnel answering, mount surviving a refresh) against that
+#     workshop, then tears it down. Real LXD, Store and upstream downloads;
+#     ~15-40 min per SDK; local only. Pattern borrowed from
+#     rascheel/snap-packager-skill-test's install-and-assert stage.
+#
 # One-off round note: this harness exists for the Sonnet 5 calibration
 # round recorded in ../BASELINE.md. It is re-runnable but NOT part of CI
 # and not part of the pinned baseline pairs.
@@ -49,12 +60,21 @@ work_root="${script_dir}/.work"
 work="${work_root}/run-$(date -u +%Y%m%d%H%M%S)"
 
 stage_only=0
+tier="offline"
 while (( $# > 0 )); do
   case "$1" in
     --stage-only) stage_only=1; shift ;;
-    *) echo "error: unknown argument '$1' (--stage-only)" >&2; exit 1 ;;
+    --tier)
+      tier="${2:-}"
+      shift 2 || { echo "error: --tier needs a value (offline|full)" >&2; exit 1; }
+      ;;
+    *) echo "error: unknown argument '$1' (--stage-only, --tier offline|full)" >&2; exit 1 ;;
   esac
 done
+if [[ "${tier}" != "offline" && "${tier}" != "full" ]]; then
+  echo "error: --tier must be 'offline' or 'full'" >&2
+  exit 1
+fi
 
 auth="${RECON_AUTH:-subscription}"
 if [[ "${auth}" != "api" && "${auth}" != "subscription" ]]; then
@@ -67,13 +87,22 @@ if [[ "${judge}" != "openai" && "${judge}" != "local" ]]; then
   exit 1
 fi
 concurrency="${RECON_CONCURRENCY:-1}"
+if [[ "${tier}" == "full" && "${concurrency}" != "1" ]]; then
+  # One --wait-on-error workshop at a time, and the agents share one LXD.
+  echo "note: --tier full forces RECON_CONCURRENCY=1 (was ${concurrency})" >&2
+  concurrency=1
+fi
 model="${DESIGN_RECON_MODEL:-claude-sonnet-5}"
 export RECON_MODEL_OVERRIDE="${model}"
 
 sdk_root="${DESIGN_SDK_ROOT:-${HOME}/Documents/SDKs}"
 read -r -a sdks <<< "${DESIGN_SDKS:-uv-sdk ollama-sdk claude-code-sdk}"
 
-for cmd in promptfoo python3 claude git; do
+required_cmds=(promptfoo python3 claude git)
+if [[ "${tier}" == "full" ]]; then
+  required_cmds+=(sdkcraft workshop lxc curl)
+fi
+for cmd in "${required_cmds[@]}"; do
   if ! command -v "${cmd}" >/dev/null 2>&1; then
     echo "error: '${cmd}' not found on PATH" >&2
     exit 1
@@ -172,6 +201,7 @@ summary="${work}/staging-summary.txt"
   echo "date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "model: ${model}"
   echo "auth: ${auth}  judge: ${judge}"
+  echo "tier: ${tier}"
 } > "${summary}"
 
 staged=0
@@ -225,19 +255,34 @@ for sdk in "${sdks[@]}"; do
 JSON
 
   brief="$(brief_for "${sdk}")"
+  # The recon- prefix keeps teardown away from any real workshop.
+  ws_name="recon-$(echo "${sdk}" | tr -cs 'a-z0-9' '-' | sed 's/^-//;s/-$//' | cut -c1-30)"
   {
-    echo "- description: design-reconstruct ${sdk} (offline)"
+    echo "- description: design-reconstruct ${sdk} (${tier})"
     echo "  vars:"
     echo "    sandbox: .work/$(basename "${work}")/${sdk}"
     echo "    sdk_name: ${sdk}"
+    echo "    tier: ${tier}"
+    echo "    workshop_name: ${ws_name}"
     echo "    task: |"
     printf '%s\n' "${brief}" | sed 's/^/      /'
     echo "      Work in the current directory. Make your recommendations and"
     echo "      proceed with them — assume I accept every recommendation."
-    echo "      There is no network and no sdkcraft/workshop CLI here:"
-    echo "      generate the complete SDK repo (definition, hooks, tests,"
-    echo "      README, release automation), then stop and report what you"
-    echo "      would verify with the try loop."
+    if [[ "${tier}" == "full" ]]; then
+      echo "      Generate the complete SDK repo (definition, hooks, tests,"
+      echo "      README, release automation), then prove it per the skill's"
+      echo "      iterate loop: pack it, stage it with sdkcraft try, consume"
+      echo "      it as a try SDK in a test workshop named exactly ${ws_name},"
+      echo "      launch it, and verify it comes up healthy with every"
+      echo "      advertised capability exercised. Do not run spread tests."
+      echo "      Leave the workshop running when you finish; the harness"
+      echo "      checks it and removes it afterwards."
+    else
+      echo "      There is no network and no sdkcraft/workshop CLI here:"
+      echo "      generate the complete SDK repo (definition, hooks, tests,"
+      echo "      README, release automation), then stop and report what you"
+      echo "      would verify with the try loop."
+    fi
   } >> "${tests_yaml}"
   staged=$((staged + 1))
 done
@@ -247,11 +292,11 @@ if (( stage_only )); then
   echo "Staged ${staged} SDK brief(s) under ${work} (--stage-only; skipping promptfoo)"
   exit 0
 fi
-echo "Staged ${staged} SDK brief(s) under ${work}; running promptfoo (${auth} auth, ${judge} judge, ${model}, -j ${concurrency})"
+echo "Staged ${staged} SDK brief(s) under ${work}; running promptfoo (${tier} tier, ${auth} auth, ${judge} judge, ${model}, -j ${concurrency})"
 cd "${script_dir}"
 date_tag="$(date -u +%Y-%m-%d-%H%M%S)"
 mkdir -p "${script_dir}/../results/raw"
-raw_json="${script_dir}/../results/raw/${date_tag}-design-reconstruction-${model}.json"
+raw_json="${script_dir}/../results/raw/${date_tag}-design-reconstruction-${tier}-${model}.json"
 
 promptfoo_args=(eval -c promptfooconfig.yaml --no-cache
                 --output "${raw_json}" --max-concurrency "${concurrency}")

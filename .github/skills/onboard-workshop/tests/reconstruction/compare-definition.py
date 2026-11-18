@@ -169,6 +169,11 @@ def main():
     ap.add_argument("--repo-dir", required=True, help="sandboxed repo after the agent run")
     ap.add_argument("--ground-truth", required=True, help="parked original definition tree")
     ap.add_argument("--expectations", help="expectations JSON for this repo (optional)")
+    ap.add_argument(
+        "--verdict-json",
+        help="check-contracts.py --transcript result for the run (optional); "
+             "when given, a missing or schema-invalid onboarding-verdict block fails the run",
+    )
     args = ap.parse_args()
 
     gen_defs, gen_sdk_yamls, gen_hooks = load_definitions(args.repo_dir)
@@ -229,6 +234,30 @@ def main():
     }
 
     failures = []
+
+    # Machine-readable verdict mirror (capability-envelope.md <verdict_format>,
+    # schema references/onboarding-verdict.schema.json). The harness extracts
+    # and validates it from the transcript; this only consumes that result.
+    verdict = None
+    if args.verdict_json:
+        try:
+            with open(args.verdict_json) as fh:
+                verdict = json.load(fh)
+        except (OSError, json.JSONDecodeError) as exc:
+            verdict = {"verdict_valid": False, "document": None, "errors": [f"unreadable: {exc}"]}
+        doc = verdict.get("document") or {}
+        metrics["verdict_json"] = {
+            "valid": bool(verdict.get("verdict_valid")),
+            "verdict": doc.get("verdict") if isinstance(doc, dict) else None,
+            "stage": doc.get("stage") if isinstance(doc, dict) else None,
+            "errors": verdict.get("errors", [])[:5],
+        }
+        if not verdict.get("verdict_valid"):
+            failures.append(
+                "verdict JSON: onboarding-verdict block missing or invalid "
+                f"({'; '.join(verdict.get('errors', [])[:3])})"
+            )
+
     exp = None
     if args.expectations and os.path.isfile(args.expectations):
         with open(args.expectations) as fh:
@@ -351,12 +380,19 @@ def main():
                 )
         metrics["anywhere_groups_satisfied"] = satisfied_groups
 
+        want_verdict = exp.get("expected_verdict_any")
+        got_verdict = (metrics.get("verdict_json") or {}).get("verdict")
+        if want_verdict and verdict is not None and got_verdict not in want_verdict:
+            failures.append(f"verdict: expected one of {want_verdict}, got {got_verdict}")
+
         if exp.get("gitignore_lock") and not metrics["gitignore_lock"]:
             failures.append(".gitignore does not cover .workshop.lock")
 
         overall = not failures
     else:
-        overall = None  # no thresholds recorded for this repo; rubric-only
+        # No thresholds recorded for this repo: rubric-only, unless the
+        # verdict-JSON gate already failed.
+        overall = False if failures else None
 
     print(json.dumps({
         "overall_pass": overall,

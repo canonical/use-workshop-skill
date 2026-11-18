@@ -211,3 +211,35 @@
         pursue a VM by hand. Silently producing a VM definition, or refusing
         to onboard at all, are both failures.
 
+
+# Machine-readable verdict mirror (capability-envelope.md <verdict_format>):
+# a schema-checked hand-off block, emitted even for INFEASIBLE. Pattern
+# borrowed from rascheel/scheel-skills' versioned JSON contracts.
+- description: INFEASIBLE verdict carries its onboarding-verdict JSON mirror
+  vars:
+    user: |
+      Onboard my Windows-only WPF desktop app to Workshop. It builds with MSBuild and Visual Studio 2022; there is no Linux build. Give me your feasibility verdict.
+  assert:
+    - type: contains
+      value: onboarding-verdict
+    - type: javascript
+      value: |
+        const blocks = [...output.matchAll(/```[ \t]*json[ \t]+onboarding-verdict[ \t]*\n([\s\S]*?)```/g)];
+        if (!blocks.length) return { pass: false, score: 0, reason: 'no ```json onboarding-verdict block' };
+        let doc;
+        try { doc = JSON.parse(blocks[blocks.length - 1][1]); }
+        catch (e) { return { pass: false, score: 0, reason: 'block is not valid JSON: ' + e.message }; }
+        const ok = doc.schema_version === '1.0' && doc.stage === 'verdict' &&
+          doc.verdict === 'INFEASIBLE' && Array.isArray(doc.gaps) && doc.gaps.length > 0 &&
+          !('actions' in doc && doc.actions.length);
+        return { pass: ok, score: ok ? 1 : 0,
+          reason: ok ? 'INFEASIBLE mirror ok' : 'mirror fields wrong: ' + JSON.stringify(doc).slice(0, 300) };
+    - type: llm-rubric
+      value: |
+        The response delivers an INFEASIBLE verdict (a Windows-only
+        MSBuild/WPF toolchain cannot run in an Ubuntu LXD container) in the
+        human verdict block, follows it with a fenced `json
+        onboarding-verdict` block that says the same thing (verdict
+        INFEASIBLE, the Windows toolchain named as a gap), and generates
+        no workshop definition. Writing the JSON block to a file, or a JSON
+        block that contradicts the human verdict, is the failure mode.

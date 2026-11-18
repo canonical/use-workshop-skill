@@ -157,8 +157,8 @@ checks in CI on every push/PR; a $0 subscription lane — the `claude` CLI on
 a local login — for every suite's routing gate (`make eval-routing`), the
 agentic suites, and the reconstruction harness; and a Copilot lane — a GPT
 model on a local Copilot login, same judge — for the cross-vendor routing
-runs (`make eval-routing-copilot`). The former OpenRouter GLM-5.2 gate is
-suspended but kept runnable. A skill change that drops a pinned baseline
+runs (`make eval-routing-copilot`). An OpenRouter GLM-5.2 lane (resumed
+2026-11-17) adds a paid cross-vendor routing row for use-workshop. A skill change that drops a pinned baseline
 must not merge. The eval surface is what keeps the
 rest of these principles from drifting back into informality.
 

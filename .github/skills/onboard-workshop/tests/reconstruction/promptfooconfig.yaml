@@ -30,6 +30,10 @@ defaultTest:
     # Deterministic gate: the scorecard's threshold verdict.
     - type: contains
       value: '"overall_pass": true'
+    # Non-interactive contract (_testlib/claude-cli-core.js
+    # nonInteractiveArgs): every decision taken in place of asking is listed.
+    - type: contains
+      value: '## Decisions'
     # The verdict-before-generation contract left a trace in the transcript.
     - type: contains-any
       value:
@@ -63,6 +67,9 @@ defaultTest:
         marked UNVERIFIED inline and in the verdict. A confident install
         line for something the repo never installs is a fabrication even
         when the underlying need is real, and is graded as one.
+        (f) Decisions: the final `## Decisions` section lists each choice
+        the agent took in place of asking, with a one-line rationale that
+        follows the skill's stated defaults.
         Fail (3 or below) if the generated definition would not build/test
         the project, invents SDKs, asserts an unevidenced install route as
         fact, or the transcript shows the verdict was skipped.

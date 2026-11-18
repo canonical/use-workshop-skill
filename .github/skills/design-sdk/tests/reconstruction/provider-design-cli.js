@@ -9,13 +9,24 @@
 // repo the agent never sees. Unlike the onboard reconstruction there is no
 // scrubbing — the candidate starts from a needs-phrased brief, not from a
 // repo. This provider:
-//   1. runs `claude -p` in <sandbox>/repo with the offline tool whitelist
-//      (generate-and-stop: no sdkcraft, no workshop, no network),
+//   1. runs `claude -p` in <sandbox>/repo with a tier-dependent whitelist —
+//      offline: generate-and-stop (no sdkcraft, no workshop, no network);
+//      full: also sdkcraft + workshop + localhost curl, so the agent runs
+//      the skill's try loop in a test workshop named vars.workshop_name,
 //   2. captures the generated SDK tree and the parked reference tree,
 //   3. runs compare-sdk.py (expectations-gated scorecard) and appends its
-//      JSON to the output.
-// Asserts then check `"overall_pass": true` plus an llm-rubric comparing
-// generated vs reference for functional equivalence and honesty.
+//      JSON to the output,
+//   4. (full tier) runs the expectations' `online_checks` against the
+//      launched workshop itself (_testlib/behavior-checks.js — the harness
+//      proves behaviour, not the transcript), captures workshop state, and
+//      tears the workshop down.
+// Asserts then check `"overall_pass": true` (+ `"behavioral_pass": true` on
+// the full tier) plus an llm-rubric comparing generated vs reference for
+// functional equivalence and honesty.
+//
+// Full-tier network: sdkcraft itself downloads what the parts need, but the
+// AGENT gets no general curl/git — fetching the published reference SDK
+// would contaminate a reconstruction.
 
 'use strict';
 
@@ -24,6 +35,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const core = require('../../../_testlib/claude-cli-core.js');
+const behavior = require('../../../_testlib/behavior-checks.js');
 
 const OFFLINE_ALLOWED_TOOLS = [
   'Read',
@@ -42,6 +54,16 @@ const OFFLINE_ALLOWED_TOOLS = [
   'Bash(find *)',
   'Bash(head *)',
   'Bash(wc *)',
+];
+
+// Full tier: the skill's iterate loop (iterate-and-debug.md) on real LXD.
+const FULL_EXTRA_TOOLS = [
+  'Bash(sdkcraft *)',
+  'Bash(workshop *)',
+  'Bash(snap list*)',
+  'Bash(lxc list*)',
+  'Bash(lxc info*)',
+  'Bash(curl -sf http://localhost*)',
 ];
 
 // The SDK-repo shape both dumps capture.
@@ -81,11 +103,13 @@ class DesignReconstructionProvider {
       return { error: `Pre-staged sandbox not found (vars.sandbox=${vars.sandbox}); run via run-sdk-reconstruction.sh` };
     }
     const sdkName = String(vars.sdk_name || path.basename(sandbox));
+    const tier = String(vars.tier || 'offline');
+    const workshopName = String(vars.workshop_name || `recon-${sdkName}`);
 
     const model =
       vars.model || process.env.RECON_MODEL_OVERRIDE || cfg.model || 'claude-sonnet-5';
-    const timeoutMs = Number(vars.timeout_ms || cfg.agent_timeout_ms || 900_000);
-    const maxBudgetUsd = Number(vars.max_budget_usd || cfg.max_budget_usd || 3);
+    const timeoutMs = Number(vars.timeout_ms || cfg.agent_timeout_ms || (tier === 'full' ? 2_700_000 : 900_000));
+    const maxBudgetUsd = Number(vars.max_budget_usd || cfg.max_budget_usd || (tier === 'full' ? 8 : 3));
     const taskPrompt = vars.task || prompt;
     if (!taskPrompt || !String(taskPrompt).trim()) {
       return { error: 'No task prompt supplied (set vars.task).' };
@@ -99,14 +123,19 @@ class DesignReconstructionProvider {
     const transcriptPath = path.join(sandbox, 'transcript.jsonl');
     const stderrPath = path.join(sandbox, 'stderr.log');
 
+    // Full tier builds into the shared try area (keyed by SDK name): keep the
+    // maintainer's own try builds safe (claude-cli-core.js snapshotTryArea).
+    const trySnap = tier === 'full' ? core.snapshotTryArea() : null;
+
     const claudeArgs = [
       '-p',
       '--output-format', 'stream-json',
       '--verbose',
       '--model', model,
       ...auth.isolationArgs,
+      ...core.nonInteractiveArgs(),
       '--permission-mode', 'acceptEdits',
-      '--allowedTools', ...OFFLINE_ALLOWED_TOOLS,
+      '--allowedTools', ...(tier === 'full' ? OFFLINE_ALLOWED_TOOLS.concat(FULL_EXTRA_TOOLS) : OFFLINE_ALLOWED_TOOLS),
       '--no-session-persistence',
       String(taskPrompt),
     ];
@@ -140,11 +169,38 @@ class DesignReconstructionProvider {
     const generated = core.dumpPaths(repoDir, SDK_CAPTURE_PATHS);
     const reference = core.dumpPaths(gtDir, SDK_CAPTURE_PATHS);
 
+    // Full tier: harness-owned behavioural checks, then state, then teardown
+    // (from the project dir that owns the workshop, wherever the agent put
+    // its test definition).
+    let behaviorSection = '';
+    let behaviorSummary = null;
+    let cleanupError = null;
+    if (tier === 'full') {
+      let checks = [];
+      try {
+        checks = (JSON.parse(fs.readFileSync(expFile, 'utf8')).online_checks) || [];
+      } catch (_) { /* no expectations → no checks; reported below */ }
+      behaviorSummary = behavior.runBehaviorChecks(workshopName, checks, { sdkDir: repoDir });
+      const owner = behavior.findWorkshop(workshopName);
+      const projectDir = (owner && owner.project) || repoDir;
+      const state = core.captureWorkshopState(projectDir, [workshopName]);
+      behaviorSection =
+        '\n\n--- BEHAVIORAL CHECKS (run by the harness after the agent) ---\n```json\n' +
+        JSON.stringify(behaviorSummary, null, 2) + '\n```\n' +
+        '\n--- WORKSHOP STATE AFTER ---\n' +
+        'workshop list --global:\n' + (state.workshop_list_global.stdout || state.workshop_list_global.stderr) +
+        '\nworkshop info ' + workshopName + ':\n' +
+        ((state.per_workshop[workshopName] || {}).info || {}).stdout + '\n';
+      cleanupError = core.teardownWorkshops(projectDir, [workshopName]);
+    }
+    const tryRestore = trySnap ? core.restoreTryArea(trySnap) : null;
+
     const output =
       transcriptText +
       '\n\n--- GENERATED FILES ---\n' + generated +
       '\n\n--- REFERENCE SDK (hidden from the agent) ---\n' + reference +
       '\n\n--- SCORECARD ---\n```json\n' + scorecard + '\n```\n' +
+      behaviorSection +
       (timedOut ? '\n[harness] timed out after ' + timeoutMs + 'ms\n' : '') +
       (stderrText ? '\n--- claude stderr (tail) ---\n' + stderrText + '\n' : '');
 
@@ -154,6 +210,10 @@ class DesignReconstructionProvider {
         model,
         auth: auth.subscription ? 'subscription' : 'api',
         sdk_name: sdkName,
+        tier,
+        behavioral_pass: behaviorSummary ? behaviorSummary.behavioral_pass : null,
+        cleanup_error: cleanupError,
+        try_area_restore: tryRestore,
         exit_code: exitCode,
         timed_out: timedOut,
         duration_ms: durationMs,

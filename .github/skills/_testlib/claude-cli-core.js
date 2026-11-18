@@ -79,6 +79,39 @@ function resolveAuth(maxBudgetUsd) {
   };
 }
 
+// --------------------------------------------------------------------------
+// Non-interactive mode (agentic + reconstruction candidates; never the judge
+// or the tool-less routing candidate)
+// --------------------------------------------------------------------------
+//
+// An unattended run has no one to answer a question, so "assume I accept
+// every recommendation" in the task prompt is not enough on its own: the
+// tools that wait for a human (or for a later turn) are denied at the CLI,
+// and a directive appended to the system prompt says how to decide instead
+// and makes every decision auditable in a `## Decisions` section the
+// rubric can read. Pattern borrowed from rascheel/snap-packager-skill-test
+// (its NONINTERACTIVE_DIRECTIVE + --disallowedTools).
+
+const NONINTERACTIVE_DISALLOWED = ['AskUserQuestion', 'ScheduleWakeup', 'CronCreate'];
+
+const NONINTERACTIVE_DIRECTIVE = [
+  'You are running unattended: no human will read or answer anything until the run ends.',
+  '- Never ask a question and never wait for a reply. At every step where a loaded skill says to ask, confirm, or wait for approval, decide yourself using that skill\'s own stated criteria and defaults, then continue.',
+  '- The user\'s instruction to assume they accept every recommendation is their acknowledgment of any PARTIAL feasibility verdict or design proposal. A verdict or stop condition that ends the run (for example INFEASIBLE, or a blocked report) still ends it.',
+  '- Do not end your turn while a build, launch, refresh, or other command you started is still running; wait for it and report its outcome.',
+  '- End your final report with a section headed exactly `## Decisions`: one line per decision you took in place of asking, formatted `<decision> — <choice> — <why>`. Write `- none` if you took no such decision.',
+].join('\n');
+
+// Returns the argv fragment. --disallowedTools is variadic, so the list is
+// passed as ONE comma-joined token and is immediately followed by another
+// flag; callers spread this before --allowedTools / the positional prompt.
+function nonInteractiveArgs() {
+  return [
+    '--disallowedTools', NONINTERACTIVE_DISALLOWED.join(','),
+    '--append-system-prompt', NONINTERACTIVE_DIRECTIVE,
+  ];
+}
+
 // In subscription mode a sandbox carries an explicit project settings file so
 // `--setting-sources project` resolves to a known-empty config (no hooks, no
 // plugins) rather than to nothing at all.
@@ -372,6 +405,72 @@ function captureWorkshopState(cwd, names) {
   return state;
 }
 
+// --------------------------------------------------------------------------
+// Try-area guard
+// --------------------------------------------------------------------------
+//
+// `sdkcraft try` writes ~/.local/share/workshop/try/<sdk>/, keyed by SDK
+// NAME — so an eval that builds "uv" silently replaces the maintainer's own
+// try build of uv. snapshotTryArea() hard-links the whole area into a
+// sibling backup dir (cheap, and always the same filesystem; `sdkcraft try`
+// replaces files rather than rewriting them, verified 2026-11-17, so the
+// links keep the old bytes) and restoreTryArea() puts every entry the run
+// created, changed or removed back the way it was.
+//
+// Only for serial runs (design-sdk full tier forces concurrency 1): a
+// restore during a concurrent run would revert another case's live build.
+
+const TRY_AREA = path.join(os.homedir(), '.local', 'share', 'workshop', 'try');
+
+function entrySignature(dir) {
+  try {
+    return fs.readdirSync(dir).sort()
+      .map(f => { const st = fs.statSync(path.join(dir, f)); return `${f}:${st.ino}:${st.size}`; })
+      .join('|');
+  } catch (_) { return null; }
+}
+
+function snapshotTryArea(backupDir = path.join(path.dirname(TRY_AREA), `.try-eval-backup-${process.pid}-${Date.now()}`)) {
+  const snap = { backupDir, entries: {}, error: null };
+  if (!fs.existsSync(TRY_AREA)) return snap;
+  fs.mkdirSync(backupDir, { recursive: true });
+  for (const name of fs.readdirSync(TRY_AREA)) {
+    const src = path.join(TRY_AREA, name);
+    const r = spawnSync('cp', ['-al', src, path.join(backupDir, name)], { encoding: 'utf8' });
+    if (r.status !== 0) {
+      snap.error = `cannot hard-link ${src} into ${backupDir}: ${(r.stderr || '').trim()}`;
+      return snap;
+    }
+    snap.entries[name] = entrySignature(src);
+  }
+  return snap;
+}
+
+// Returns a short report string (null when nothing needed restoring).
+function restoreTryArea(snap) {
+  if (!snap || snap.error) return snap && snap.error ? `try-area NOT restored: ${snap.error}` : null;
+  const actions = [];
+  const now = fs.existsSync(TRY_AREA) ? fs.readdirSync(TRY_AREA) : [];
+  for (const name of now) {
+    if (!(name in snap.entries)) {
+      fs.rmSync(path.join(TRY_AREA, name), { recursive: true, force: true });
+      actions.push(`removed new ${name}`);
+    } else if (entrySignature(path.join(TRY_AREA, name)) !== snap.entries[name]) {
+      fs.rmSync(path.join(TRY_AREA, name), { recursive: true, force: true });
+      fs.renameSync(path.join(snap.backupDir, name), path.join(TRY_AREA, name));
+      actions.push(`restored ${name}`);
+    }
+  }
+  for (const name of Object.keys(snap.entries)) {
+    if (!now.includes(name)) {
+      fs.renameSync(path.join(snap.backupDir, name), path.join(TRY_AREA, name));
+      actions.push(`restored removed ${name}`);
+    }
+  }
+  fs.rmSync(snap.backupDir, { recursive: true, force: true });
+  return actions.length ? actions.join(', ') : null;
+}
+
 // 1. Ask workshop to remove; 2. LXD-level prefix cleanup as a safety net for
 //    containers a half-failed launch leaves behind.
 function teardownWorkshops(cwd, names) {
@@ -405,6 +504,8 @@ function teardownWorkshops(cwd, names) {
 module.exports = {
   authMode,
   resolveAuth,
+  nonInteractiveArgs,
+  NONINTERACTIVE_DIRECTIVE,
   writeSandboxSettings,
   spawnClaude,
   runCmd,
@@ -416,4 +517,7 @@ module.exports = {
   parseListVar,
   captureWorkshopState,
   teardownWorkshops,
+  snapshotTryArea,
+  restoreTryArea,
+  TRY_AREA,
 };

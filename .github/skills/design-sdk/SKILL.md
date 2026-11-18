@@ -197,7 +197,9 @@ A run of this skill is complete when:
 - [ ] A Design Proposal was delivered and approved before any file was
       generated.
 - [ ] Every generated or edited SDK went through the try loop and came up
-      healthy (`workshop info` reports `status: ready`).
+      healthy (`workshop info` reports `status: ready`) — or the loop hit a
+      cap or a hard stop (`iterate-and-debug.md` Step 5) and ended in a
+      `## Blocked:` report instead of another blind retry.
 - [ ] Spread tests cover launch plus the SDK's primary functionality.
 - [ ] The README matches the template with no verbosity on connections or
       implementation details.
