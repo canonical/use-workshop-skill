@@ -1,0 +1,487 @@
+{
+  "meta": {
+    "generated_at": "2026-11-18T12:56:27+00:00",
+    "model": "gpt-6.1-sol",
+    "provider": "copilot",
+    "total_cases": 63,
+    "passed": 61,
+    "failed": 2,
+    "errors": 0,
+    "pass_rate": 0.9683,
+    "tokens": {
+      "total": 2153597,
+      "prompt": 2140296,
+      "completion": 13301,
+      "cached": 2091000
+    },
+    "cost_usd": 0,
+    "copilot": {
+      "served_models": [
+        "gpt-6.1-sol"
+      ],
+      "premium_requests": 63,
+      "ai_credits": 46.26
+    }
+  },
+  "cases": [
+    {
+      "description": "analyze verb stops at the verdict without asking which path",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10713,
+      "cost": 0
+    },
+    {
+      "description": "onboard verb commits to the full chain",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11516,
+      "cost": 0
+    },
+    {
+      "description": "verify verb goes straight to launch-and-verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10875,
+      "cost": 0
+    },
+    {
+      "description": "Full onboarding ask routes through analysis first, read-only",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11430,
+      "cost": 0
+    },
+    {
+      "description": "Analysis checks for an existing definition before anything else",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11040,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-linked facts, CI outranks README",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9808,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility-only ask stops at the verdict",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11016,
+      "cost": 0
+    },
+    {
+      "description": "Subdirectory Makefiles are part of the analysis",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12340,
+      "cost": 0
+    },
+    {
+      "description": "Packaging pipelines are out of the inner loop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9491,
+      "cost": 0
+    },
+    {
+      "description": "CI series matrix suggests parallel definitions",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8819,
+      "cost": 0
+    },
+    {
+      "description": "iOS repo gets INFEASIBLE and no definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9489,
+      "cost": 0
+    },
+    {
+      "description": "Verdict comes before generation",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 11471,
+      "cost": 0
+    },
+    {
+      "description": "macOS-only tool inside an otherwise feasible repo becomes a GAP",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13386,
+      "cost": 0
+    },
+    {
+      "description": "No git-URL SDK sources exist",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9934,
+      "cost": 0
+    },
+    {
+      "description": "No invented SDK names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8480,
+      "cost": 0
+    },
+    {
+      "description": "Nested virtualization is outside the envelope",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9965,
+      "cost": 0
+    },
+    {
+      "description": "Refuses to soften a verdict on user pressure",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 8861,
+      "cost": 0
+    },
+    {
+      "description": "Mostly-unmappable Linux stack gets the minimal-workshop fallback offer",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28152,
+      "cost": 0
+    },
+    {
+      "description": "Refuses to edit the repo's Makefile to make an action fit",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7225,
+      "cost": 0
+    },
+    {
+      "description": "Needed tool with no install evidence is tagged, not guessed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10452,
+      "cost": 0
+    },
+    {
+      "description": "User asks the onboarded definition to be a VM workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12676,
+      "cost": 0
+    },
+    {
+      "description": "INFEASIBLE verdict carries its onboarding-verdict JSON mirror",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11278,
+      "cost": 0
+    },
+    {
+      "description": "Every question carries an explicit recommendation",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14796,
+      "cost": 0
+    },
+    {
+      "description": "Base recommendation follows CI evidence",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6161,
+      "cost": 0
+    },
+    {
+      "description": "Channel pinning recommended over latest/stable",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9194,
+      "cost": 0
+    },
+    {
+      "description": "Evidence-answered questions are not asked",
+      "passed": true,
+      "score": 0.7,
+      "latency_ms": 12852,
+      "cost": 0
+    },
+    {
+      "description": "Store lookup comes first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12565,
+      "cost": 0
+    },
+    {
+      "description": "Catalog fallback is tagged unverified",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10863,
+      "cost": 0
+    },
+    {
+      "description": "CI apt-get lines become an in-project SDK setup-base",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 11147,
+      "cost": 0
+    },
+    {
+      "description": "Node channel from engines field",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8033,
+      "cost": 0
+    },
+    {
+      "description": "Python maps to uv",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8032,
+      "cost": 0
+    },
+    {
+      "description": "Docker-compose services go through the docker SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11400,
+      "cost": 0
+    },
+    {
+      "description": "Compositor build-deps reach desktop and gpu plugs",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11153,
+      "cost": 0
+    },
+    {
+      "description": "JVM repo maps to openjdk plus the matching build-tool SDK",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 10616,
+      "cost": 0
+    },
+    {
+      "description": "Store-SDKs-only proposal uses workshop init",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 10225,
+      "cost": 0
+    },
+    {
+      "description": "Grafts and in-project SDKs go the template path",
+      "passed": true,
+      "score": 0.8,
+      "latency_ms": 9508,
+      "cost": 0
+    },
+    {
+      "description": "Default layout is .workshop/<name>.yaml named dev",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6400,
+      "cost": 0
+    },
+    {
+      "description": "Lock file gitignored, definition committed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7606,
+      "cost": 0
+    },
+    {
+      "description": "In-project sdk.yaml has no hooks key",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8585,
+      "cost": 0
+    },
+    {
+      "description": "Generation matches the approved proposal exactly",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7346,
+      "cost": 0
+    },
+    {
+      "description": "Build tree and ccache get mount plugs, not a project subdirectory",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 9573,
+      "cost": 0
+    },
+    {
+      "description": "In-project hook at mode 644 is not broken",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7411,
+      "cost": 0
+    },
+    {
+      "description": "A repo that needs an API key gets the variable name, never a value (0.9.8)",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 20981,
+      "cost": 0
+    },
+    {
+      "description": "Actions are proven by running, not by YAML validity",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11591,
+      "cost": 0
+    },
+    {
+      "description": "Verification triplet after launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8584,
+      "cost": 0
+    },
+    {
+      "description": "Tunnels are probed from the host",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8754,
+      "cost": 0
+    },
+    {
+      "description": "Failing action is fixed or reported UNVERIFIED, never deleted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11116,
+      "cost": 0
+    },
+    {
+      "description": "Final report includes the proof table and gaps",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11491,
+      "cost": 0
+    },
+    {
+      "description": "Repo-analysis onboarding ask picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5430,
+      "cost": 0
+    },
+    {
+      "description": "Workshop-ify phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5274,
+      "cost": 0
+    },
+    {
+      "description": "Feasibility question picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5940,
+      "cost": 0
+    },
+    {
+      "description": "Failed refresh picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6522,
+      "cost": 0
+    },
+    {
+      "description": "Launching a cloned repo's existing definition picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5947,
+      "cost": 0
+    },
+    {
+      "description": "Interface wiring on a running workshop picks use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4835,
+      "cost": 0
+    },
+    {
+      "description": "Toolchain-derivation phrasing picks onboard-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5786,
+      "cost": 0
+    },
+    {
+      "description": "Parallel worktree environments pick use-workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5178,
+      "cost": 0
+    },
+    {
+      "description": "Packaging software as a Store SDK picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5469,
+      "cost": 0
+    },
+    {
+      "description": "Near miss \u2014 onboarding an SDK repo picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5207,
+      "cost": 0
+    },
+    {
+      "description": "Promoting an in-project SDK to the Store picks design-sdk",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7368,
+      "cost": 0
+    },
+    {
+      "description": "Existing definition routes away from onboarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8038,
+      "cost": 0
+    },
+    {
+      "description": "sdkcraft publishing routes to the design-sdk sibling",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8693,
+      "cost": 0
+    },
+    {
+      "description": "Sketch-SDK walkthrough is not offered",
+      "passed": false,
+      "score": 0.7,
+      "latency_ms": 13203,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response explains sketch-sdk needs an interactive $EDITOR session\nit cannot drive, and offers the agent-drivable path instead: writing\nthe in-project SDK files directly.\n",
+          "passed": false,
+          "reason": "The response correctly identifies that `workshop sketch-sdk` requires a live `$EDITOR` session it cannot drive. It does recommend the in-project SDK path as the alternative, but it does not offer to actually write the in-project SDK files directly as the agent-drivable action \u2014 instead it only names the approach as a recommendation and then proceeds to explain the manual sketch steps. The rubric specifically requires offering to write the files directly, which is absent."
+        }
+      ],
+      "failure_reason": "The response correctly identifies that `workshop sketch-sdk` requires a live `$EDITOR` session it cannot drive. It does recommend the in-project SDK path as the alternative, but it does not offer to actually write the in-project SDK files directly as the agent-drivable action \u2014 instead it only names the approach as a recommendation and then proceeds to explain the manual sketch steps. The rubric specifically requires offering to write the files directly, which is absent."
+    },
+    {
+      "description": "Daily operations belong to the sibling skill",
+      "passed": false,
+      "score": 0.7,
+      "latency_ms": 12280,
+      "cost": 0,
+      "failed_assertions": [
+        {
+          "type": "llm-rubric",
+          "value": "The response hands day-to-day operation (exec/run/refresh/troubleshoot)\nto the use-workshop skill rather than duplicating an operations\ntutorial inside onboarding. Brief pointers (e.g. workshop shell) are\nfine.\n",
+          "passed": false,
+          "reason": "The output explicitly states at the end that \"these are existing-workshop operations, covered by the use-workshop workflow rather than onboarding,\" acknowledging the boundary. However, the body of the response contradicts this by providing a comprehensive operations tutorial\u2014full bash examples for shell/run/exec/refresh, post-refresh verification steps (workshop changes, tasks, info), detailed troubleshooting guidance for failed refreshes (--continue/--abort), and an exception note about setup-b"
+        }
+      ],
+      "failure_reason": "The output explicitly states at the end that \"these are existing-workshop operations, covered by the use-workshop workflow rather than onboarding,\" acknowledging the boundary. However, the body of the response contradicts this by providing a comprehensive operations tutorial\u2014full bash examples for shell/run/exec/refresh, post-refresh verification steps (workshop changes, tasks, info), detailed troubleshooting guidance for failed refreshes (--continue/--abort), and an exception note about setup-b"
+    }
+  ]
+}
