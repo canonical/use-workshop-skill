@@ -141,7 +141,15 @@ const KINDS = {
       const original = fs.readFileSync(hook);
       restore = () => fs.writeFileSync(hook, original);
       fs.appendFileSync(hook, '\n# recon-refresh-probe (harness; reverted after the check)\n');
-      const tr = run('sdkcraft', ['try'], { cwd: ctx.sdkDir, timeoutMs: 1_800_000 });
+      // Incremental first (fast when parts are cached); an override-pull that
+      // isn't re-runnable (e.g. `git clone … .` into a non-empty dir, seen
+      // 2026-11-17) fails it, so fall back to the skill's own deterministic
+      // default, a clean rebuild.
+      let tr = run('sdkcraft', ['try'], { cwd: ctx.sdkDir, timeoutMs: 1_800_000 });
+      if (tr.status !== 0) {
+        run('sdkcraft', ['clean'], { cwd: ctx.sdkDir, timeoutMs: 600_000 });
+        tr = run('sdkcraft', ['try'], { cwd: ctx.sdkDir, timeoutMs: 1_800_000 });
+      }
       if (tr.status !== 0) {
         restore();
         return { ok: false, inconclusive: true, detail: `sdkcraft try for the forced refresh failed rc=${tr.status} ${tail(tr.out)}` };
