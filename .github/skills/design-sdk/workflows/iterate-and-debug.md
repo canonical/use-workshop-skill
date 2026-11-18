@@ -119,6 +119,18 @@ Tried: <one line per fix attempt>
 Next for the user: <the check or decision you can't make>
 ```
 
+When the user brings the repeats to you, the answer IS this report. Say
+"my third fix for `setup-project` still fails with `npm: command not
+found`, should I try another?":
+- Wrong: another hook edit plus `workshop refresh`, or a `workshop remove`
+  + `launch` to "start clean", or a diagnosis essay with no report.
+- Right: `workshop refresh --abort` to release the parked change, then
+  `## Blocked: hook failure`, `Attempts: 3 of 3`, the `workshop tasks <ID>`
+  output (ask the user to paste it if you don't have it), the hypothesis
+  (e.g. `setup-project` runs without the `/etc/profile.d` PATH that
+  `setup-base` wrote), `Tried:` their three fixes, and the check that
+  would confirm the hypothesis under `Next for the user`.
+
 **Step 6. Respect setup-base semantics.** An applied refresh does NOT
 re-run `setup-base` — it reuses the post-setup-base snapshot. After editing
 `setup-base`, recreate: `workshop remove` then `launch` (the one legitimate
