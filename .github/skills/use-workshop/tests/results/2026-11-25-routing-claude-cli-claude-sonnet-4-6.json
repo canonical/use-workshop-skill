@@ -1,0 +1,819 @@
+{
+  "meta": {
+    "generated_at": "2026-11-25T11:28:31+00:00",
+    "model": "claude-sonnet-4-6",
+    "provider": "claude-cli",
+    "total_cases": 114,
+    "passed": 114,
+    "failed": 0,
+    "errors": 0,
+    "pass_rate": 1.0,
+    "tokens": {
+      "total": 8465538,
+      "prompt": 8370848,
+      "completion": 94690,
+      "cached": 8314590
+    },
+    "cost_usd": 4.2512
+  },
+  "cases": [
+    {
+      "description": "debug verb routes straight to troubleshooting",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17220,
+      "cost": 0.035375
+    },
+    {
+      "description": "connect verb routes straight to interface management",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18507,
+      "cost": 0.036011
+    },
+    {
+      "description": "bare worktrees verb enters parallel environments",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28913,
+      "cost": 0.043084
+    },
+    {
+      "description": "First-time setup, user has cloned a repo with workshop.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 9486,
+      "cost": 0.029753
+    },
+    {
+      "description": "Greenfield project, user wants a Go-based workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16701,
+      "cost": 0.035806
+    },
+    {
+      "description": "User wants to know what to commit and what to gitignore",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17317,
+      "cost": 0.033341
+    },
+    {
+      "description": "User wants to discover SDKs first",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12863,
+      "cost": 0.032078
+    },
+    {
+      "description": "User asks how to confirm a launch worked",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10021,
+      "cost": 0.030053
+    },
+    {
+      "description": "User wants to scaffold a definition from the CLI (workshop init)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13597,
+      "cost": 0.033613
+    },
+    {
+      "description": "User asks whether workshop init can set up actions and connections",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19147,
+      "cost": 0.036751
+    },
+    {
+      "description": "User asks to mix a root workshop.yaml with a workshop init definition",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16131,
+      "cost": 0.035321
+    },
+    {
+      "description": "Bare workshop init and in-project SDK references (0.9.5 forms)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20012,
+      "cost": 0.038183
+    },
+    {
+      "description": "VM workshop launch refused as experimental \u2014 an old Workshop (0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23808,
+      "cost": 0.03994
+    },
+    {
+      "description": "Scaffolding a VM workshop with workshop init (--runtime)",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 15806,
+      "cost": 0.034484
+    },
+    {
+      "description": "Converting a launched container workshop to a VM",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 26664,
+      "cost": 0.041375
+    },
+    {
+      "description": "SDKs refused in a VM workshop \u2014 an old Workshop, not an LXD switch (0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 26936,
+      "cost": 0.04285
+    },
+    {
+      "description": "Only mount and secret connect in a VM workshop (0.9.9)",
+      "passed": true,
+      "score": 0.9,
+      "latency_ms": 31283,
+      "cost": 0.043574
+    },
+    {
+      "description": "VM workshop connections persist across refresh (0.9.9)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27709,
+      "cost": 0.043102
+    },
+    {
+      "description": "PCIe ports exhausted connecting a mount in a VM workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 26573,
+      "cost": 0.041974
+    },
+    {
+      "description": "Removing a stopped VM workshop fails on a mount disconnect",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 30175,
+      "cost": 0.044996
+    },
+    {
+      "description": "A leftover `confinement:` key is rejected on 0.9.9",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22186,
+      "cost": 0.040349
+    },
+    {
+      "description": "VM to sandbox a coding agent \u2014 the boundary stops at the kernel",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 32652,
+      "cost": 0.046702
+    },
+    {
+      "description": "base ubuntu@20.04 is deprecated, not rejected (0.9.8)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18037,
+      "cost": 0.03626
+    },
+    {
+      "description": "Give a VM workshop more memory and CPUs (cpus/memory, 0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17391,
+      "cost": 0.036026
+    },
+    {
+      "description": "Container disk below the minimum fails launch (disk, 0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22789,
+      "cost": 0.040118
+    },
+    {
+      "description": "Run a one-off command inside an existing workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5191,
+      "cost": 0.026561
+    },
+    {
+      "description": "User edited only the actions block, asks if refresh is needed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 5178,
+      "cost": 0.026105
+    },
+    {
+      "description": "User wants to forward arguments through workshop run",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11112,
+      "cost": 0.031487
+    },
+    {
+      "description": "User reports a workshop is Stopped, wants to use it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4908,
+      "cost": 0.026101
+    },
+    {
+      "description": "User edited base image and asks how to apply it",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4680,
+      "cost": 0.026056
+    },
+    {
+      "description": "Short command aliases (ls / rm / sh, 0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 7240,
+      "cost": 0.029975
+    },
+    {
+      "description": "Expose a workshop service on the host (auto-connect tunnel)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14804,
+      "cost": 0.03398
+    },
+    {
+      "description": "Reach a host service from inside the workshop (manual connect)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16816,
+      "cost": 0.034426
+    },
+    {
+      "description": "Plug conflict between two SDKs wanting the same mount target",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22687,
+      "cost": 0.039616
+    },
+    {
+      "description": "Reassign a mount source to a different host directory",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19601,
+      "cost": 0.038291
+    },
+    {
+      "description": "User asks about ssh-agent forwarding",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 34094,
+      "cost": 0.050276
+    },
+    {
+      "description": "Expose host serial adapters via the custom-device interface",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 35459,
+      "cost": 0.051062
+    },
+    {
+      "description": "Set ownership and permissions on a mount target",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 24029,
+      "cost": 0.0421
+    },
+    {
+      "description": "Read a mount from another regular SDK's slot, not the system default",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15894,
+      "cost": 0.033938
+    },
+    {
+      "description": "Connections name try and in-project SDKs by their bare names",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 20693,
+      "cost": 0.038471
+    },
+    {
+      "description": "Narrow a custom-device plug to one USB adapter by vendor/product ID",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22412,
+      "cost": 0.040271
+    },
+    {
+      "description": "Sticky disconnect \u2014 keep an auto-connected plug off across refreshes",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22467,
+      "cost": 0.040424
+    },
+    {
+      "description": "Sticky manual connection \u2014 does refresh drop workshop connect wiring",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14231,
+      "cost": 0.033632
+    },
+    {
+      "description": "Editing a tunnel endpoint drops its manual connection (0.9.8)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12841,
+      "cost": 0.032401
+    },
+    {
+      "description": "Provide an SDK's API key from the host keyring, end to end",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28451,
+      "cost": 0.043301
+    },
+    {
+      "description": "A secret pair in connections is not connected (0.9.8)",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 17984,
+      "cost": 0.035789
+    },
+    {
+      "description": "Locked keyring \u2014 unlock and retry (exit 2)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19410,
+      "cost": 0.03812
+    },
+    {
+      "description": "No secret found \u2014 fix the slot, refresh, and reconnect",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18121,
+      "cost": 0.036629
+    },
+    {
+      "description": "Multiple secrets match \u2014 refine the slot (exit 4)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21319,
+      "cost": 0.037325
+    },
+    {
+      "description": "One-off command with an API key \u2014 --env NAME filled from the keyring",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13085,
+      "cost": 0.03311
+    },
+    {
+      "description": "Who can read a connected secret \u2014 the whole workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17333,
+      "cost": 0.036047
+    },
+    {
+      "description": "Secret slot only on the system SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15487,
+      "cost": 0.033074
+    },
+    {
+      "description": "In-project SDK secret \u2014 bare name in get-secret",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15598,
+      "cost": 0.034232
+    },
+    {
+      "description": "Run two parallel test runs over the same source",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21645,
+      "cost": 0.03878
+    },
+    {
+      "description": "Compare two builds against the same code",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18098,
+      "cost": 0.036983
+    },
+    {
+      "description": "Cleanup ordering for worktrees with workshops",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 8338,
+      "cost": 0.028874
+    },
+    {
+      "description": "Optional case mentioning AI agents (one example among others)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 42035,
+      "cost": 0.052072
+    },
+    {
+      "description": "git status fails inside a worktree's workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19698,
+      "cost": 0.037655
+    },
+    {
+      "description": "Refresh failed, user asks what to do",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23128,
+      "cost": 0.039356
+    },
+    {
+      "description": "Refresh failed (paraphrase 1, SDK install error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15777,
+      "cost": 0.033835
+    },
+    {
+      "description": "Refresh failed (paraphrase 2, repeated failure with Status Error)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15873,
+      "cost": 0.034585
+    },
+    {
+      "description": "User wants to inspect a paused workshop interactively",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15795,
+      "cost": 0.033125
+    },
+    {
+      "description": "User asks how to resume after fixing the issue",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 6954,
+      "cost": 0.0283
+    },
+    {
+      "description": "User asks about warnings vs errors",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15017,
+      "cost": 0.032171
+    },
+    {
+      "description": "User reaches for snap purge prematurely",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16012,
+      "cost": 0.034091
+    },
+    {
+      "description": "Snap purge prematurely (paraphrase 1, hopeful framing)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18868,
+      "cost": 0.032063
+    },
+    {
+      "description": "Snap purge prematurely (paraphrase 2, \"nuke option\" framing)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14368,
+      "cost": 0.033341
+    },
+    {
+      "description": "No space left on device with free host disk (full storage pool)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18265,
+      "cost": 0.035819
+    },
+    {
+      "description": "Change stuck in Doing, every command fails with other changes in progress",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17531,
+      "cost": 0.03604
+    },
+    {
+      "description": "Post-uncontrolled-Off, can the reported Ready state be trusted",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 29309,
+      "cost": 0.047468
+    },
+    {
+      "description": "Negative guard \u2014 ordinary refresh failure must not get a daemon restart",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15767,
+      "cost": 0.034373
+    },
+    {
+      "description": "SDK YAML rejected by strict validation (unknown SDK YAML fields)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10817,
+      "cost": 0.031609
+    },
+    {
+      "description": "A connections entry with an interface key is rejected (0.9.9)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17442,
+      "cost": 0.036629
+    },
+    {
+      "description": "Restore refused right after a Workshop snap update",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15836,
+      "cost": 0.0347
+    },
+    {
+      "description": "Refresh rejected because another change is already running",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22445,
+      "cost": 0.039197
+    },
+    {
+      "description": "GPU device inaccessible on a pre-0.9.2 workshop (device-group fix)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 13113,
+      "cost": 0.032878
+    },
+    {
+      "description": "`workshop start` refused \u2014 workshop too old (0.9.6 format guard)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23170,
+      "cost": 0.039155
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 1, refresh just failed",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 12971,
+      "cost": 0.032039
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 2, paused in Waiting after fixing",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 4961,
+      "cost": 0.026287
+    },
+    {
+      "description": "Multi-turn recovery \u2014 turn 3, succeeded, what to verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 27774,
+      "cost": 0.042625
+    },
+    {
+      "description": "Standard workshop removal",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10924,
+      "cost": 0.030236
+    },
+    {
+      "description": "Project deleted before workshop was removed (orphan)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15355,
+      "cost": 0.033268
+    },
+    {
+      "description": "User asks about workshop restore vs remove",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22961,
+      "cost": 0.039883
+    },
+    {
+      "description": "After manual lxc cleanup, what to verify",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 16871,
+      "cost": 0.035974
+    },
+    {
+      "description": "Orphaned workshop the user wants to keep",
+      "passed": true,
+      "score": 0.8666666666666667,
+      "latency_ms": 43369,
+      "cost": 0.05654
+    },
+    {
+      "description": "Broken workshop won't start \u2014 copy files out before removing it (0.9.10)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25589,
+      "cost": 0.042605
+    },
+    {
+      "description": "User asks about publishing an SDK to the Store",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17607,
+      "cost": 0.035584
+    },
+    {
+      "description": "User asks about workshopctl (0.9.8 \u2014 set-health and get-secret)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18620,
+      "cost": 0.036146
+    },
+    {
+      "description": "User asks about sdkcraft pack vs workshop launch",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19226,
+      "cost": 0.037865
+    },
+    {
+      "description": "User asks the agent to drive a workshop sketch-sdk session",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18654,
+      "cost": 0.035557
+    },
+    {
+      "description": "User wants a reusable build script for the workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10858,
+      "cost": 0.030686
+    },
+    {
+      "description": "User wants a project-specific tool install (route to author-in-project-sdk)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 33446,
+      "cost": 0.051194
+    },
+    {
+      "description": "User wants ruff installed against the project via an in-project SDK",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 36991,
+      "cost": 0.053399
+    },
+    {
+      "description": "User asks about setup-base for system packages on every workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 22553,
+      "cost": 0.039725
+    },
+    {
+      "description": "User reports a hook script that isn't running",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 46698,
+      "cost": 0.058015
+    },
+    {
+      "description": "User asks where hooks go in sdk.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17938,
+      "cost": 0.035507
+    },
+    {
+      "description": "Minimal in-project sdk.yaml contents",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11723,
+      "cost": 0.031775
+    },
+    {
+      "description": "Publisher metadata in an in-project sdk.yaml (0.9.9)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15090,
+      "cost": 0.033503
+    },
+    {
+      "description": "User asks how to update an existing in-project SDK's setup-project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 11750,
+      "cost": 0.031193
+    },
+    {
+      "description": "Reporting SDK health from a check-health hook (correct statuses)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 14477,
+      "cost": 0.033968
+    },
+    {
+      "description": "Persisting SDK state across a refresh (save-state / restore-state)",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18211,
+      "cost": 0.036349
+    },
+    {
+      "description": "User asks for the full list of SDK hooks and their privilege",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 17895,
+      "cost": 0.034453
+    },
+    {
+      "description": "User wants to attach a remote IDE over SSH (vendor-agnostic)",
+      "passed": true,
+      "score": 0.95,
+      "latency_ms": 13593,
+      "cost": 0.032633
+    },
+    {
+      "description": "User asks about a specific remote-IDE vendor",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 19179,
+      "cost": 0.035287
+    },
+    {
+      "description": "SSH works for a new workshop but fails for one launched months ago",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 25961,
+      "cost": 0.040811
+    },
+    {
+      "description": "User wants ssh-agent forwarding for git inside the workshop",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 28006,
+      "cost": 0.045625
+    },
+    {
+      "description": "User asks for the host address to point their tool at",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15274,
+      "cost": 0.035548
+    },
+    {
+      "description": "User picks a privileged port for a system tunnel plug",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 23458,
+      "cost": 0.041978
+    },
+    {
+      "description": "User wants two workshops in the same project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 18941,
+      "cost": 0.03686
+    },
+    {
+      "description": "User asks how to migrate from a single workshop.yaml",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 15688,
+      "cost": 0.035146
+    },
+    {
+      "description": "User omits workshop name in a multi-workshop project",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 10548,
+      "cost": 0.0314
+    },
+    {
+      "description": "Cross-workshop networking within the same project (DNS by name)",
+      "passed": true,
+      "score": 0.9333333333333332,
+      "latency_ms": 45036,
+      "cost": 0.060989
+    },
+    {
+      "description": "A workshop needs a host-only service \u2014 still a tunnel",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 21716,
+      "cost": 0.039047
+    },
+    {
+      "description": "User attempts a direct cross-workshop connect",
+      "passed": true,
+      "score": 1,
+      "latency_ms": 29070,
+      "cost": 0.044551
+    }
+  ]
+}
