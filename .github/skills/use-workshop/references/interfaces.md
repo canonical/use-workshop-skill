@@ -13,7 +13,7 @@ A workshop is a graph of capabilities wired through two named endpoints that bot
 </model>
 
 <auto_vs_manual>
-**The VM runtime narrows this table to two rows.** A `runtime: lxd-vm` workshop supports only `mount` and `secret` (0.9.9): those auto-connect and persist as below, while every other interface's plugs and slots are skipped with an `incompatible plugs` warning and cannot be connected at all. Through 0.9.8 a VM skipped auto-connect entirely. On LXD `6/stable` a VM cannot carry SDKs, so it has no plugs to wire in the first place. See `references/runtime.md`.
+**The VM runtime narrows this table to two rows.** A `runtime: lxd-vm` workshop supports only `mount` and `secret` (0.9.9): those auto-connect and persist as below, while every other interface's plugs and slots are skipped with an `incompatible plugs` warning and cannot be connected at all. A `mount` connects only while the VM is running. Through 0.9.8 a VM skipped auto-connect entirely, and through 0.9.9 it carried SDKs only on LXD `6/candidate`. See `references/runtime.md`.
 
 | Interface | Auto-connect default | Manual when |
 |-----------|---------------------|-------------|
@@ -107,6 +107,8 @@ plugs:
 ```
 
 To find a device's attributes on the host: `udevadm info --query=property --property=SUBSYSTEM --property=ID_VENDOR_ID --property=ID_MODEL_ID <DEVICE-PATH>` — `vendorid` matches `ID_VENDOR_ID`, `productid` matches `ID_MODEL_ID`. A bare `subsystem: tty` exposes every serial device on the host; narrow with `vendorid`/`productid` when the workshop needs just one adapter.
+
+**USB (0.9.10+).** `subsystem: usb`, or a `vendorid`/`productid` with no `subsystem`, also passes the raw USB device through (`/dev/bus/usb/…`), so `lsusb` and libusb-based tools (flashers, debug probes) see it. Through 0.9.9 `subsystem: usb` exposed nothing, because LXD skips that subsystem when it enumerates hotplug device nodes. A vendor/product-only plug matched only the device's kernel nodes, such as a `tty`. So "connected but `lsusb` shows nothing" on an older host is fixed by upgrading Workshop and reconnecting, not by rewriting the plug.
 
 **Connect:** manual, always (never auto-connects, for security):
 `workshop connect <WORKSHOP>/<SDK>:<PLUG-NAME> :custom-device`.

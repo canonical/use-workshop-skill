@@ -8,7 +8,7 @@ Core conceptual model an agent must hold to operate Workshop fluently. These are
 <core_terms>
 
 <term name="workshop (lowercase)">
-An isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it) — an LXD container by default, or a full virtual machine when the definition says `runtime: lxd-vm` (experimental; spelled `confinement: virtual-machine` in 0.9.7). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
+An isolated development environment defined by a single YAML blueprint. Hosted by LXD as an implementation detail (don't rely on it) — an LXD container by default, or a full virtual machine when the definition says `runtime: lxd-vm` (generally available since 0.9.10; spelled `confinement: virtual-machine` in 0.9.7). Capitalized "Workshop" is the tool itself; lowercase "workshop" is an instance of an environment.
 </term>
 
 <term name="project">
@@ -24,7 +24,7 @@ The underlying OS image of the workshop, declared as `base: ubuntu@<release>`. S
 </term>
 
 <term name="runtime">
-How the workshop is sandboxed, declared as the top-level `runtime:` key (0.9.8+; `confinement:` in 0.9.7 — 0.9.8 silently ignored a leftover one, 0.9.9 rejects it as an unknown field): `lxd-container` (the default; omitting the key selects it) or `lxd-vm` (**experimental**, gated behind `sudo snap set workshop workshop.experimental-vms=1` and, for SDKs, LXD from `6/candidate`). The runtime is fixed at launch — changing it means remove + launch, not refresh. A VM drops SDK support on LXD `6/stable` and every interface but `mount` and `secret` (0.9.9; through 0.9.8 it also skipped auto-connect and `check-health`), fixes its virtual hardware at start, and its boundary stops at the kernel. Full model and the exact errors: `references/runtime.md`.
+How the workshop is sandboxed, declared as the top-level `runtime:` key (0.9.8+; `confinement:` in 0.9.7 — 0.9.8 silently ignored a leftover one, 0.9.9 rejects it as an unknown field): `lxd-container` (the default; omitting the key selects it) or `lxd-vm` (generally available since 0.9.10; through 0.9.9 it was experimental, needed a snap opt-in and, for SDKs, LXD `6/candidate`). The runtime is fixed at launch — changing it means remove + launch, not refresh. A VM drops every interface but `mount` and `secret` (0.9.9+; through 0.9.8 it also skipped auto-connect and `check-health`). Its CPUs, memory and disk come from the `cpus`/`memory`/`disk` keys (0.9.10+; default 2, `4GiB`, `10GiB`), and its boundary stops at the kernel. Full model and the exact errors: `references/runtime.md`.
 </term>
 
 <term name="workshop hostname (DNS)">

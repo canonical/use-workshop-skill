@@ -18,7 +18,8 @@ The complete expressive surface of a workshop definition:
 |-----------|--------|----------------|
 | `name` | `^[a-z](?:-?[a-z0-9])*$`, max 40 chars; must match filename in `.workshop/<name>.yaml` layout | Default `dev` |
 | `base` | Exactly one of `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (`ubuntu@20.04` is deprecated since 0.9.7 — still accepted in 0.9.8, but warns on every launch/refresh, and removal is announced without a date) | Match the repo's CI runner / docs; default `ubuntu@24.04`; never propose `20.04` |
-| `runtime` | `lxd-container` (default; omit the key) or `lxd-vm` (experimental). 0.9.8 renamed it from `confinement:` (silently ignored on 0.9.8, rejected as an unknown field since 0.9.9) — never emit either key. Onboarding always emits a container — see `<not_in_envelope>` | Omit |
+| `runtime` | `lxd-container` (default; omit the key) or `lxd-vm` (generally available since 0.9.10, but limited to `mount` and `secret` interfaces). 0.9.8 renamed it from `confinement:` (silently ignored on 0.9.8, rejected as an unknown field since 0.9.9) — never emit either key. Onboarding always emits a container — see `<not_in_envelope>` | Omit |
+| `cpus` / `memory` / `disk` | 0.9.10+: CPU count (integer), memory and root-disk size (integer + unit, e.g. `8GiB`). A container is unlimited by default. Minimums: memory `256MiB`, disk `2GiB`. They apply on `workshop refresh` | Omit. Emit them only when the repo's own tooling states a resource need (for example a CI job's memory requirement) or the user asks, and cite the evidence |
 | `sdks` | Store SDKs by name (+ snap-style `channel`), in-project SDKs as `project-<name>`, try SDKs as `try-<name>`, implicit `system` | Toolchains and runtimes |
 | `sdks[].plugs` / `sdks[].slots` | Graft interface endpoints onto any listed SDK (incl. `system`) | Tunnels for dev servers; desktop/gpu/device access |
 | `connections` | Explicit plug↔slot wiring when auto-connect isn't enough | venv sharing, cross-SDK content |
@@ -51,13 +52,13 @@ Things a proposal must NEVER contain, because Workshop cannot express them:
 - **No non-Linux toolchains.** Workshops are Ubuntu LXD instances: no macOS
   (Xcode/iOS), Windows (MSVC/.NET Framework), or BSD-only builds.
 - **No `runtime: lxd-vm` in a generated definition** (nor the 0.9.7
-  spelling, `confinement: virtual-machine`). The VM runtime is experimental,
-  needs a host-level snap opt-in this skill must never perform, and on LXD
-  `6/stable` refuses any definition that declares SDKs — which every
-  onboarded definition does; lifting that needs a host-wide, one-way switch
-  to LXD `6/candidate`. Even then a VM supports only `mount` and `secret`
-  interfaces, so any tunnel, GPU, desktop, or device wiring the repo needs is
-  skipped. If the user asks for
+  spelling, `confinement: virtual-machine`). Since Workshop 0.9.10 the VM runtime is
+  generally available and carries SDKs on stable LXD. But a VM supports only
+  `mount` and `secret` interfaces, so any tunnel, GPU, desktop, or device
+  wiring the repo needs is skipped. It also costs more memory and disk (2 CPUs,
+  `4GiB`, `10GiB` by default), and a repo's build tooling gives no evidence
+  that it needs one. On 0.9.9 and earlier hosts it also needed an opt-in and
+  LXD `6/candidate`. If the user asks for
   a VM, say this plainly and offer the container definition instead; do not
   emit the key. If the motive is containing a coding agent, say also that a
   VM leaves `/project` (with `.git`) writable and the network open. For your

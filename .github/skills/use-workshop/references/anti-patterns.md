@@ -103,9 +103,9 @@ Common mistakes when an agent operates the workshop CLI. Each entry is a thing T
 </anti_pattern>
 
 <anti_pattern name="Promising SDKs or container-only interfaces in a VM workshop">
-**Wrong:** proposing a `runtime: lxd-vm` definition that carries `sdks:` on a stock host, or that relies on a tunnel, desktop, ssh-agent, camera, custom-device, or GPU plug, and treating it like a container with a stronger wall.
-**Why it's bad:** on LXD `6/stable` a VM workshop with any SDK is refused outright (`SDKs are currently unavailable for virtual machines`) — SDKs need LXD from `6/candidate`, a host-wide switch LXD can't roll back. Even where SDKs do work, a VM supports only `mount` and `secret`: every other interface is skipped with an `incompatible plugs` warning and cannot be connected by hand, and each mount spends a PCIe port from a fixed budget. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
-**Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up and what the LXD switch costs. See `references/runtime.md`.
+**Wrong:** proposing a `runtime: lxd-vm` definition that relies on a tunnel, desktop, ssh-agent, camera, custom-device, or GPU plug, and treating it like a container with a stronger wall.
+**Why it's bad:** a VM supports only `mount` and `secret`. Since 0.9.10 it carries SDKs on stable LXD, but every other interface is skipped with an `incompatible plugs` warning and cannot be connected by hand, and each mount spends a PCIe port from a fixed budget. And the boundary stops at the kernel: `/project` (with `.git`) stays writable and the network stays open.
+**Right:** default to the container runtime. Only reach for a VM when the user explicitly needs nested virtualization or a harder kernel boundary, and when you do, say up front what it gives up. On 0.9.9 and earlier, `SDKs are currently unavailable for virtual machines` or the opt-in demand means: upgrade Workshop, not switch LXD to `6/candidate`. See `references/runtime.md`.
 </anti_pattern>
 
 <anti_pattern name="Writing a secret's value where the workshop can read it">

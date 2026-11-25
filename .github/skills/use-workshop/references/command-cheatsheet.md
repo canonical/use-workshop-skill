@@ -6,14 +6,23 @@ Dense reference for every `workshop` and `sdk` subcommand. One block per command
 
 All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--project <DIR>` to target a project directory other than the current one. The installed version comes from `workshop --version`/`-v` — there is no `workshop version` subcommand — or from `snap list workshop`, which also shows the tracked channel. Prefer the snap table when reading `sdkcraft`'s version: an edge build answers `--version` with a dev string (`0.0.post1.dev1+g<sha>`), and the two snaps track independently, so `sdkcraft` trailing `workshop` by a point release is normal. Every `(0.9.x+)` note below is a floor — check it before citing the behavior on an older install, and never `snap refresh`/`snap remove` on the user's behalf (see `references/anti-patterns.md` on forward compatibility and what a reinstall destroys). Upstream states explicitly (0.9.7 docs) that **the `workshop` and `sdk` CLI output format can change at any time** — the `workshopd` API is the stable surface, and only breaking changes to CLI *arguments* are announced in release notes. So match the named, documented lines this file calls out (`status:`, `hostname:`, `runtime:`) rather than column positions or field order, and don't build a parser on table layout. The `workshop` and `sdk` CLIs ship Bash, Zsh, and Fish completion scripts that dynamically complete workshop names, plugs, slots, and recent change IDs — prefer letting the user tab-complete names rather than hard-coding them. The snap enables completion automatically; manual setup is `source <(workshop completion bash)` (also `zsh`/`fish`, and `sdk completion …`).
 
+**Aliases (0.9.10+):**
+- `workshop ls` = `workshop list`
+- `workshop rm` = `workshop remove`
+- `workshop sh` = `workshop shell`
+- `workshop ok` = `workshop okay`
+- `sdk ls` = `sdk list`
+
+They take the same arguments and flags as the full commands. On 0.9.9 and earlier they are unknown commands, so write the full name in scripts or instructions that may run on an older host.
+
 **Workshop-name argument rule.** What matters is the *number* of workshops in the project, not the file layout. In a single-workshop project the workshop name is OPTIONAL and may be omitted on most subcommands — this holds whether the definition is a root `workshop.yaml` or a lone `.workshop/<NAME>.yaml` (e.g. one created by `workshop init`; tutorial part 1 runs `workshop launch`/`info`/`stop`/`start`/`refresh` with no name against `.workshop/dev.yaml`). In a multi-workshop project (two or more definitions under `.workshop/`) the workshop name is REQUIRED on every subcommand that takes one — bare `workshop refresh`, `workshop exec`, `workshop run`, etc. are rejected with a name-required error, NOT silently expanded across all workshops. Always surface this when diagnosing a multi-workshop "command complained" symptom.
 </overview>
 
 <workshop_lifecycle>
 **`workshop init <NAME> [flags]`** — Scaffold a new workshop *definition* in the project; writes a named file to `.workshop/<NAME>.yaml` and reports `"<NAME>" workshop definition created at <path>` (0.9.8 wording). Fails if a workshop with that name already exists. Creates the definition file ONLY — it does not build a container; follow with `workshop launch`. Shell completion covers `--base` and `--runtime` values (0.9.8+).
-- `--sdks` — optional (0.9.5+; bare `workshop init dev` scaffolds a base-only definition). Comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.26/stable`) and may be an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). Example: `--sdks go,project-tools`.
+- `--sdks` — optional (0.9.5+; bare `workshop init dev` scaffolds a base-only definition). Comma-separated list; each entry may pin a channel via `<NAME>/<CHANNEL>` (e.g. `go/1.27/stable`) and may be an in-project (`project-<NAME>`) or try (`try-<NAME>`) SDK (0.9.5+). Example: `--sdks go,project-tools`.
 - `--base` — base image; optional, defaults to `ubuntu@24.04`. `--help` lists the supported bases: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04` (0.9.7 dropped `ubuntu@20.04` from the list — the validator still accepts it, but it warns on every launch/refresh; never scaffold it).
-- `--runtime <lxd-container|lxd-vm>` (0.9.8+; default `lxd-container`) — `--runtime lxd-vm` scaffolds `runtime: lxd-vm`. Without it no `runtime:` line is written at all, which means `lxd-container`. The 0.9.7 `--vm` flag is gone (`Error: unknown flag: --vm`). The VM runtime is experimental, needs LXD `6/candidate` for SDKs, and the launch is refused until the host opts in — read `references/runtime.md` before proposing it.
+- `--runtime <lxd-container|lxd-vm>` (0.9.8+; default `lxd-container`) — `--runtime lxd-vm` scaffolds `runtime: lxd-vm`. Without it no `runtime:` line is written at all, which means `lxd-container`. The 0.9.7 `--vm` flag is gone (`Error: unknown flag: --vm`). Since 0.9.10 the VM runtime needs no opt-in and carries SDKs on stable LXD. It still supports only `mount` and `secret` interfaces, so read `references/runtime.md` before proposing it.
 - Scaffolds base + SDK list only. For `actions:`, `connections:`, or plug/slot grafts, edit the generated `.workshop/<NAME>.yaml` afterward (or start from a `templates/` file). An in-project SDK's *directory* (`.workshop/<NAME>/`) is still authored separately.
 - Example: `workshop init dev --sdks ollama/cpu/stable --base ubuntu@22.04`
 
@@ -23,11 +32,17 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - `--verbose` combines stdout+stderr from hooks.
 - Workshop name is optional if the project has only one workshop.
 - Launching an already-launched workshop fails with no effect — use `refresh` to update it.
-- A `runtime: lxd-vm` definition is refused here until the host opts in: `runtime "lxd-vm" is experimental` / `To opt in: "sudo snap set workshop workshop.experimental-vms=1 && sudo snap restart workshop.workshopd"`. If it also declares SDKs on LXD `6/stable`: `SDKs are currently unavailable for virtual machines`. If the daemon couldn't listen on vsock (0.9.9+): `virtual machines are unavailable: <reason>`. A bad value: `invalid runtime "<X>"; valid runtimes: lxd-container, lxd-vm`. See `references/runtime.md`.
+- VM errors at launch:
+  - If the daemon couldn't listen on vsock (0.9.9+): `virtual machines are unavailable: <reason>`.
+  - A bad runtime value: `invalid runtime "<X>"; valid runtimes: lxd-container, lxd-vm`.
+  - `runtime "lxd-vm" is experimental` (an opt-in demand) or `SDKs are currently unavailable for virtual machines` means a pre-0.9.10 Workshop. Upgrade it; don't apply the old opt-in.
+
+  See `references/runtime.md`.
+- A bad `cpus`/`memory`/`disk` value (0.9.10+) fails the launch. A malformed size fails up front. A size below the runtime's minimum fails in the create task (`Create new "<NAME>" workshop … (invalid disk size "1GiB": must be at least 2GiB for containers)`). See `references/definition-file.md`.
 - Example: `workshop launch nimble jazzy`
 
 **`workshop refresh [<WORKSHOP>...] [flags]`** — Update existing workshops to match the current definition. Workshop must be `Ready`. Same `--wait-on-error`/`--continue`/`--abort`/`--no-wait`/`--verbose` flags as `launch`.
-- Use this — not `remove`+`launch` — for definition changes, including `base:`, `sdks:`, `connections:`, and `actions:`. (Action edits don't actually require it; everything else does.)
+- Use this — not `remove`+`launch` — for definition changes, including `base:`, `sdks:`, `connections:`, `actions:`, and (0.9.10+) `cpus:`/`memory:`/`disk:`. Action edits don't actually require it; everything else does. A resource change applies to a running container or VM, and deleting the key resets the limit to its default.
 - The runtime cannot change on a launched workshop: editing `runtime:` and refreshing fails with `runtime changed from "lxd-container" to "lxd-vm"`. The only path is `remove` + `launch` — the one case where that is the right answer rather than the anti-pattern.
 - In a VM workshop (`runtime: lxd-vm`), the stickiness below holds for `mount` and `secret`, the only interfaces a VM supports (0.9.9); other plugs are skipped with a warning. Through 0.9.8 a VM refresh skipped auto-connect and restored nothing, so every connection had to be re-wired.
 - Connection stickiness (0.9.5+): manual `workshop connect` connections are PRESERVED across refresh (as long as their plugs and slots still exist in the new definition), and a manual `workshop disconnect` made without `--forget` stays disconnected. Auto-connections are re-evaluated as usual. `workshop restore` is the reset, not refresh.
@@ -45,6 +60,8 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 
 **`workshop remove <WORKSHOP>... [flags]`** — Delete the workshop container but preserve the definition file. Requires not `Off`/`Pending`. Auto-stops if `Ready`.
 - Host directories set by `workshop remount` are NOT deleted, but the remount *record* does not survive — after a later `launch` the plug mounts its default source again.
+- Alias `workshop rm` (0.9.10+).
+- Removal destroys everything inside the workshop: the `workshop` user's home and the Workshop-allocated mount directories under `~/.local/share/workshop/id/<PROJECT-ID>/<WORKSHOP>/mount/`. Only directories the user manages survive: `/project`, and any `remount` target. Copy out what matters first (`workflows/purge-and-recover.md`).
 - Example: `workshop remove nimble`
 
 **`workshop restore <WORKSHOP>... [flags]`** — Revert container filesystem to last `launch`/`refresh` state and reset interface wiring to definition defaults. Workshop must be `Ready`. Transactional across multiple workshops.
@@ -55,12 +72,13 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 </workshop_lifecycle>
 
 <workshop_introspection>
-**`workshop list [flags]`** — List workshops in current project (Project, Workshop, Status, Notes columns).
+**`workshop list [flags]`** — List workshops in current project (Project, Workshop, Status, Notes columns). Alias `workshop ls` (0.9.10+).
 - `--global` lists workshops from all projects in the system (excludes `Off`).
 - `--no-headers`.
 - Example: `workshop list --global`
 
 **`workshop info [<WORKSHOP>] [flags]`** — Print workshop's settings, status, SDK details, and connected mount plugs as YAML.
+- `cpus:`, `memory:` and `disk:` lines (0.9.10+) follow `runtime:`. A VM always prints all three, with its defaults (`2`, `4GiB`, `10GiB`) when the definition sets none. A container prints only the keys its definition sets. These lines are the authoritative effective limits after a refresh.
 - A `runtime:` line (0.9.8+; `confinement:` in 0.9.7) follows `status:` and is always present: `lxd-container` or `lxd-vm`. This is the authoritative answer to "is this a VM?" — the definition file can have been edited after launch (and on 0.9.8 could carry a stale `confinement:` key that was silently ignored; 0.9.9 rejects one), and the runtime is fixed at launch. Don't pin the indentation of `workshop info` output; the header block's padding has changed between releases.
 - The `status:` line is lowercase (`status:   ready`) and carries the workshop status — `off`/`ready`/`stopped`/`pending`/`waiting`/`error`. It is the roll-up of every SDK's `check-health`: there is no per-SDK health line, and `okay`/`waiting`/`error` (the `workshopctl set-health` vocabulary) are not strings this output prints. Match `status:\s+ready`, never `status:\s+okay`.
 - Output includes a `hostname:` line (0.9.2+) with the workshop's DNS name `<WORKSHOP>.<PROJECT>.wp`; workshops in the same project can reach each other by that name (a short name where the base supports the DNS search domain). Existing workshops need one `workshop refresh` to populate it.
@@ -84,7 +102,7 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 - `--abs-time` switches to RFC 3339 absolute timestamps.
 - `--unicode auto|never|always`, `--verbose`.
 
-**`workshop okay`** — Acknowledge all warnings printed by the previous `workshop warnings` call.
+**`workshop okay`** — Acknowledge all warnings printed by the previous `workshop warnings` call. Alias `workshop ok` (0.9.10+).
 </workshop_introspection>
 
 <workshopctl_in_the_workshop>
@@ -108,9 +126,10 @@ All commands accept `-h`/`--help` and the `workshop` CLI also accepts `-p`/`--pr
 **`workshop run [flags] [<WORKSHOP>] [--] <ACTION> <ARGUMENTS>...`** — Invoke a named action from the workshop's `actions:` section. Same flags as `exec`.
 - Trailing arguments are forwarded to the action's bash script as positional parameters (`"$@"`, `"$1"`, ...).
 - Action edits do NOT require `workshop refresh` — they're parsed at run time.
+- Exit status: `workshop run` returns the action's exit status. Through 0.9.9 it could report the wrong status for an action that called `exit` explicitly; 0.9.10 fixed this. On an older host, don't debug the action itself when the status contradicts its output: upgrade Workshop, or end the action without an explicit `exit`.
 - Example: `workshop run dev -- tests -run TestFoo ./pkg/...`
 
-**`workshop shell [<WORKSHOP>]`** — Shorthand for `workshop exec` that opens an interactive login shell as the `workshop` user. Requires `Ready` or `Waiting`. Takes no flags; for a shell with custom uid/cwd/env, use `workshop exec [<WORKSHOP>] -- bash -l`.
+**`workshop shell [<WORKSHOP>]`** — Shorthand for `workshop exec` that opens an interactive login shell as the `workshop` user. Requires `Ready` or `Waiting`. Takes no flags; for a shell with custom uid/cwd/env, use `workshop exec [<WORKSHOP>] -- bash -l`. Alias `workshop sh` (0.9.10+).
 - Example: `workshop shell nimble`
 </workshop_execution>
 
@@ -158,7 +177,7 @@ When emitting commands to the user, write `sdk` (the readable form) and add a on
 </sdk_cli_invocation>
 
 <sdk_cli>
-**`sdk list [flags]`** — List local SDK volumes on this machine (multiple entries possible if several revisions co-exist). Use `workshop info` for per-workshop SDK installation status. `--no-headers`.
+**`sdk list [flags]`** (alias `sdk ls`, 0.9.10+) — List local SDK volumes on this machine (multiple entries possible if several revisions co-exist). Use `workshop info` for per-workshop SDK installation status. `--no-headers`.
 
 **`sdk find <QUERY> [flags]`** — Search the SDK Store for SDKs whose name/title/summary/description/publisher matches the query. Only the latest release per SDK is shown.
 - Combine multiple words: `sdk find <keyword> <other-keyword>`. `--no-headers`.
