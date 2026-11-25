@@ -125,3 +125,24 @@
         again. It does NOT prescribe `lxc delete` or `workshop remove` as
         the way to recover a workshop the user wants to KEEP (mentioning
         removal as the alternative for when they don't want it is fine).
+
+- description: Broken workshop won't start — copy files out before removing it (0.9.10)
+  vars:
+    user: |
+      An agent ran a bunch of sudo commands in my container workshop "dev" and now it won't start; `workshop restore` didn't help either. I have some notes in /home/workshop/notes that aren't in the project. Should I just `workshop remove dev` and relaunch?
+  assert:
+    - type: contains
+      value: lxc file pull
+    - type: llm-rubric
+      value: |
+        The response says to copy the files out BEFORE removing the
+        workshop, because `workshop remove` deletes everything inside it,
+        including the `workshop` user's home (only the project directory and
+        user-managed remount targets survive). Since the container won't
+        start, it copies them with `lxc file pull --recursive` from the
+        workshop's LXD instance (named `<WORKSHOP>-<PROJECT-ID>`, in the
+        `workshop.<USERNAME>` LXD project) into a new directory on the host.
+        It runs `lxc` without `sudo`, or at least does not prescribe `sudo`
+        for it. Only after that does it remove and relaunch. It does NOT
+        start with `workshop remove`, `lxc delete`, or a snap purge, and it
+        does NOT mount the instance's disk on the host.

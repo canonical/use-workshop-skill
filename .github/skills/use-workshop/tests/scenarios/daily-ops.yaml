@@ -76,3 +76,20 @@
         `workshop remove` + `workshop launch` (or "delete and re-launch") as
         the way to apply a base change. Mentioning remove/launch only to warn
         against it is fine.
+
+- description: Short command aliases (ls / rm / sh, 0.9.10)
+  vars:
+    user: |
+      Is `workshop rm dev` the same as `workshop remove dev`? And is there a short form for `workshop shell`?
+  assert:
+    - type: contains
+      value: workshop sh
+    - type: llm-rubric
+      value: |
+        The response confirms that `workshop rm` is an alias for
+        `workshop remove` and `workshop sh` for `workshop shell`, added in
+        Workshop 0.9.10 (with `workshop ls`, `workshop ok` and `sdk ls`
+        being equally fine to mention). It may note that older Workshop
+        releases don't know the aliases. It does NOT claim the aliases behave
+        differently from the full commands, and it does NOT tell the user to
+        define a shell alias themselves as the only way to get them.
