@@ -3,189 +3,198 @@
 
 # use-workshop skill family
 
-Agentic skills for [Workshop](https://ubuntu.com/workshop/docs/):
+Agent skills for [Workshop](https://ubuntu.com/workshop/docs/), in the
+standard `SKILL.md` format:
 
-- **`use-workshop`** — operate the Workshop CLI: launching workshops,
-  refreshing them, running commands inside, wiring interfaces, debugging
-  failed changes, and orchestrating parallel environments via git worktrees.
-- **`onboard-workshop`** — onboard an arbitrary repository: analyze its
-  build/test/debug toolchain (Makefiles, package scripts, CI workflows, dev
-  servers), deliver an honest feasibility verdict against Workshop's actual
-  capability envelope, then propose, generate, launch, and verify a tailored
-  workshop definition. If onboarding is only partial or impossible, the
-  skill says so instead of shipping a subpar workshop.
-- **`design-sdk`** — the publisher side: design, build, and publish Store
-  SDKs with `sdkcraft`. Interview-first design against the documented best
-  practices and the reference SDKs, generation of `sdkcraft.yaml` + hooks +
-  spread smoke tests + a concise README, the `sdkcraft try` / `workshop
-  refresh` iteration loop, and SDK-repo onboarding (version branches,
-  CI workflows, renovate).
+- **`use-workshop`**: operates the Workshop CLI. It launches and refreshes
+  workshops, runs commands in them, connects interfaces, debugs failed
+  changes, and runs parallel workshops in git worktrees.
+- **`onboard-workshop`**: creates a workshop definition for an existing
+  repository. It reads the repository's build, test and debug toolchain,
+  reports whether Workshop can support it, then generates, launches and
+  verifies the definition.
+- **`design-sdk`**: designs, builds and publishes Store SDKs with
+  `sdkcraft`. It writes `sdkcraft.yaml`, hooks, spread smoke tests and the
+  README, and sets up the SDK repository (version branches, CI, renovate).
 
-`onboard-workshop` and `design-sdk` borrow the sibling's references and
-templates by relative path (`../use-workshop/…`), so the skills ship and
-vendor together.
+`onboard-workshop` and `design-sdk` read files from `../use-workshop/`.
+Always install the three skills together, in the same directory.
 
 ## Install
 
-### Claude Code (plugin)
+The skills are in `.github/skills/` in this repository. The `tests/`
+subdirectories and `.github/skills/_testlib/` are only used to evaluate the
+skills here, so you can leave them out.
 
-Add the marketplace, then install the plugin:
+Most agents read skills from `~/.agents/skills/` (all projects) and
+`.agents/skills/` (one project). Claude Code is the exception: it reads
+`~/.claude/skills/` and `.claude/skills/` instead.
 
-```
-/plugin marketplace add canonical/use-workshop-skill
-/plugin install use-workshop@canonical
-```
+| Agent | All projects | One project |
+|---|---|---|
+| opencode | `~/.agents/skills/` | `.agents/skills/` |
+| omp | `~/.agents/skills/` | `.agents/skills/` |
+| Codex CLI | `~/.agents/skills/` | `.agents/skills/` |
+| GitHub Copilot CLI | `~/.agents/skills/` | `.agents/skills/` or `.github/skills/` |
+| Claude Code | `~/.claude/skills/` | `.claude/skills/` |
 
-Then run `/reload-plugins` (or restart Claude Code) to activate.
+Tested with opencode 2.4.1, omp 19.1.1, Codex CLI 0.172.0, GitHub Copilot
+CLI 1.0.114 and Claude Code 2.1.332.
 
-Claude Code discovers skills under a top-level `skills/` directory, so
-this repo ships a `skills` → `.github/skills` symlink alongside the
-`.claude-plugin/` manifests (`plugin.json` + `marketplace.json`). The
-skill files themselves stay at `.github/skills/use-workshop/` (single
-source of truth, shared with Copilot and any other consumer).
+### For all projects
 
-To install from a local clone instead of the marketplace, point Claude
-Code at the checkout directly:
+Clone the repository and link the skills into `~/.agents/skills/`:
 
-```
-git clone https://github.com/canonical/use-workshop-skill
-claude --plugin-dir ./use-workshop-skill
-```
-
-#### Updating
-
-Updates from the marketplace are manual by default:
-
-```
-/plugin marketplace update canonical
-/plugin update use-workshop
-/reload-plugins
+```sh
+git clone https://github.com/canonical/use-workshop-skill ~/.local/share/use-workshop-skill
+mkdir -p ~/.agents/skills
+for s in use-workshop onboard-workshop design-sdk; do
+  ln -s ~/.local/share/use-workshop-skill/.github/skills/$s ~/.agents/skills/$s
+done
 ```
 
-To have Claude Code pick up new commits automatically at startup,
-enable auto-update for the `canonical` marketplace via the
-**Marketplaces** tab in `/plugin`. Updates are tracked by commit SHA,
-so any new commit to this repo registers as an update — the
-`plugin.json` `version` field does not need to be bumped for skill
-content edits to flow through.
+For Claude Code, also link them into `~/.claude/skills/`:
 
-### Copy into a single repo
+```sh
+mkdir -p ~/.claude/skills
+for s in use-workshop onboard-workshop design-sdk; do
+  ln -s ~/.agents/skills/$s ~/.claude/skills/$s
+done
+```
 
-If you'd rather vendor the skills into one project (Claude Code or
-Copilot), copy ALL THREE directories — `onboard-workshop` and `design-sdk`
-read `use-workshop`'s references and templates by sibling-relative path:
+To update, pull the clone:
 
-- Claude Code: `.github/skills/{use-workshop,onboard-workshop,design-sdk}/` → `.claude/skills/`
-- Copilot:     `.github/skills/{use-workshop,onboard-workshop,design-sdk}/` → `.github/skills/`
+```sh
+git -C ~/.local/share/use-workshop-skill pull
+```
 
-If you truly need `onboard-workshop` or `design-sdk` standalone, the
-`<sibling_skill>` block in each `SKILL.md` documents the docs-URL fallback
-it uses when the sibling files are absent.
+### For one project
 
-For the Workshop CLI itself, see the
-[Workshop docs](https://ubuntu.com/workshop/docs/).
+Run this from the project root to copy the skills into `.agents/skills/`:
+
+```sh
+src=$(mktemp -d)
+git clone --depth 1 https://github.com/canonical/use-workshop-skill "$src"
+mkdir -p .agents/skills
+for s in use-workshop onboard-workshop design-sdk; do
+  cp -r "$src/.github/skills/$s" .agents/skills/
+done
+rm -rf "$src"
+```
+
+For Claude Code, use `.claude/skills` instead of `.agents/skills`. To update,
+run the commands again.
+
+### As a plugin
+
+Codex CLI, GitHub Copilot CLI and Claude Code can install the skills as a
+plugin from this repository's marketplace (`.claude-plugin/`). Plugins update
+through the agent's own commands, not through `git pull`.
+
+Codex CLI:
+
+```sh
+codex plugin marketplace add canonical/use-workshop-skill
+codex plugin add use-workshop@canonical
+```
+
+To update, upgrade the marketplace and add the plugin again:
+
+```sh
+codex plugin marketplace upgrade canonical
+codex plugin add use-workshop@canonical
+```
+
+GitHub Copilot CLI:
+
+```sh
+copilot plugin marketplace add canonical/use-workshop-skill
+copilot plugin install use-workshop@canonical
+```
+
+To update:
+
+```sh
+copilot plugin update use-workshop@canonical
+```
+
+Claude Code:
+
+```sh
+claude plugin marketplace add canonical/use-workshop-skill
+claude plugin install use-workshop@canonical
+```
+
+To update:
+
+```sh
+claude plugin marketplace update canonical
+claude plugin update use-workshop@canonical
+```
+
+Restart the agent after you install or update a plugin.
 
 ## Design principles
 
-A few opinions about what keeps a CLI-operating skill useful as the
-agent's context fills up and as the underlying CLI evolves.
+**Router, not a playbook.** `SKILL.md` routes requests and does not teach
+all of Workshop. It contains an `<intake>` list, a `<routing>` table that maps
+requests to workflow files, and a `<reference_index>` that maps topics to
+reference files. A typical turn loads `SKILL.md`, one workflow and one or two
+references. This keeps context use low, and adding a new workflow does not
+make existing turns load more.
 
-**Router, not a playbook.** `SKILL.md` does not try to teach Workshop
-end-to-end. It dispatches: an `<intake>` enumeration, a `<routing>`
-table mapping user paraphrases to workflow files, and a
-`<reference_index>` mapping topics to reference files. A typical agent
-turn loads `SKILL.md` plus one workflow plus one or two references —
-not the whole skill. This keeps context budgets reasonable and makes
-adding a new workflow a constant-cost change.
+**XML structure, little prose.** Files in `references/` and `workflows/` use
+semantic tags such as `<overview>`, `<process>`, `<anti_patterns>`,
+`<success_criteria>` and `<source_docs>`. Their content is tables, command
+blocks and short instructions. The reader is a model, not a person.
 
-**Pure-XML body, prose-light.** Every file under `references/` and
-`workflows/` uses semantic tags (`<overview>`, `<process>`,
-`<anti_patterns>`, `<success_criteria>`, `<source_docs>`). Inside
-tags it is tables, command blocks, and short directive sentences.
-The audience is a model that benefits from structural cues to land on
-the right action, not a human reader who can interpolate from prose.
+**External docs are the source of truth.** A `<docs>` block in `SKILL.md` sets
+the base URL of the Workshop docs. Each file's `<source_docs>` block lists doc
+paths relative to that base. The docs site keeps the content current; the
+skill sends the agent to the right page.
 
-**External docs are the source of truth.** A single `<docs>` block in
-`SKILL.md` declares the canonical Workshop docs base URL. Per-file
-`<source_docs>` blocks list paths *relative* to that base, with `.md`
-suffixes. The skill is portable — installable into any repo, with the
-URLs still resolving — and the doc site is responsible for staying
-current; the skill is responsible for routing the agent to the right
-page.
+**Explicit scope.** An `<out_of_scope>` block in `SKILL.md` lists what the
+skill does not do: publishing with `sdkcraft`, standalone `workshopctl`, and
+interactive sketch sessions that need `$EDITOR`. For these cases the skill
+points to the docs and tells the agent to stop. Related CLIs overlap, and
+their error messages don't always show the boundary.
 
-**Scope is fenced explicitly.** An `<out_of_scope>` block in
-`SKILL.md` enumerates what the skill will NOT drive: publishing-grade
-`sdkcraft`, standalone `workshopctl`, interactive sketch sessions
-that require `$EDITOR`. Out-of-scope cases redirect to docs URLs with
-stop-do-not-improvise language. Defensive fencing matters because the
-surrounding ecosystem has overlapping CLIs whose error messages do not
-always make the boundary obvious.
+**Failure handling.** `troubleshoot.md`, `purge-and-recover.md`,
+`anti-patterns.md` and `async-and-recovery.md` cover common errors and the
+diagnostic flow. After each change, `SKILL.md` requires a verification loop
+(`workshop changes`, then `workshop tasks <ID>`, then `workshop info`) and a
+fixed report format.
 
-**Failure modes are first-class.** Dedicated documents
-(`troubleshoot.md`, `purge-and-recover.md`, `anti-patterns.md`,
-`async-and-recovery.md`) cover the most common errors and the
-diagnostic flow. `SKILL.md` mandates a verification loop —
-`workshop changes` → `workshop tasks <ID>` → `workshop info` — after
-every mutating action, with a "report back as" template. The skill
-assumes things will go wrong and pre-routes the recovery path.
+**Templates, not memory.** The YAML files in `templates/` are the reference
+for `workshop.yaml`. The agent copies from a template instead of writing YAML
+from memory, because details such as `base:` syntax, plug and slot structure
+and action format are easy to get subtly wrong.
 
-**Templates, not memory.** YAML stubs under `templates/` are the
-canonical source for `workshop.yaml` shapes. The style guide
-instructs the agent to copy from a template rather than synthesize
-from memory, because schema details (`base:` syntax, plug/slot
-structure, action format) are easy to get plausibly-but-wrongly right.
+**Checked YAML and doc paths.** Every YAML key and doc path in the skills
+must come from an upstream schema or doc. Two offline CI checks enforce this:
+`check-yaml-keys` lints fenced YAML snippets and `templates/*.yaml` against
+key allowlists generated from the upstream JSON schemas, and
+`check-source-docs` checks each cited doc path against
+`tests/docs-manifest.txt`. To regenerate both from a Workshop checkout, run
+`make -C .github/skills/use-workshop/tests update-docs-manifest WORKSHOP_REPO=<path>`.
 
-**YAML is schema-traceable.** Every YAML shape and every upstream doc
-path the skill shows must be traceable to an upstream schema or doc —
-not invented from memory. Two failures this rule exists to prevent
-have both happened: an in-project `sdk.yaml` was shown with a `hooks:`
-key that strict validation actually rejects, and CLI-explanation pages
-were cited after upstream merged them away. Both are now caught
-mechanically by free, offline CI checks: `check-yaml-keys` lints every
-fenced YAML snippet and every `templates/*.yaml` against key allowlists
-generated from the upstream JSON schemas, and `check-source-docs`
-validates every cited doc path against `tests/docs-manifest.txt`. Both
-allowlist and manifest are regenerated from a Workshop checkout with
-`make update-docs-manifest` (`WORKSHOP_REPO=<path>`), so a version bump
-refreshes the ground truth in one step.
-
-**Changes are eval-gated.** The bundled `tests/` directories are
-[promptfoo](https://promptfoo.dev) regression suites (routing + agentic
-E2E + reconstruction) with baselines pinned per (candidate, judge) pair in
-each `BASELINE.md`. The lanes ([`TESTING.md`](TESTING.md)): free static
-checks in CI on every push/PR; a $0 subscription lane — the `claude` CLI on
-a local login — for every suite's routing gate (`make eval-routing`), the
-agentic suites, and the reconstruction harness; and a Copilot lane — a GPT
-model on a local Copilot login, same judge — for the cross-vendor routing
-runs (`make eval-routing-copilot`). An OpenRouter GLM-5.2 lane (resumed
-2026-11-17) adds a paid cross-vendor routing row for use-workshop. A skill change that drops a pinned baseline
-must not merge. The eval surface is what keeps the
-rest of these principles from drifting back into informality.
+**Eval-gated changes.** Each skill has a [promptfoo](https://promptfoo.dev)
+regression suite in `tests/`, with baselines pinned in `BASELINE.md`. A change
+that drops a pinned baseline does not merge.
 
 ## Testing
 
-[`TESTING.md`](TESTING.md) is the doctrine: the lanes, what runs when,
-costs, and the judge-comparability rule. Shared harness code lives in
-`.github/skills/_testlib/`. When vendoring the skills into another repo,
-the `tests/` directories may be omitted — the suites run from this repo
-only.
+[`TESTING.md`](TESTING.md) describes the evaluation lanes, when each runs,
+and what each costs. Shared harness code is in `.github/skills/_testlib/`.
 
-See
-[`.github/skills/use-workshop/tests/README.md`](.github/skills/use-workshop/tests/README.md)
-for the routing and agentic E2E suites: prerequisites, `make` targets,
-filter patterns, and baseline pinning.
+Suite documentation:
 
-For `onboard-workshop`, see
-[`.github/skills/onboard-workshop/tests/README.md`](.github/skills/onboard-workshop/tests/README.md)
-— its suite adds a guinea-pig *reconstruction eval*: real repos are
-sandbox-copied with their workshop definitions hidden, the skill onboards
-them from toolchain evidence alone, and the generated definitions are
-scored against the originals (deterministic thresholds + a
-functional-equivalence rubric).
-
-For `design-sdk`, see
-[`.github/skills/design-sdk/tests/README.md`](.github/skills/design-sdk/tests/README.md)
-— its suite mirrors the onboard shape (Lane 2-only routing gate + agentic
-tasks) and adds an *SDK reconstruction* harness: given only a user-level
-brief naming the software, the skill designs an SDK from scratch and the
-output is scored against the corresponding reference SDK repo.
+- [`use-workshop`](.github/skills/use-workshop/tests/README.md): routing and
+  agentic end-to-end suites.
+- [`onboard-workshop`](.github/skills/onboard-workshop/tests/README.md): adds
+  a reconstruction eval. The skill onboards real repositories with their
+  workshop definitions hidden, and the results are scored against the
+  originals.
+- [`design-sdk`](.github/skills/design-sdk/tests/README.md): adds an SDK
+  reconstruction harness. The skill designs an SDK from a short brief, and
+  the result is scored against the reference SDK repository.
