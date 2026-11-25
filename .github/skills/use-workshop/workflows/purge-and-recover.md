@@ -2,7 +2,7 @@
 <!-- Copyright 2026 Canonical Ltd. -->
 
 <objective>
-Remove a workshop cleanly when standard `workshop remove` works; recover orphaned workshops (project directory deleted) by recreating the directory; fall back to direct LXD cleanup only when that fails. Last-resort: a full snap purge.
+Copy out any files that live only inside the workshop, then remove it cleanly when standard `workshop remove` works; recover orphaned workshops (project directory deleted) by recreating the directory; fall back to direct LXD cleanup only when that fails. Last-resort: a full snap purge.
 </objective>
 
 <required_reading>
@@ -13,6 +13,35 @@ Remove a workshop cleanly when standard `workshop remove` works; recover orphane
 
 <process>
 
+**Step 0. Copy files out before any removal (0.9.10 docs).**
+
+Removal is destructive. Removing a workshop deletes:
+- everything inside it, including the `workshop` user's home;
+- the host directories Workshop allocated for its mount plugs, under `~/.local/share/workshop/id/<PROJECT-ID>/<WORKSHOP>/mount/` (`workshop info` shows them as `host-source:`).
+
+Only the directories the user manages survive: the project directory (`/project`) and any `workshop remount` target. Ask what the user needs to keep before Step 1, and do this first even when the workshop looks unrecoverable. `workshop restore` is not a safe substitute: after an agent with `sudo` broke the workshop, neither a restart nor `restore` is sure to bring it back.
+
+- **The workshop still runs.** Copy into a new directory in the project:
+  ```
+  workshop shell <WORKSHOP>
+  mkdir /project/workshop-recovery && cp -a ~/<PATH> /project/workshop-recovery/
+  ```
+  For a mount's data, copy the `host-source:` directory on the host.
+- **It won't start, and it is a container.** The LXD instance is `<WORKSHOP>-<PROJECT-ID>` in the LXD project `workshop.<USERNAME>`, or `workshop.<UID>` when the username isn't a valid LXD project name (`id -u`). `lxc list --project workshop.<USERNAME> --columns nst` finds the instance and its type. Then:
+  ```
+  mkdir ~/workshop-recovery
+  lxc file pull --recursive --project workshop.<USERNAME> <INSTANCE>/home/workshop/<PATH> ~/workshop-recovery/
+  ```
+  Run `lxc` **without `sudo`**, so the copies belong to the user; this needs `lxd` group membership. Symbolic links are copied as links.
+- **It won't start, and it is a VM.** `lxc file pull` works only while the VM runs and its LXD agent answers. Otherwise, attach its disk to a second, empty VM workshop and copy from there. **Never mount the broken VM's disk on the host.** Anything inside the VM could have written that disk, and mounting a crafted filesystem can crash the host or hand it over. The procedure is upstream's `how-to/fix-workshops/purge.md` ("Copy files out of a broken workshop"):
+  1. In a new, empty directory, `workshop init <R> --runtime lxd-vm --project ~/vm-recovery` and `workshop launch <R> --project ~/vm-recovery`. Give it no SDKs, so no interfaces connect it to the host, and keep its project directory empty.
+  2. `lxc stop --force` the broken VM.
+  3. `lxc storage volume set … workshop virtual-machine/<INSTANCE> security.shared=true`, then `lxc config device add … <R-INSTANCE> recovery disk pool=workshop source=<INSTANCE> source.type=virtual-machine`.
+  4. In the recovery VM, find the unmounted disk with `lsblk -f`. Mount its `cloudimg-rootfs` partition **read-only**, copy the files to `/project/workshop-recovery/`, then unmount it.
+  5. `lxc config device remove` the recovery device. The files are now in `~/vm-recovery/workshop-recovery/`.
+
+Then go to Step 1.
+
 **Step 1. Try the standard removal first.**
 ```
 workshop remove <workshop>           # or: workshop remove (single-workshop project)
@@ -21,7 +50,7 @@ workshop list --global                # confirm gone everywhere
 ```
 This stops the container if running, deletes the LXD container, removes data and cache, and cleans up LXD profiles.
 
-If it succeeds, you're done. Note: non-default mount sources set via `workshop remount` are NOT removed by `workshop remove` — clean those up separately if you need to.
+If it succeeds, you're done. (`workshop rm` is the 0.9.10+ alias.) Note: non-default mount sources set via `workshop remount` are NOT removed by `workshop remove` — clean those up separately if you need to.
 
 **Step 2. If `workshop remove` fails or the workshop still appears — classify the failure.**
 
@@ -137,6 +166,8 @@ workshop connections               # only auto-connections present
 
 <anti_patterns>
 - Jumping to `sudo snap remove workshop --purge` for a single broken workshop. It nukes everyone.
+- Removing (or `lxc delete`-ing) a broken workshop before asking what lives only inside it: its home and its Workshop-allocated mount directories go with it (Step 0).
+- Mounting a broken VM's disk on the host to rescue files. Attach it to a second VM instead (Step 0).
 - Running `lxc delete` without `--force` on a container that's in error — it may refuse and leave you in a worse state.
 - Deleting LXD profiles without checking USED BY — kills profiles for valid workshops.
 - Confusing `workshop remove` (deletes the container, keeps the YAML) with `workshop restore` (reverts the container's filesystem to a known good point and keeps it running).
@@ -145,13 +176,15 @@ workshop connections               # only auto-connections present
 </anti_patterns>
 
 <success_criteria>
+- Files the user needed from inside the workshop were copied out before removal, or the user said there were none.
 - The target workshop is gone from `workshop list --global`.
 - No orphan LXD containers or profiles remain in `workshop.$USER` / `workshop-snapshots.$USER`.
 - Other workshops on the system are unaffected (the user did not nuke the snap).
 </success_criteria>
 
 <source_docs>
-- `how-to/fix-workshops/purge.md`
+- `how-to/fix-workshops/purge.md` ("Before removing a workshop" and "Copy files out of a broken workshop", 0.9.10)
+- `security.md` (an agent with `sudo` can break the workshop; copy files out before `workshop remove`)
 - `explanation/workshops/projects.md` (project tracking; orphaned workshops)
 - `how-to/fix-workshops/fix-installation.md` (LXC exploration)
 - `reference/cli/workshop.md` (remove, restore, list sections)
