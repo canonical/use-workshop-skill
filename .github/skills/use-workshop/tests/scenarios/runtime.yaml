@@ -1,31 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright 2026 Canonical Ltd.
 
-- description: VM workshop launch refused — the experimental opt-in (0.9.8 runtime)
+- description: VM workshop launch refused as experimental — an old Workshop (0.9.10)
   vars:
     user: |
-      I put `runtime: lxd-vm` in my definition and `workshop launch dev` says the runtime is experimental. How do I actually launch it?
+      I put `runtime: lxd-vm` in my definition and `workshop launch dev` says the runtime is experimental and tells me to set workshop.experimental-vms. How do I actually launch it?
   assert:
-    - type: contains
-      value: workshop.experimental-vms=1
-    - type: contains-any
+    - type: icontains-any
       value:
-        - snap restart workshop.workshopd
-        - restart workshop.workshopd
+        - "0.9.10"
+        - snap refresh workshop
     - type: not-contains
       value: snap remove
     - type: llm-rubric
       value: |
-        The response gives BOTH opt-in commands — `sudo snap set workshop
-        workshop.experimental-vms=1` and `sudo snap restart
-        workshop.workshopd` — and makes clear the daemon restart is part of
-        the opt-in rather than optional. It flags that the VM runtime is
-        experimental and steers the user toward containers as the normal
-        choice — either framing counts ("the default", "the supported
-        choice", "what you want unless you need a harder boundary"). It does
-        NOT invent a `workshop launch --vm` / `--experimental` flag, an
-        environment variable the user should export by hand, or a config file
-        to edit.
+        The response recognizes that this error comes from Workshop 0.9.9 or
+        earlier: since 0.9.10 the VM runtime is generally available, and the
+        opt-in and the `workshop.experimental-vms` setting are gone. Its fix
+        is to upgrade Workshop (e.g. `sudo snap refresh workshop`) to 0.9.10,
+        on LXD 6.10 or later. Mentioning that on an old host the error's own
+        `snap set` + `snap restart workshop.workshopd` pair would also work is
+        acceptable only as a secondary note, never as the recommended path.
+        It keeps containers as the default (the user may drop the `runtime:`
+        line if they don't need a VM). It does NOT invent a
+        `workshop launch --vm` / `--experimental` flag, and it does NOT tell
+        the user to switch LXD to `6/candidate`.
 
 - description: Scaffolding a VM workshop with workshop init (--runtime)
   vars:
@@ -42,9 +41,10 @@
         explains that it writes `runtime: lxd-vm` into the generated
         definition. Mentioning that the key can equally be added by hand is a
         plus, not required — the user asked only about init. It says or
-        implies that omitting the key means `lxd-container`. It should also
-        warn that a VM is experimental and needs the snap opt-in before it
-        will launch. It does NOT present `--vm` as a current flag (naming it
+        implies that omitting the key means `lxd-container`. Noting that a VM
+        supports only the mount and secret interfaces is a plus. It does NOT
+        describe the VM runtime as experimental or requiring a snap opt-in
+        (0.9.10 removed both), and it does NOT present `--vm` as a current flag (naming it
         as the removed 0.9.7 spelling is fine), and it does NOT claim a
         runtime flag exists on `workshop launch` or `workshop refresh`.
 
@@ -70,28 +70,25 @@
         another `workshop refresh` variant as the fix, and it does NOT claim
         the refresh would have worked with a flag.
 
-- description: VM workshop that declares SDKs is refused (LXD 6/candidate)
+- description: SDKs refused in a VM workshop — an old Workshop, not an LXD switch (0.9.10)
   vars:
     user: |
       Launching my VM workshop fails with "SDKs are currently unavailable for virtual machines", but the same definition works fine as a container. What's going on?
   assert:
-    - type: contains
-      value: 6/candidate
+    - type: icontains-any
+      value:
+        - "0.9.10"
+        - snap refresh workshop
     - type: llm-rubric
       value: |
-        The response explains that SDK support in a VM workshop depends on the
-        host's LXD being able to mount shifted disks into a virtual machine,
-        which means switching LXD to the `6/candidate` channel (Workshop
-        0.9.9; noting that the 0.9.8 docs named `6/edge` is fine, but
-        `6/candidate` must be the channel it tells the user to switch to).
-        Mentioning the other way out — a VM definition that declares no
-        SDKs — is a plus, not a requirement (this user wants their SDKs).
-        Before or alongside the switch it warns about its cost — any of: it
-        applies to the whole host including container workshops, `candidate`
-        is unreleased LXD, or LXD cannot move back from `6/candidate` to
-        `6/stable`. It does NOT claim VM workshops never support SDKs as a
-        permanent rule, and it does NOT tell the user to reinstall or
-        downgrade Workshop.
+        The response explains that this error comes from Workshop 0.9.9 or
+        earlier, where a VM workshop could carry SDKs only on LXD
+        `6/candidate`. Since Workshop 0.9.10, SDKs work in VM workshops on
+        LXD from the stable channel (6.10 or later), so the fix is to
+        upgrade Workshop. It does NOT recommend switching LXD to
+        `6/candidate` (naming it as what old releases needed is fine), it does
+        NOT claim VM workshops never support SDKs, and it does NOT tell the
+        user to reinstall or downgrade Workshop.
 
 - description: Only mount and secret connect in a VM workshop (0.9.9)
   vars:
@@ -159,14 +156,15 @@
 - description: Removing a stopped VM workshop fails on a mount disconnect
   vars:
     user: |
-      `workshop remove dev` fails for my stopped VM workshop — the error is about disconnecting one of its SDK's mount plugs. The container workshops in the same project removed fine. How do I get rid of it?
+      `workshop remove dev` fails for my stopped VM workshop — the error is about disconnecting a mount plug that's connected to another workshop's slot. The container workshops in the same project removed fine. How do I get rid of it?
   assert:
     - type: contains
       value: workshop start
     - type: llm-rubric
       value: |
         The response explains that in a VM workshop disconnecting a `mount`
-        plug needs the workshop to be running, and removal disconnects its
+        plug (here, one wired to another workshop's slot) needs the workshop
+        to be running, and removal disconnects its
         mounts, so a stopped VM workshop can fail to remove (a known
         limitation of the VM runtime). The fix is `workshop start dev`, then
         `workshop remove dev`; if it won't start, the purge / recovery path
@@ -189,9 +187,8 @@
         unknown field. The fix is to write `runtime: lxd-vm` in place of
         `confinement: virtual-machine` — not merely to delete the line,
         which would launch a plain container instead of the VM the user
-        wanted. Noting that the VM runtime also needs the experimental snap
-        opt-in, or that 0.9.8 silently ignored the old key, is a plus, not
-        required. It does NOT tell the user to downgrade Workshop, does NOT
+        wanted. Noting that 0.9.8 silently ignored the old key is a plus,
+        not required. It does NOT tell the user to downgrade Workshop, does NOT
         present deleting the `confinement:` line as the whole fix, and does
         NOT claim `confinement:` still works.
 
@@ -209,7 +206,7 @@
         repository rather than the user's working copy, and disconnecting
         interfaces such as ssh-agent, secrets, or writable mounts before the
         agent starts. It may mention the VM runtime as an optional extra
-        layer (experimental, opt-in), but containers stay the default. It
+        layer, but containers stay the default. It
         does NOT claim a container or VM fully isolates the project from the
         agent.
 
@@ -235,3 +232,45 @@
         base is already rejected, that launch fails today, or that validation
         errors out, and it does NOT name a specific release in which 20.04
         stops working (upstream hasn't).
+
+- description: Give a VM workshop more memory and CPUs (cpus/memory, 0.9.10)
+  vars:
+    user: |
+      My VM workshop "dev" keeps running out of memory during builds and only has 2 cores. Can I give it more without rebuilding it?
+  assert:
+    - type: contains
+      value: "memory:"
+    - type: contains
+      value: workshop refresh
+    - type: not-contains
+      value: lxc config set
+    - type: llm-rubric
+      value: |
+        The response tells the user to set the top-level `memory:` (with a
+        unit, e.g. `8GiB`) and `cpus:` (an integer) keys in the workshop
+        definition, Workshop 0.9.10+, then run `workshop refresh dev`, which
+        applies them to the existing VM without remove + launch. It may note
+        the VM defaults (2 CPUs, 4GiB memory, 10GiB disk) or that
+        `workshop info` shows the effective `cpus:` / `memory:` lines
+        afterwards. It does NOT prescribe `lxc config set limits.*`, does NOT
+        claim the hardware is fixed until the workshop is recreated, and does
+        NOT write a unit-less or `8G`-style memory value.
+
+- description: Container disk below the minimum fails launch (disk, 0.9.10)
+  vars:
+    user: |
+      I added `disk: 1GiB` to cap my container workshop and now `workshop launch dev` fails with `invalid disk size "1GiB": must be at least 2GiB for containers`. Isn't 1GiB enough for a small project?
+  assert:
+    - type: icontains-any
+      value:
+        - 2GiB
+        - 2 GiB
+    - type: llm-rubric
+      value: |
+        The response explains that `disk:` sets the workshop's root disk size
+        and that Workshop enforces a minimum of 2GiB for a container (10GiB
+        for a VM), so 1GiB is rejected regardless of the project's size. The
+        fix is to raise the value to at least `2GiB`, or to drop the key so
+        the container is limited only by the storage pool. It does NOT treat
+        this as a storage-pool problem, does NOT suggest resizing the LXD
+        pool, and does NOT invent a flag to bypass the minimum.

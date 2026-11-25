@@ -158,8 +158,9 @@ Caveat worth knowing, not designing around: since Workshop 0.9.9
 `check-health` runs in a VM workshop (`runtime: lxd-vm`) too, but a VM
 supports only `mount` and `secret` plugs — any other plug the SDK declares is
 skipped there with a warning. (Through 0.9.8 a VM never ran `check-health`.)
-VM workshops cannot carry SDKs on LXD `6/stable` anyway — design for
-containers, and don't make a health check depend on a plug a VM drops.
+Since 0.9.10 VM workshops carry SDKs on stable LXD, so an SDK can land in
+one. Design for containers, and don't make a health check depend on a plug a
+VM drops.
 </health_checks>
 
 <sdk_dependencies>

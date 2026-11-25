@@ -21,12 +21,12 @@ Regenerate via `tests/scripts/update-sdk-catalog.sh` (maintainer-only).
 
 <catalog>
 <!-- catalog:start -->
-Generated from canonical/reference-sdks @ 5f07cedc on 2026-10-23 (hand-curated v1)
+Generated from canonical/reference-sdks @ 5f07cedc on 2026-11-25 (hand-curated v1)
 — fallback only; always prefer live `sdk find`.
 
 | SDK | Provides | Typical channels | Matching repo signals |
 |-----|----------|------------------|----------------------|
-| `go` | Go toolchain + module cache mount | `1.26/stable`, `latest/stable` | `go.mod`, `*.go` |
+| `go` | Go toolchain + module cache mount | `1.27/stable`, `latest/stable` | `go.mod`, `*.go` |
 | `node` | Node.js LTS + Corepack; npm/pnpm/yarn cache mounts; inspector tunnel slot | `"24"`, `"22"`, `latest/stable` | `package.json`, lockfiles |
 | `rust` | Rust toolchain | `latest/stable` | `Cargo.toml` |
 | `dotnet` | .NET SDK | `10/stable`, `9/stable`, `8/stable` | `global.json`, `*.csproj` |

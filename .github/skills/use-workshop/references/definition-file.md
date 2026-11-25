@@ -22,10 +22,24 @@ Anatomy of a workshop definition file. Use this when generating or editing `work
 |-----|----------|------|---------|
 | `name` | yes | string | Workshop name; lowercase letters, digits, hyphens; must match filename for `.workshop/` files |
 | `base` | yes | string | OS image: `ubuntu@22.04`, `ubuntu@24.04`, `ubuntu@26.04`. `ubuntu@20.04` is deprecated — still accepted (0.9.8 included), but warns on every launch/refresh; removal is announced, not dated |
-| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (experimental, snap-gated, SDKs need LXD `6/candidate`, only `mount` and `secret` interfaces). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key fails as an unknown field since 0.9.9 (0.9.8 silently ignored it). See `references/runtime.md` |
+| `runtime` | optional | string | `lxd-container` (default when the key is absent) or `lxd-vm` (generally available since 0.9.10; only `mount` and `secret` interfaces; through 0.9.9 it was experimental, snap-gated, and SDKs needed LXD `6/candidate`). Fixed at launch. 0.9.8 renamed it from `confinement:` — a leftover `confinement:` key fails as an unknown field since 0.9.9 (0.9.8 silently ignored it). See `references/runtime.md` |
+| `cpus` | optional | integer | (0.9.10+) Number of CPUs. Default: unlimited for a container, 2 for a VM. `0` means unset; a negative value fails. Workshop may raise it for a VM with many mounts (see `references/runtime.md`) |
+| `memory` | optional | string | (0.9.10+) Memory limit, an integer plus a unit (`512MiB`, `8GiB`). Default: unlimited for a container, `4GiB` for a VM. Minimum `256MiB` (container) / `512MiB` (VM) |
+| `disk` | optional | string | (0.9.10+) Root disk size, same format as `memory`. Default: the storage pool's limit for a container, `10GiB` for a VM. Minimum `2GiB` (container) / `10GiB` (VM). A VM runs `setup-base` hooks on a 10GiB disk and grows it afterwards, so the snapshot is reusable |
 | `sdks` | optional | list | SDKs layered on top of the base |
 | `connections` | optional | list | Explicit plug↔slot wiring beyond auto-connect |
 | `actions` | optional | map | Named bash scripts invoked via `workshop run` |
+
+**Resource keys (`cpus`, `memory`, `disk`; 0.9.10+).**
+- They apply on the next `workshop refresh`. There is no need to remove and relaunch, for a container or a VM.
+- `workshop info` prints a `cpus:`, `memory:` or `disk:` line after `runtime:`. A container prints only the keys that are set. A VM always prints all three, with the defaults filled in.
+- Units are `B` with an optional `k M G T P E` or `Ki Mi Gi Ti Pi Ei` prefix. A bare `8G` is wrong; write `8GiB`.
+- Bad values fail. The verified 0.9.10 messages are:
+  - `invalid memory size "8G": must be a positive integer followed by a unit, e.g. 8GiB` at launch.
+  - `invalid CPU count -1: must be a positive integer`.
+  - `cpus: "2"` (a quoted string) fails with `cannot unmarshal !!str `2` into int`.
+  - A value below a minimum fails in the create task, e.g. `invalid disk size "1GiB": must be at least 2GiB for containers` or `invalid memory size "256MiB": must be at least 512MiB for virtual machines`.
+- These are strictly validated top-level keys. On 0.9.9 and earlier, any of them fails as an unknown field (`workshop definition YAML contains unknown fields: "memory"`), so upgrade Workshop rather than delete the key.
 </top_level_keys>
 
 <sdks_entry>
@@ -34,7 +48,7 @@ Each entry under `sdks:` is an object:
 | Key | Required | Type | Purpose |
 |-----|----------|------|---------|
 | `name` | yes | string | SDK name. `system` for the system SDK; `project-<NAME>` for in-project SDKs; `try-<NAME>` for try SDKs. Length caps: 40 bare, 44 with `try-`, 48 with `project-`; `try-system`, `try-sketch`, `project-system`, `project-sketch` are rejected as reserved. **The prefix exists only here**: it says where the SDK comes from, and Workshop strips it. Everywhere else (`connections:`, `bind:`, `workshop connect`, `workshop info`) the SDK is its bare `<NAME>`. Bare names must be unique: `try-mir` next to `mir` or `project-mir` fails as `"mir" SDK must only be included once` |
-| `channel` | optional | string | snap-like format `<TRACK>/<RISK>/<BRANCH>` — all three parts optional, at least one present; default `latest/stable`. Only for Store SDKs. **Quote values that look numeric** (`channel: "1.26"`, `"24"`) or YAML parses them as numbers and validation fails |
+| `channel` | optional | string | snap-like format `<TRACK>/<RISK>/<BRANCH>` — all three parts optional, at least one present; default `latest/stable`. Only for Store SDKs. **Quote values that look numeric** (`channel: "1.27"`, `"24"`) or YAML parses them as numbers and validation fails |
 | `plugs` | optional | map | Plug bindings or new plug definitions on this SDK |
 | `slots` | optional | map | New slot definitions on this SDK |
 
@@ -134,6 +148,7 @@ actions:
 **Custom-device plugs** (regular SDKs only; never the system SDK):
 - Name is freeform.
 - Attributes: `subsystem` (kernel device subsystem to expose, e.g. `tty`, `input`, `usb`), `vendorid` (0.9.3+), `productid` (0.9.3+) — each optional, at least one required; `productid` requires `vendorid`. Quote IDs as strings (`"0403"`, `"6001"`).
+- USB (0.9.10+): `subsystem: usb`, or a `vendorid`/`productid` with no `subsystem`, also passes the matching raw USB device through (`/dev/bus/usb/…`), so libusb tools see it. Through 0.9.9 `subsystem: usb` exposed nothing, because LXD skips that subsystem for hotplug device nodes. The fix for a USB device that is "connected but invisible" on an older host is to upgrade Workshop, not to rewrite the plug.
 - Never auto-connects — wire it after launch/refresh with `workshop connect <WORKSHOP>/<SDK>:<PLUG> :custom-device`. The slot exists only as `system:custom-device`.
 
 **Secret slots** (0.9.8+; on the `system` SDK only — the user adds them here, any name):
@@ -146,14 +161,16 @@ actions:
 
 <minimal_examples>
 
-**VM runtime (experimental — needs the snap opt-in; no SDKs on LXD `6/stable`):**
+**VM runtime with resources (0.9.10+; only `mount` and `secret` interfaces connect):**
 ```yaml
 name: dev
 base: ubuntu@24.04
 runtime: lxd-vm
-actions:
-  <action>: |
-    <command>
+cpus: 4
+memory: 8GiB
+disk: 30GiB
+sdks:
+  - name: <sdk-name>
 ```
 
 **Single SDK, no extras:**

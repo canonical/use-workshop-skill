@@ -10,7 +10,7 @@ file covers the commands and the channel model.
 
 Version note: SDKcraft and Workshop are released independently and their
 version numbers no longer match (they shared a number only up to Workshop
-0.9.1). SDKcraft 0.9.4 pairs with Workshop 0.9.8 (it adds `secret` plugs);
+0.9.1). SDKcraft 0.9.4 pairs with Workshop 0.9.8 through 0.9.10 (it adds `secret` plugs);
 SDKcraft 0.9.3 paired with Workshop 0.9.5, 0.9.6, and 0.9.7. SDKcraft is
 released only when it has changes, so it can trail Workshop. Never infer one
 tool's version from the other, and never tell a user
